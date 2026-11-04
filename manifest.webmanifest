@@ -1,0 +1,31 @@
+{
+ "name": "مصاريف البيت",
+ "short_name": "مصاريف البيت",
+ "description": "دفتر مصاريف البيت الشهري، الالتزامات، المدخرات والفلوس اللي ليك برا",
+ "lang": "ar",
+ "dir": "rtl",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#0F1715",
+ "theme_color": "#0E6E62",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
