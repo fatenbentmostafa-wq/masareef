@@ -1629,17 +1629,21 @@ async function lockSupported(){
   try{ return !IN_ARTIFACT && window.isSecureContext && window.PublicKeyCredential && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); }catch(e){ return false; }
 }
 function renderLockCard(){
-  $("#lockState").textContent=lockCred?"شغال ✓ التطبيق بيطلب بصمتك أو الـ PIN كل ما يتفتح.":"التطبيق هيطلب بصمتك أو الـ PIN بتاع الموبايل كل ما يتفتح.";
+  $("#lockState").textContent=lockCred?"شغال ✓ التطبيق بيقفل كل ما تخرج منه، وبيطلب بصمتك أو الـ PIN عشان ترجع.":"التطبيق هيطلب بصمتك أو الـ PIN بتاع الموبايل كل ما يتفتح.";
   $("#lockToggle").textContent=lockCred?"إيقاف القفل":"تشغيل القفل";
   $("#lockToggle").className=lockCred?"danger":"btn-main";
 }
 async function verifyUser(){
+  verifying=true;
+  try{
   const a=await navigator.credentials.get({publicKey:{challenge:rnd(32),allowCredentials:[{type:"public-key",id:unb64(lockCred)}],userVerification:"required",timeout:60000}});
   return !!a;
+  } finally { setTimeout(()=>{ verifying=false; },800); }
 }
 function showLock(){ if(!lockCred) return; document.documentElement.classList.add("locked"); $("#lockScreen").hidden=false; $("#lockErr").textContent=""; $("#unlockGoogle").hidden=!(typeof fbUser!=="undefined"&&fbUser); }
 function hideLock(){ document.documentElement.classList.remove("locked"); $("#lockScreen").hidden=true; }
 async function tryUnlock(){
+  if(verifying) return;
   try{ if(await verifyUser()) hideLock(); }
   catch(e){ $("#lockErr").textContent=e&&e.name==="NotAllowedError"?"ماتمش التأكيد. دوس فتح وجرّب تاني.":"حصلت مشكلة في البصمة. جرّب تاني."; $("#unlockGoogle").hidden=!(typeof fbUser!=="undefined"&&fbUser); }
 }
@@ -1664,10 +1668,21 @@ $("#lockToggle").addEventListener("click",async()=>{
     renderLockCard(); toast("القفل اشتغل ✓ من المرة الجاية التطبيق هيطلب بصمتك");
   }catch(e){ toast(e&&e.name==="NotAllowedError"?"اتلغى تشغيل القفل":"الموبايل ده مش بيدعم القفل بالبصمة من المتصفح"); }
 });
+// lock every time the app leaves the screen; the app's own pickers/popups are exempt
+let verifying=false, awayOk=false;
+const allowAway=()=>{ awayOk=true; };
 document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="hidden") hiddenAt=Date.now();
-  else if(lockCred&&hiddenAt&&Date.now()-hiddenAt>60000){ showLock(); tryUnlock(); }
+  if(!lockCred) return;
+  if(document.visibilityState==="hidden"){
+    if(verifying||awayOk) return;
+    showLock();
+  } else {
+    if(awayOk){ awayOk=false; return; }
+    if(!verifying&&!$("#lockScreen").hidden) tryUnlock();
+  }
 });
+// file picker, share sheet, Google sign-in, PDF save: don't relock for these
+document.addEventListener("click",e=>{ if(e.target.closest("#bkLoad,#shareBtn,#bkSave,#pdfBtn,#homePdf,#sbLogin,#unlockGoogle")) allowAway(); },true);
 (async()=>{ const ok=await lockSupported(); $("#lockCard").hidden=!ok; if(ok){ renderLockCard(); if(lockCred){ showLock(); tryUnlock(); return; } } hideLock(); })();
 
 /* ---------- pages ---------- */
