@@ -370,12 +370,23 @@ header[hidden]{display:none!important}
 .dtitle.big span{font-size:.85rem!important}
 .dhead{grid-template-columns:minmax(0,1fr) auto!important;padding-top:10px!important}
 .dhead .mpill .i{display:block!important}
+/* app lock */
+.lk-row{display:flex;gap:12px;align-items:center}
+.lk-ic{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--t1s);color:var(--t1);flex-shrink:0}
+.lk-ic svg.i{width:28px;height:28px}
+.lockscreen{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:radial-gradient(120% 70% at 50% 0%,#11302A 0%,var(--bg) 65%);padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.ls-box{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;max-width:320px;width:100%}
+.ls-ic{width:96px;height:96px;border-radius:28px;display:grid;place-items:center;background:var(--t1s);color:var(--t1);border:1px solid #2B5A4C;margin-bottom:6px}
+.ls-ic svg.i{width:52px;height:52px}
+.ls-box b{font-size:1.4rem}
+.ls-box .bigadd{width:100%;margin-top:14px}
+html.locked body>.wrap,html.locked .tabbar{visibility:hidden}
 /* hide amounts (privacy) */
 .eyebtn .eye-off{display:none}
 .hide-money .eyebtn .eye-on{display:none}
 .hide-money .eyebtn .eye-off{display:block}
 .hide-money .eyebtn{color:var(--t3);border-color:var(--t3)}
-.hide-money input[type=number]{filter:blur(5px)}
+input[data-masked]{letter-spacing:.08em;cursor:not-allowed;direction:ltr;text-align:right}
 /* tabs */
 nav{position:fixed;inset:auto 0 0 0;z-index:6;background:var(--paper);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(4px,env(safe-area-inset-left,0px));padding-right:max(4px,env(safe-area-inset-right,0px))}
 nav .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
@@ -468,6 +479,10 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
 
   <!-- 7. settings -->
   <section id="tab-settings" hidden>
+    <div class="card dc" id="lockCard" hidden>
+      <div class="lk-row"><span class="lk-ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 11v3.5c0 2.5-1 4.5-2.5 6"/><path d="M8.5 9.5A4 4 0 0 1 16 11.5v2c0 2.6-.6 5-1.8 7"/><path d="M5.5 13.5V12a6.5 6.5 0 0 1 11.6-4"/><path d="M18.4 10.5c.1.5.1 1 .1 1.5v1.5c0 1.5-.2 3-.6 4.3"/><path d="M6 17.5c.6-1 .9-2 1-3"/><path d="M4.5 8.5A9 9 0 0 1 19 5.5"/></svg></span><div style="min-width:0"><h2>قفل التطبيق بالبصمة</h2><p class="hint" id="lockState">التطبيق هيطلب بصمتك أو الـ PIN بتاع الموبايل كل ما يتفتح.</p></div></div>
+      <button type="button" class="btn-main" id="lockToggle">تشغيل القفل</button>
+    </div>
     <div class="card dc" id="houseCard" hidden>
       <h2>مشاركة البيت</h2>
       <p class="hint">الحسابات دي بتشوف وتعدّل نفس الداتا. ضيف إيميل جوجل بتاع أي حد عايزه يشاركك، ويسجّل دخول من موبايله بالإيميل ده.</p>
@@ -617,6 +632,16 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
   </section>
 </div>
 
+<div class="lockscreen" id="lockScreen" hidden>
+  <div class="ls-box">
+    <span class="ls-ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 11v3.5c0 2.5-1 4.5-2.5 6"/><path d="M8.5 9.5A4 4 0 0 1 16 11.5v2c0 2.6-.6 5-1.8 7"/><path d="M5.5 13.5V12a6.5 6.5 0 0 1 11.6-4"/><path d="M18.4 10.5c.1.5.1 1 .1 1.5v1.5c0 1.5-.2 3-.6 4.3"/><path d="M6 17.5c.6-1 .9-2 1-3"/><path d="M4.5 8.5A9 9 0 0 1 19 5.5"/></svg></span>
+    <b>مصاريف البيت مقفول</b>
+    <span class="hint">افتح ببصمتك أو بالـ PIN بتاع الموبايل</span>
+    <button type="button" class="bigadd" id="unlockBtn"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 11v3.5c0 2.5-1 4.5-2.5 6"/><path d="M8.5 9.5A4 4 0 0 1 16 11.5v2c0 2.6-.6 5-1.8 7"/><path d="M5.5 13.5V12a6.5 6.5 0 0 1 11.6-4"/><path d="M18.4 10.5c.1.5.1 1 .1 1.5v1.5c0 1.5-.2 3-.6 4.3"/><path d="M6 17.5c.6-1 .9-2 1-3"/><path d="M4.5 8.5A9 9 0 0 1 19 5.5"/></svg>فتح</button>
+    <button type="button" class="linkbtn" id="unlockGoogle" hidden>افتح بحساب جوجل بدل البصمة</button>
+    <span class="hint neg" id="lockErr"></span>
+  </div>
+</div>
 <div class="toast" id="toast" hidden></div>
 <nav class="tabbar" aria-label="التنقل">
   <button type="button" data-nav="home"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg><span>الرئيسية</span></button>
@@ -633,8 +658,10 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
 const LS_KEY="house-budget-v2";
 const $=s=>document.querySelector(s);
 let HIDE=false;
+try{ if(localStorage.getItem("house-budget-lock")&&!(window.claude&&window.claude.use)) document.documentElement.classList.add("locked"); }catch(e){}
 const fmtReal=n=>(Math.round((+n||0)*100)/100).toLocaleString("en-US");
-const fmt=n=>HIDE?"***":fmtReal(n);
+const star=t=>String(t).replace(/\d/g,"*");
+const fmt=n=>HIDE?star(fmtReal(n)):fmtReal(n);
 const money=n=>`<span class="num">${fmt(n)}</span><span class="cur">ج.م</span>`;
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const uid=()=>Math.random().toString(36).slice(2,9);
@@ -1572,8 +1599,76 @@ function setHidden(on){
   document.querySelectorAll("[data-eye]").forEach(b=>{ b.setAttribute("aria-pressed",String(on)); b.setAttribute("aria-label",on?"إظهار الأرقام":"إخفاء الأرقام"); });
   try{ localStorage.setItem("house-budget-hide",on?"1":"0"); }catch(e){}
 }
-document.addEventListener("click",e=>{ const b=e.target.closest("[data-eye]"); if(!b) return; const on=!document.documentElement.classList.contains("hide-money"); flushAll(); setHidden(on); renderAll(); toast(on?"الأرقام اتخفت":"الأرقام ظهرت"); });
+document.addEventListener("click",e=>{ const b=e.target.closest("[data-eye]"); if(!b) return; const on=!document.documentElement.classList.contains("hide-money"); flushAll(); if(!on) maskInputs(); setHidden(on); if(!on) maskInputs(); renderAll(); toast(on?"الأرقام اتخفت":"الأرقام ظهرت"); });
 try{ setHidden(localStorage.getItem("house-budget-hide")==="1"); }catch(e){}
+
+/* ---------- masking typed numbers while hidden ---------- */
+function maskInputs(){
+  if(HIDE){
+    document.querySelectorAll('input[type="number"]').forEach(el=>{
+      if(el.value===""||el===document.activeElement) return;
+      el.dataset.real=el.value; el.type="text"; el.value=star(fmtReal(el.value)); el.readOnly=true; el.dataset.masked="1";
+    });
+  } else {
+    document.querySelectorAll('input[data-masked]').forEach(el=>{
+      el.type="number"; el.value=el.dataset.real||""; el.readOnly=false; delete el.dataset.masked; delete el.dataset.real;
+    });
+  }
+}
+document.addEventListener("click",e=>{ if(e.target.matches&&e.target.matches("input[data-masked]")) toast("دوس على العين 👁 فوق عشان تعدّل الأرقام"); });
+document.addEventListener("submit",e=>{ if(HIDE&&e.target.querySelector("input[data-masked]")){ e.preventDefault(); e.stopImmediatePropagation(); toast("دوس على العين 👁 فوق الأول عشان تحفظ"); } },true);
+
+/* ---------- app lock (fingerprint / device PIN via WebAuthn) ---------- */
+const LOCK_KEY="house-budget-lock";
+const b64=buf=>btoa(String.fromCharCode(...new Uint8Array(buf)));
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const rnd=n=>crypto.getRandomValues(new Uint8Array(n));
+let lockCred=null; try{ lockCred=localStorage.getItem(LOCK_KEY); }catch(e){}
+let hiddenAt=0;
+async function lockSupported(){
+  try{ return !IN_ARTIFACT && window.isSecureContext && window.PublicKeyCredential && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); }catch(e){ return false; }
+}
+function renderLockCard(){
+  $("#lockState").textContent=lockCred?"شغال ✓ التطبيق بيطلب بصمتك أو الـ PIN كل ما يتفتح.":"التطبيق هيطلب بصمتك أو الـ PIN بتاع الموبايل كل ما يتفتح.";
+  $("#lockToggle").textContent=lockCred?"إيقاف القفل":"تشغيل القفل";
+  $("#lockToggle").className=lockCred?"danger":"btn-main";
+}
+async function verifyUser(){
+  const a=await navigator.credentials.get({publicKey:{challenge:rnd(32),allowCredentials:[{type:"public-key",id:unb64(lockCred)}],userVerification:"required",timeout:60000}});
+  return !!a;
+}
+function showLock(){ if(!lockCred) return; document.documentElement.classList.add("locked"); $("#lockScreen").hidden=false; $("#lockErr").textContent=""; $("#unlockGoogle").hidden=!(typeof fbUser!=="undefined"&&fbUser); }
+function hideLock(){ document.documentElement.classList.remove("locked"); $("#lockScreen").hidden=true; }
+async function tryUnlock(){
+  try{ if(await verifyUser()) hideLock(); }
+  catch(e){ $("#lockErr").textContent=e&&e.name==="NotAllowedError"?"ماتمش التأكيد. دوس فتح وجرّب تاني.":"حصلت مشكلة في البصمة. جرّب تاني."; $("#unlockGoogle").hidden=!(typeof fbUser!=="undefined"&&fbUser); }
+}
+$("#unlockBtn").addEventListener("click",tryUnlock);
+$("#unlockGoogle").addEventListener("click",async()=>{
+  try{ const p=new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({prompt:"select_account"});
+    const r=await firebase.auth().signInWithPopup(p);
+    if(r&&r.user&&fbUser&&r.user.email===fbUser.email){ hideLock(); toast("اتفتح بحساب جوجل. لو البصمة مش شغالة، تقدر توقف القفل من الإعدادات."); }
+    else $("#lockErr").textContent="لازم تدخل بنفس الحساب المتزامن.";
+  }catch(e){ $("#lockErr").textContent="ماقدرتش أفتح بجوجل."; }
+});
+$("#lockToggle").addEventListener("click",async()=>{
+  if(lockCred){
+    try{ if(!(await verifyUser())) return; }catch(e){ toast("لازم تأكد ببصمتك عشان تقفل القفل"); return; }
+    lockCred=null; try{ localStorage.removeItem(LOCK_KEY); }catch(e){} renderLockCard(); toast("القفل اتقفل"); return;
+  }
+  try{
+    const c=await navigator.credentials.create({publicKey:{challenge:rnd(32),rp:{name:"مصاريف البيت"},user:{id:rnd(16),name:"masareef",displayName:"مصاريف البيت"},
+      pubKeyCredParams:[{type:"public-key",alg:-7},{type:"public-key",alg:-257}],
+      authenticatorSelection:{authenticatorAttachment:"platform",userVerification:"required",residentKey:"preferred"},timeout:60000}});
+    lockCred=b64(c.rawId); try{ localStorage.setItem(LOCK_KEY,lockCred); }catch(e){}
+    renderLockCard(); toast("القفل اشتغل ✓ من المرة الجاية التطبيق هيطلب بصمتك");
+  }catch(e){ toast(e&&e.name==="NotAllowedError"?"اتلغى تشغيل القفل":"الموبايل ده مش بيدعم القفل بالبصمة من المتصفح"); }
+});
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="hidden") hiddenAt=Date.now();
+  else if(lockCred&&hiddenAt&&Date.now()-hiddenAt>60000){ showLock(); tryUnlock(); }
+});
+(async()=>{ const ok=await lockSupported(); $("#lockCard").hidden=!ok; if(ok){ renderLockCard(); if(lockCred){ showLock(); tryUnlock(); return; } } hideLock(); })();
 
 /* ---------- pages ---------- */
 const PAGES={home:"مصاريف البيت",month:"المصاريف",months:"الشهور",commits:"ملخص الالتزامات",data:"الداتا",savings:"المدخرات",owed:"فلوس ليا برا",settings:"الإعدادات"};
@@ -1610,7 +1705,7 @@ function renderHome(){
   const pct=inc?Math.round(total/inc*100):0;
   $("#hcAmt").innerHTML=money(total);
   $("#hcBar").style.width=Math.min(100,pct)+"%";
-  $("#hcSub").innerHTML=inc?`<b class="num">${pct}%</b> من دخل الشهر (${fmt(inc)} ج.م)`:"اكتب دخل الشهر عشان تشوف النسبة";
+  $("#hcSub").innerHTML=inc?`<b class="num">${HIDE?star(pct):pct}%</b> من دخل الشهر (${fmt(inc)} ج.م)`:"اكتب دخل الشهر عشان تشوف النسبة";
   const leftAll=state.commits.reduce((a,c)=>a+commitStats(c).leftAmt,0);
   const sl=savingsLedger(), sav=sl.length?sl[sl.length-1].run:0;
 
@@ -1663,7 +1758,8 @@ document.querySelector(".tabbar").addEventListener("click",e=>{
   if(b.dataset.nav==="home"){ location.hash=""; cameFromHome=false; return; }
   showTab(b.dataset.nav);
 });
-function renderAll(fromSnap){
+function renderAll(fromSnap){ try{ renderAllInner(fromSnap); } finally { maskInputs(); } }
+function renderAllInner(fromSnap){
   const a=document.activeElement, typing=fromSnap&&a&&(a.tagName==="INPUT"||a.tagName==="SELECT");
   if(tab==="month"){
     if(!fromSnap) renderForm();
