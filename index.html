@@ -425,25 +425,10 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
       </div>
     </div>
 
-    <div class="stats3">
-      <button type="button" class="stat st-gold" data-go="commits"><span class="st-ic"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1.2"/><path d="M15 9l4.5-4.5M17 4.5h2.5V7"/></svg></span><span><span class="st-l">إجمالي الالتزامات</span><b id="stCommit"></b></span></button>
-      <button type="button" class="stat st-mint" data-go="months"><span class="st-ic"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6.5" rx="6.5" ry="2.5"/><path d="M5.5 6.5v5c0 1.4 2.9 2.5 6.5 2.5s6.5-1.1 6.5-2.5v-5"/><path d="M5.5 11.5v5c0 1.4 2.9 2.5 6.5 2.5s6.5-1.1 6.5-2.5v-5"/></svg></span><span><span class="st-l">المتبقي</span><b id="stLeft"></b></span></button>
-      <button type="button" class="stat st-pink" data-go="savings"><span class="st-ic"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11c0-3.3 3.1-6 7-6 2.2 0 4.2.9 5.5 2.3L20 6v4.2c.6.6 1 1.3 1 2.1v1.4h-1.6c-.5 1.3-1.4 2.4-2.6 3.1V20h-3v-2h-3v2h-3v-3.2C6 15.7 5 13.5 5 11z"/><path d="M10 8.5h4"/></svg></span><span><span class="st-l">المدخرات</span><b id="stSave"></b></span></button>
-    </div>
-
-    <div class="card donutcard">
-      <h2>توزيع المصاريف حسب البنود</h2>
-      <div class="dn-wrap">
-        <div class="dn-legend" id="dnLegend"></div>
-        <div class="dn-chart"><svg viewBox="0 0 120 120" id="dnSvg" role="img" aria-label="توزيع المصاريف"></svg><div class="dn-center"><b id="dnTotal"></b><span>ج.م</span></div></div>
-      </div>
-      <button type="button" class="linkbtn" id="dnMore"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"/><path d="M7 17v-5M11 17V8M15 17v-7M19 17V5"/></svg>عرض التحليل الكامل<svg class="i " viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
-    </div>
-
     <div class="grid6">
-      <button type="button" class="g6 c-gold" data-go="commits"><span class="g6-ic"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4.5" width="14" height="16.5" rx="2.5"/><path d="M9 4.5V3h6v1.5"/><path d="M8.5 11l1.5 1.5L13 9.5M8.5 16.5h7"/></svg></span><b>الالتزامات</b><span class="g6-v" id="g6Commit"></span><svg class="i g6-ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button type="button" class="g6 c-mint" data-go="month"><span class="g6-ic"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H17v3"/><rect x="4" y="8" width="16" height="11" rx="2.5"/><path d="M15 13.5h2.5"/></svg></span><b>المصاريف</b><span class="g6-v" id="g6Month"></span><svg class="i g6-ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button type="button" class="g6 c-blue" data-go="months"><span class="g6-ic"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><b>الشهور</b><span class="g6-v" id="g6Months"></span><svg class="i g6-ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+      <button type="button" class="g6 c-gold" data-go="commits"><span class="g6-ic"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4.5" width="14" height="16.5" rx="2.5"/><path d="M9 4.5V3h6v1.5"/><path d="M8.5 11l1.5 1.5L13 9.5M8.5 16.5h7"/></svg></span><b>الالتزامات</b><span class="g6-v" id="g6Commit"></span><svg class="i g6-ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button type="button" class="g6 c-purple" data-go="data"><span class="g6-ic"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v6.5c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8V5.5"/><path d="M4.5 12v6.5c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8V12"/></svg></span><b>الداتا</b><span class="g6-v" id="g6Data"></span><svg class="i g6-ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button type="button" class="g6 c-pink" data-go="savings"><span class="g6-ic"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11c0-3.3 3.1-6 7-6 2.2 0 4.2.9 5.5 2.3L20 6v4.2c.6.6 1 1.3 1 2.1v1.4h-1.6c-.5 1.3-1.4 2.4-2.6 3.1V20h-3v-2h-3v2h-3v-3.2C6 15.7 5 13.5 5 11z"/><path d="M10 8.5h4"/></svg></span><b>المدخرات</b><span class="g6-v" id="g6Save"></span><svg class="i g6-ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
       <button type="button" class="g6 c-green" data-go="owed"><span class="g6-ic"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12.5l3.2-2.7c.8-.7 1.9-.9 2.9-.6l3.4 1c.9.3 1.3 1.3.8 2.1-.4.6-1.2.9-1.9.7l-2.2-.6"/><path d="M3 18.5l2.5-1.2c.6-.3 1.3-.4 2-.2l4.3 1.2c.9.2 1.8 0 2.5-.5l5.2-4.1c.7-.6.8-1.6.2-2.2-.5-.5-1.3-.6-1.9-.2l-3.6 2.4"/><circle cx="16.5" cy="5.5" r="2.5"/></svg></span><b>فلوس ليا برا</b><span class="g6-v" id="g6Owed"></span><svg class="i g6-ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
@@ -1590,19 +1575,7 @@ function renderHome(){
   $("#hcSub").innerHTML=inc?`<b class="num">${pct}%</b> من دخل الشهر (${fmt(inc)} ج.م)`:"اكتب دخل الشهر عشان تشوف النسبة";
   const leftAll=state.commits.reduce((a,c)=>a+commitStats(c).leftAmt,0);
   const sl=savingsLedger(), sav=sl.length?sl[sl.length-1].run:0;
-  $("#stCommit").innerHTML=money(leftAll);
-  $("#stLeft").innerHTML=money(inc-total); $("#stLeft").style.color=inc-total<0?"var(--neg)":"";
-  $("#stSave").innerHTML=money(sav);
-  // donut: biggest items of the month
-  const items=m.items.filter(i=>+i.cost>0).map(i=>({n:i.name||"بند",v:+i.cost})).sort((a,b)=>b.v-a.v);
-  const top=items.slice(0,4), rest=items.slice(4).reduce((a,i)=>a+i.v,0);
-  const parts=rest?[...top,{n:"أخرى",v:rest}]:top;
-  const C=2*Math.PI*46; let off=0;
-  $("#dnSvg").innerHTML=`<circle cx="60" cy="60" r="46" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="18"/>`+
-    parts.map((p,x)=>{const len=total?p.v/total*C:0; const seg=`<circle cx="60" cy="60" r="46" fill="none" stroke="${DN_COLORS[x]}" stroke-width="18" stroke-dasharray="${Math.max(0,len-1.5)} ${C}" stroke-dashoffset="${-off}"/>`; off+=len; return seg;}).join("");
-  $("#dnTotal").textContent=fmt(total);
-  $("#dnLegend").innerHTML=parts.length? parts.map((p,x)=>`<div class="dl-row"><i class="sw" style="background:${DN_COLORS[x]}"></i><span class="nm">${esc(p.n)}</span><span class="am num">${fmt(p.v)}</span><span class="pc num">${total?Math.round(p.v/total*100):0}%</span></div>`).join("")
-    : `<p class="hint">لسه مفيش مصاريف في ${monthName(homeMonth)}.</p>`;
+
   // tiles
   $("#g6Commit").innerHTML=money(leftAll);
   $("#g6Month").innerHTML=money(total);
@@ -1630,7 +1603,6 @@ function renderBell(){
 }
 $("#bellBtn").addEventListener("click",()=>{ const p=$("#notifPanel"); p.hidden=!p.hidden; $("#bellBtn").setAttribute("aria-expanded",String(!p.hidden)); });
 $("#homeMonthSel").addEventListener("change",e=>{ homeMonth=e.target.value; renderHome(); });
-$("#dnMore").addEventListener("click",()=>{ openMonths.add(homeMonth); showTab("months"); });
 $("#homeAdd").addEventListener("click",()=>{
   cur=nowKey(); showTab("month");
   setTimeout(()=>{ const b=document.querySelector('[data-add="basic"]'); if(b) b.click(); },60);
@@ -1680,7 +1652,9 @@ cloudInit();
 
 <script>
 if("serviceWorker" in navigator && (location.protocol==="https:"||location.hostname==="localhost")){
-  navigator.serviceWorker.register("sw.js").catch(()=>{});
+  navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{ r.update().catch(()=>{}); }).catch(()=>{});
+  let reloaded=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(reloaded) return; reloaded=true; try{ flushAll(); }catch(e){} location.reload(); });
 }
 </script>
 </body>

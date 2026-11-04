@@ -1,5 +1,5 @@
 // مصاريف البيت — offline support
-const VERSION = "v4";
+const VERSION = "v5";
 const SHELL = "shell-" + VERSION;
 const RUNTIME = "runtime-" + VERSION;
 const SHELL_FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png"];
@@ -16,7 +16,7 @@ self.addEventListener("fetch", e => {
   const url = new URL(req.url);
   // The app page: try the network first so updates arrive, fall back to the saved copy offline.
   if (req.mode === "navigate" || (url.origin === location.origin && url.pathname.endsWith("/index.html"))) {
-    e.respondWith(fetch(req).then(res => { const copy = res.clone(); caches.open(SHELL).then(c => c.put("index.html", copy)); return res; })
+    e.respondWith(fetch(req.url, {cache: "no-cache", credentials: "same-origin"}).then(res => { const copy = res.clone(); caches.open(SHELL).then(c => c.put("index.html", copy)); return res; })
       .catch(() => caches.match("index.html").then(r => r || caches.match("./"))));
     return;
   }
