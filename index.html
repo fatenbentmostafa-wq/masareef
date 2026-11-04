@@ -355,6 +355,22 @@ svg.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .tabbar button[aria-current="page"]{color:var(--t3);background:linear-gradient(180deg,#1A3A31,#11261F);border-color:#2B5A4C;font-weight:700}
 @media (max-width:380px){.dhead .mpill svg.i,.dtitle b svg.i{display:none}.roundbtn{width:34px;height:34px}.dicons{gap:4px}.dtitle b{font-size:1rem}.g6 b{font-size:.88rem}.dtitle span{display:none}}
 header[hidden]{display:none!important}
+/* header with 3 round buttons */
+#tab-home .roundbtn{width:36px;height:36px}
+#tab-home .roundbtn svg.i{width:20px;height:20px}
+#tab-home .dicons{gap:5px}
+.dtitle b svg.i{display:none}
+.dtitle b{font-size:1.08rem}
+.dtitle span{white-space:nowrap;font-size:.7rem}
+.dhead .mpill{padding:6px 8px}
+@media (max-width:380px){#tab-home .roundbtn{width:32px;height:32px}#tab-home .roundbtn svg.i{width:18px;height:18px}.dtitle b{font-size:.95rem}.dhead .mpill select{font-size:.7rem}}
+/* hide amounts (privacy) */
+.eyebtn .eye-off{display:none}
+.hide-money .eyebtn .eye-on{display:none}
+.hide-money .eyebtn .eye-off{display:block}
+.hide-money .eyebtn{color:var(--t3);border-color:var(--t3)}
+.hide-money :is(.num,.cur,.hc-amt,.hc-sub,.g6-v,.sumq,.facts b,.kv b,.tl span:last-child,.mo-sub,.mi>span:last-child,.tile b,.sv-bal,.sv-split b,.pay .pv,.dl .meta,.sv-run,.dn-center,.preview,#dPreview,.notif b){filter:blur(7px);user-select:none}
+.hide-money input[type=number]{filter:blur(5px)}
 /* tabs */
 nav{position:fixed;inset:auto 0 0 0;z-index:6;background:var(--paper);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(4px,env(safe-area-inset-left,0px));padding-right:max(4px,env(safe-area-inset-right,0px))}
 nav .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
@@ -375,6 +391,7 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
     </div>
     <div class="hsave">
       <span class="status" id="status">جاري التحميل…</span>
+      <button type="button" class="roundbtn eyebtn" data-eye aria-label="إخفاء الأرقام" aria-pressed="false"><svg class="i eye-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="i eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l16 16"/><path d="M9.9 5.8A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3 3.7M6.2 7.6A16.6 16.6 0 0 0 2.5 12S6 18.5 12 18.5c1.5 0 2.9-.4 4.1-1"/><path d="M9.9 10a3 3 0 0 0 4.1 4.1"/></svg></button>
       <button type="button" class="savebtn" id="saveNow"><svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg><span id="saveNowTxt">حفظ</span></button>
     </div>
   </header>
@@ -385,6 +402,7 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
       <label class="mpill"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><select id="homeMonthSel" aria-label="الشهر المعروض"></select></label>
       <div class="dtitle"><b><svg class="i gold" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg>مصاريف البيت</b><span>إدارة مصاريف الأسرة</span></div>
       <div class="dicons">
+        <button type="button" class="roundbtn eyebtn" data-eye aria-label="إخفاء الأرقام" aria-pressed="false"><svg class="i eye-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="i eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l16 16"/><path d="M9.9 5.8A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3 3.7M6.2 7.6A16.6 16.6 0 0 0 2.5 12S6 18.5 12 18.5c1.5 0 2.9-.4 4.1-1"/><path d="M9.9 10a3 3 0 0 0 4.1 4.1"/></svg></button>
         <button type="button" class="roundbtn" id="bellBtn" aria-label="التنبيهات" aria-expanded="false"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><i class="dot" id="bellDot" hidden></i></button>
         <button type="button" class="roundbtn" id="profileBtn" aria-label="الحساب والإعدادات" data-go="settings"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5"/></svg><i class="dot ok" id="syncDot" hidden></i></button>
       </div>
@@ -1536,6 +1554,15 @@ $("#houseList").addEventListener("click",async ev=>{
   try{ await firebase.firestore().collection("houses").doc(house.id).update({emails:firebase.firestore.FieldValue.arrayRemove(e)}); toast("اتشال "+e,async()=>{ await firebase.firestore().collection("houses").doc(house.id).update({emails:firebase.firestore.FieldValue.arrayUnion(e)}); }); }
   catch(x){ toast("ماقدرتش أشيله"); }
 });
+
+/* ---------- hide amounts ---------- */
+function setHidden(on){
+  document.documentElement.classList.toggle("hide-money",on);
+  document.querySelectorAll("[data-eye]").forEach(b=>{ b.setAttribute("aria-pressed",String(on)); b.setAttribute("aria-label",on?"إظهار الأرقام":"إخفاء الأرقام"); });
+  try{ localStorage.setItem("house-budget-hide",on?"1":"0"); }catch(e){}
+}
+document.addEventListener("click",e=>{ const b=e.target.closest("[data-eye]"); if(!b) return; const on=!document.documentElement.classList.contains("hide-money"); setHidden(on); toast(on?"الأرقام اتخفت":"الأرقام ظهرت"); });
+try{ setHidden(localStorage.getItem("house-budget-hide")==="1"); }catch(e){}
 
 /* ---------- pages ---------- */
 const PAGES={home:"مصاريف البيت",month:"المصاريف",months:"الشهور",commits:"ملخص الالتزامات",data:"الداتا",savings:"المدخرات",owed:"فلوس ليا برا",settings:"الإعدادات"};
