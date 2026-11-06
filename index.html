@@ -421,43 +421,6 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
       <label class="mpill"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><select id="homeMonthSel" aria-label="الشهر المعروض"></select></label>
       <div class="dicons">
         <button type="button" class="roundbtn eyebtn" data-eye aria-label="إخفاء الأرقام" aria-pressed="false"><svg class="i eye-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="i eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l16 16"/><path d="M9.9 5.8A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3 3.7M6.2 7.6A16.6 16.6 0 0 0 2.5 12S6 18.5 12 18.5c1.5 0 2.9-.4 4.1-1"/><path d="M9.9 10a3 3 0 0 0 4.1 4.1"/></svg></button>
-        <button type="button" class="roundbtn" id="bellBtn" aria-label="التنبيهات" aria-expanded="false"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><i class="dot" id="bellDot" hidden></i></button>
-        <button type="button" class="roundbtn" id="profileBtn" aria-label="الحساب والإعدادات" data-go="settings"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5"/></svg><i class="dot ok" id="syncDot" hidden></i></button>
-      </div>
-    </div>
-    <div class="card notif" id="notifPanel" hidden></div>
-
-    <div class="herocard">
-      <div class="hc-art" aria-hidden="true">
-        <svg viewBox="0 0 220 160" preserveAspectRatio="xMidYMid slice">
-          <defs>
-            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B1A2A"/><stop offset="1" stop-color="#0F2620"/></linearGradient>
-            <linearGradient id="win" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD58A"/><stop offset="1" stop-color="#E89B3C"/></linearGradient>
-            <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFC66B" stop-opacity=".45"/><stop offset="1" stop-color="#FFC66B" stop-opacity="0"/></radialGradient>
-            <linearGradient id="fade" x1="0" y1="0" x2="1" y2="0"><stop offset=".55" stop-color="#0F201B" stop-opacity="0"/><stop offset="1" stop-color="#0F201B"/></linearGradient>
-          </defs>
-          <rect width="220" height="160" fill="url(#sky)"/>
-          <circle cx="40" cy="26" r="1" fill="#fff" opacity=".6"/><circle cx="96" cy="16" r=".8" fill="#fff" opacity=".5"/><circle cx="150" cy="30" r=".9" fill="#fff" opacity=".4"/>
-          <ellipse cx="90" cy="112" rx="90" ry="30" fill="url(#glow)"/>
-          <rect x="30" y="58" width="120" height="74" fill="#16231F"/>
-          <rect x="22" y="52" width="136" height="8" fill="#22332D"/>
-          <rect x="82" y="34" width="78" height="26" fill="#1B2B26"/>
-          <rect x="76" y="30" width="90" height="6" fill="#2A3D36"/>
-          <rect x="40" y="70" width="22" height="30" fill="url(#win)"/><rect x="68" y="70" width="22" height="30" fill="url(#win)" opacity=".9"/>
-          <rect x="102" y="70" width="34" height="62" fill="url(#win)" opacity=".85"/>
-          <rect x="90" y="40" width="26" height="14" fill="url(#win)" opacity=".8"/><rect x="122" y="40" width="26" height="14" fill="url(#win)" opacity=".6"/>
-          <rect x="40" y="108" width="50" height="24" fill="#0F1A17"/>
-          <rect x="0" y="130" width="220" height="30" fill="#0A1512"/>
-          <circle cx="16" cy="112" r="16" fill="#12241C"/><circle cx="10" cy="98" r="11" fill="#163024"/>
-          <circle cx="170" cy="116" r="14" fill="#12241C"/><circle cx="182" cy="104" r="10" fill="#163024"/>
-          <circle cx="58" cy="132" r="3" fill="#FFC66B" opacity=".8"/><circle cx="96" cy="132" r="3" fill="#FFC66B" opacity=".8"/>
-          <rect width="220" height="160" fill="url(#fade)"/>
-        </svg>
-      </div>
-      <div class="hc-body">
-        <div class="hc-top"><span class="hc-ic"><svg class="i gold" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H17v3"/><rect x="4" y="8" width="16" height="11" rx="2.5"/><path d="M15 13.5h2.5"/></svg></span><div><span class="hc-lbl">إجمالي المصاريف</span><b class="hc-amt" id="hcAmt"></b></div></div>
-        <div class="hc-bar"><i id="hcBar"></i></div>
-        <span class="hc-sub" id="hcSub"></span>
       </div>
     </div>
 
@@ -1520,7 +1483,7 @@ async function cloudInit(){
 function signedOutUI(){
   house=null; if(houseUnsub){houseUnsub();houseUnsub=null;}
   if(backendUnsub){backendUnsub();backendUnsub=null;} backend=null;
-  $("#syncBar").classList.remove("on"); $("#sbTitle").textContent="مزامنة بين الموبايلات"; $("#syncDot").hidden=true;
+  $("#syncBar").classList.remove("on"); $("#sbTitle").textContent="مزامنة بين الموبايلات"; 
   $("#sbSub").textContent="سجّل دخول بجوجل عشان داتاك تتحفظ على السيرفر وتظهر على أي موبايل.";
   $("#sbLogin").hidden=false; $("#sbMembers").hidden=true; $("#houseCard").hidden=true;
   setStatus("محفوظ على الموبايل ده");
@@ -1569,7 +1532,7 @@ async function connectHouse(u){
   attachBackend(dataColl,"متزامن ✓");
   if(houseUnsub) houseUnsub();
   houseUnsub=ref.onSnapshot(d=>{ house={id:ref.id,...d.data()}; renderHouse(); },()=>{});
-  $("#syncBar").classList.add("on"); $("#sbTitle").textContent="متزامن مع السيرفر"; $("#syncDot").hidden=false;
+  $("#syncBar").classList.add("on"); $("#sbTitle").textContent="متزامن مع السيرفر"; 
   $("#sbSub").textContent=email+(created?" · اتعمل بيت جديد":""); $("#sbMembers").hidden=false;
 }
 function renderHouse(){
@@ -1718,9 +1681,7 @@ function renderHome(){
   $("#homeMonthSel").innerHTML=opts.map(k=>{const [y,mm]=k.split("-");return `<option value="${k}" ${k===homeMonth?"selected":""}>${new Date(+y,+mm-1,1).toLocaleDateString("ar-EG-u-nu-latn",{month:"long"})} ${y}</option>`}).join("");
   const m=state.months[homeMonth]||{income:"",items:[]}, total=sumItems(m), inc=+m.income||0;
   const pct=inc?Math.round(total/inc*100):0;
-  $("#hcAmt").innerHTML=money(total);
-  $("#hcBar").style.width=Math.min(100,pct)+"%";
-  $("#hcSub").innerHTML=inc?`<b class="num">${HIDE?star(pct):pct}%</b> من دخل الشهر (${fmt(inc)} ج.م)`:"اكتب دخل الشهر عشان تشوف النسبة";
+
   const leftAll=state.commits.reduce((a,c)=>a+commitStats(c).leftAmt,0);
   const sl=savingsLedger(), sav=sl.length?sl[sl.length-1].run:0;
 
@@ -1731,7 +1692,6 @@ function renderHome(){
   $("#g6Data").innerHTML=`<span class="num">${state.commits.length}</span> التزامات`;
   $("#g6Save").innerHTML=money(sav);
   $("#g6Owed").innerHTML=money(owTotalLeft());
-  renderBell();
 }
 function notifications(){
   const out=[], nowK=nowKey();
@@ -1749,7 +1709,6 @@ function renderBell(){
   $("#notifPanel").innerHTML=n.length? n.map(x=>`<button type="button" class="nt" data-go="${x.go}"><span>${esc(x.t)}</span>${x.v!=null?`<b class="${x.lvl===2?"neg":"due"}">${money(x.v)}</b>`:""}</button>`).join("")
     : `<p class="hint" style="margin:6px 0">مفيش تنبيهات دلوقتي ✓</p>`;
 }
-$("#bellBtn").addEventListener("click",()=>{ const p=$("#notifPanel"); p.hidden=!p.hidden; $("#bellBtn").setAttribute("aria-expanded",String(!p.hidden)); });
 $("#homeMonthSel").addEventListener("change",e=>{ homeMonth=e.target.value; renderHome(); });
 $("#homeAdd").addEventListener("click",()=>{
   cur=nowKey(); showTab("month");
@@ -1762,7 +1721,6 @@ $("#homePdf").addEventListener("click",()=>{
 document.addEventListener("click",e=>{
   const g=e.target.closest("[data-go]"); if(!g||g.closest("#tab-month")) return;
   if(g.closest(".g6,.stat,.notif,.sqbtn,#profileBtn")||g.matches(".g6,.stat,.nt,.sqbtn,#profileBtn")){
-    $("#notifPanel").hidden=true;
     if(g.dataset.go==="month") cur=homeMonth||pickHomeMonth();
     showTab(g.dataset.go);
   }
