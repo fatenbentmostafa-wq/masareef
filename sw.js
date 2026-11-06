@@ -1,5 +1,5 @@
 // مصاريف البيت — offline support
-const VERSION = "v10";
+const VERSION = "v11";
 const SHELL = "shell-" + VERSION;
 const RUNTIME = "runtime-" + VERSION;
 const SHELL_FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png"];
