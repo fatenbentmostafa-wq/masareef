@@ -1894,10 +1894,24 @@ $("#vwBody").addEventListener("click",async e=>{
   if(op){ const o=await getFile(op.dataset.vopen); if(o){ allowAway(); window.open(dataToBlobUrl(o.data),"_blank"); } return; }
   const dl=e.target.closest("[data-vdel]");
   if(dl&&vw&&vw.editable){ const it=vw.item, id=dl.dataset.vdel, before=[...(it.att||[])];
-    it.att=before.filter(x=>x!==id); touch(); paintViewer(); if(tab==="month") renderForm();
-    toast("اتشال المستند",()=>{ it.att=before; touch(); if(vw) paintViewer(); if(tab==="month") renderForm(); }); }
+    it.att=before.filter(x=>x!==id); touch(); syncAttToSaved(it); paintViewer(); if(tab==="month") renderForm();
+    toast("اتشال المستند",()=>{ it.att=before; touch(); syncAttToSaved(it); if(vw) paintViewer(); if(tab==="month") renderForm(); }); }
 });
 let attTarget=null;
+function adoptDraftAtt(){ // receipts added before this fix, still only in unsaved drafts
+  let changed=[];
+  Object.entries(drafts||{}).forEach(([k,d])=>{ const m=state.months[k]; if(!m||!d||!d.items) return;
+    d.items.forEach(di=>{ if(!(di.att||[]).length) return; const si=m.items.find(x=>x.id===di.id);
+      if(si&&JSON.stringify(si.att||[])!==JSON.stringify(di.att)){ si.att=[...di.att]; if(!changed.includes(k)) changed.push(k); } }); });
+  if(changed.length){ saveLocal(); changed.forEach(k=>schedule("m:"+k,0)); }
+  return changed.length;
+}
+function syncAttToSaved(it){
+  const m=state.months[cur]; if(!m) return false;
+  const si=m.items.find(x=>x.id===it.id); if(!si) return false;
+  si.att=[...(it.att||[])]; if(!si.att.length) delete si.att;
+  saveLocal(); schedule("m:"+cur,0); return true;
+}
 $("#items").addEventListener("click",e=>{
   const shb=e.target.closest("[data-share]");
   if(shb){ const r=shb.closest(".row"), si=draft.items.find(i=>i.id===r.dataset.id); if(si) shareItem(si); return; }
@@ -1912,9 +1926,10 @@ async function onAttFiles(e){
   const ids=[]; for(const f of fs){ try{ const id=await storeFile(f); if(id) ids.push(id); }catch(x){ toast("حصلت مشكلة في الملف ده"); } }
   if(!ids.length) return;
   it.att=[...(it.att||[]),...ids]; touch();
+  const saved=syncAttToSaved(it);
   if(tab==="month") renderForm();
   if(vw&&vw.item===it) paintViewer();
-  toast(state.months[cur]?"اترفع المستند ✓ دوس حفظ علشان يتسجل":"اترفع المستند ✓");
+  toast(saved?"اترفع المستند واتسجل ✓":state.months[cur]?"اترفع المستند ✓ دوس حفظ علشان البند الجديد يتسجل":"اترفع المستند ✓ هيتسجل لما تدوس إدخال");
 }
 $("#attInput").addEventListener("change",onAttFiles);
 $("#attCam").addEventListener("change",onAttFiles);
@@ -1922,6 +1937,7 @@ $("#attCam").addEventListener("change",onAttFiles);
 /* ---------- monthly summary (read only) ---------- */
 let sumMonth=null;
 function renderSummary(){
+  adoptDraftAtt();
   const keys=Object.keys(state.months).filter(k=>state.months[k].items.length).sort().reverse();
   if(!keys.length){ $("#sumMonth").innerHTML=""; $("#sumBody").innerHTML=`<div class="empty card">لسه مفيش شهور متسجلة.</div>`; return; }
   if(!sumMonth||!keys.includes(sumMonth)) sumMonth=keys.includes(homeMonth)?homeMonth:keys[0];
