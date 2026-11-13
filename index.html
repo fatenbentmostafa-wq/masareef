@@ -333,6 +333,7 @@ svg.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .dtitle b svg.i{width:20px;height:20px}
 .dtitle span{font-size:.75rem;color:var(--muted)}
 .dicons{justify-self:end;display:flex;gap:6px}
+.rfbtn.spin svg{animation:rfspin .8s linear infinite}@keyframes rfspin{to{transform:rotate(360deg)}}
 .roundbtn{position:relative;width:38px;height:38px;border-radius:50%;padding:0;display:grid;place-items:center;background:var(--paper);border:1px solid var(--line);color:var(--ink)}
 .roundbtn .dot{position:absolute;top:6px;left:7px;width:9px;height:9px;border-radius:50%;background:var(--t3);box-shadow:0 0 0 2px var(--bg)}
 .roundbtn .dot.ok{background:var(--paid)}
@@ -464,6 +465,7 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
     <div class="dhead">
       <label class="mpill"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><select id="homeMonthSel" aria-label="الشهر المعروض"></select></label>
       <div class="dicons">
+        <button type="button" class="roundbtn rfbtn" data-refresh aria-label="تحديث الداتا من السيرفر"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg></button>
         <button type="button" class="roundbtn eyebtn" data-eye aria-label="إخفاء الأرقام" aria-pressed="false"><svg class="i eye-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="i eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l16 16"/><path d="M9.9 5.8A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3 3.7M6.2 7.6A16.6 16.6 0 0 0 2.5 12S6 18.5 12 18.5c1.5 0 2.9-.4 4.1-1"/><path d="M9.9 10a3 3 0 0 0 4.1 4.1"/></svg></button>
       </div>
     </div>
@@ -684,7 +686,8 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
 const LS_KEY="house-budget-v2";
 const $=s=>document.querySelector(s);
 let HIDE=false;
-try{ if(localStorage.getItem("house-budget-lock")&&!(window.claude&&window.claude.use)) document.documentElement.classList.add("locked"); }catch(e){}
+const NOLOCK_RELOAD=(function(){try{const t=+sessionStorage.getItem("masareef-nolock")||0;sessionStorage.removeItem("masareef-nolock");return Date.now()-t<20000}catch(e){return false}})();
+try{ if(localStorage.getItem("house-budget-lock")&&!(window.claude&&window.claude.use)&&!NOLOCK_RELOAD) document.documentElement.classList.add("locked"); }catch(e){}
 const fmtReal=n=>(Math.round((+n||0)*100)/100).toLocaleString("en-US");
 const star=t=>String(t).replace(/\d/g,"*");
 const fmt=n=>HIDE?star(fmtReal(n)):fmtReal(n);
@@ -1710,7 +1713,7 @@ document.addEventListener("visibilitychange",()=>{
 });
 // file picker, share sheet, Google sign-in, PDF save: don't relock for these
 document.addEventListener("click",e=>{ if(e.target.closest("#bkLoad,#shareBtn,#bkSave,#pdfBtn,#homePdf,#sbLogin,#unlockGoogle,[data-att],[data-share],#vwAdd,.vw-open")) allowAway(); },true);
-(async()=>{ const ok=await lockSupported(); $("#lockCard").hidden=!ok; if(ok){ renderLockCard(); if(lockCred){ showLock(); tryUnlock(); return; } } hideLock(); })();
+(async()=>{ const ok=await lockSupported(); $("#lockCard").hidden=!ok; if(ok){ renderLockCard(); if(lockCred&&!NOLOCK_RELOAD){ showLock(); tryUnlock(); return; } } hideLock(); })();
 
 /* ---------- pages ---------- */
 const PAGES={home:"مصاريف البيت",summary:"ملخص الشهور",month:"المصاريف",months:"الشهور",commits:"ملخص الالتزامات",data:"الداتا",savings:"المدخرات",owed:"فلوس ليا برا",settings:"الإعدادات"};
@@ -1941,6 +1944,22 @@ $("#sumBody").addEventListener("click",e=>{
   if(!(it.att||[]).length){ toast("مفيش مستند للبند ده"); return; }
   openViewer(it,false);
 });
+
+/* ---------- refresh from server (no fingerprint) ---------- */
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("[data-refresh]"); if(!b) return;
+  if(b.classList.contains("spin")) return;
+  document.querySelectorAll("[data-refresh]").forEach(x=>x.classList.add("spin"));
+  try{
+    flushAll();
+    if(backend){
+      try{ await backend.get({source:"server"}); }catch(x){}
+      attachBackend(backend,"متزامن ✓"); pushPendingFiles();
+      toast("اتحدثت الداتا من السيرفر ✓");
+    } else { renderAll(); toast(IN_ARTIFACT?"اتحدثت ✓":"مش متصل بالسيرفر. سجّل دخول بجوجل من الإعدادات."); }
+    try{ const r=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration(); if(r) await r.update(); }catch(x){}
+  } finally { setTimeout(()=>document.querySelectorAll("[data-refresh]").forEach(x=>x.classList.remove("spin")),600); }
+});
 function renderAll(fromSnap){ try{ renderAllInner(fromSnap); } finally { maskInputs(); } }
 function renderAllInner(fromSnap){
   const a=document.activeElement, typing=fromSnap&&a&&(a.tagName==="INPUT"||a.tagName==="SELECT");
@@ -1972,7 +1991,7 @@ cloudInit();
 if("serviceWorker" in navigator && (location.protocol==="https:"||location.hostname==="localhost")){
   navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{ r.update().catch(()=>{}); }).catch(()=>{});
   let reloaded=false;
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(reloaded) return; reloaded=true; try{ flushAll(); }catch(e){} location.reload(); });
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(reloaded) return; reloaded=true; try{ flushAll(); }catch(e){} try{ if(!document.documentElement.classList.contains("locked")) sessionStorage.setItem("masareef-nolock",String(Date.now())); }catch(e){} location.reload(); });
 }
 </script>
 </body>
