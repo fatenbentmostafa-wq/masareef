@@ -775,8 +775,8 @@ const secOf=i=>i.sec&&SEC_NAME[i.sec]?i.sec:(i.cid||/قسط|جمعي|فيزا/.t
 const blankItem=(sec="basic")=>({id:uid(),name:"",cost:"",paid:false,cid:"",sec});
 const isEmpty=i=>!String(i.name).trim()&&!String(i.cost).trim();
 let draft=null;
-let secOpen={basic:true,commit:true,external:true};
-try{Object.assign(secOpen,JSON.parse(localStorage.getItem("house-budget-secs")||"{}"))}catch(e){}
+let secOpen={basic:false,commit:false,external:false};
+const closeSecs=()=>{secOpen={basic:false,commit:false,external:false}};
 function loadDraft(k){
   if(drafts[k]){ drafts[k].items.forEach(i=>i.sec=secOf(i)); return drafts[k]; }
   const s=state.months[k];
@@ -864,9 +864,9 @@ function fillRow(item){ // first empty row of that section, or a new one
   const e=draft.items.find(i=>i.sec===sec&&isEmpty(i));
   if(e) Object.assign(e,item,{id:e.id}); else draft.items.push({...blankItem(sec),...item});
 }
-$("#monthPick").addEventListener("change",e=>{ if(e.target.value){cur=e.target.value;renderForm();} });
+$("#monthPick").addEventListener("change",e=>{ if(e.target.value){cur=e.target.value;closeSecs();renderForm();} });
 $("#income").addEventListener("input",e=>{ draft.income=e.target.value; touch(); renderTotals(); });
-$("#items").addEventListener("toggle",e=>{ const d=e.target; if(d.dataset&&d.dataset.sec){ if(d.open) d.querySelectorAll("textarea.name").forEach(grow); secOpen[d.dataset.sec]=d.open; try{localStorage.setItem("house-budget-secs",JSON.stringify(secOpen))}catch(x){} } },true);
+$("#items").addEventListener("toggle",e=>{ const d=e.target; if(d.dataset&&d.dataset.sec){ if(d.open) d.querySelectorAll("textarea.name").forEach(grow); secOpen[d.dataset.sec]=d.open; } },true);
 $("#items").addEventListener("input",e=>{
   const row=e.target.closest(".row"); if(!row||e.target.tagName==="SELECT") return;
   const it=findItem(row);
@@ -1651,6 +1651,7 @@ const PAGES={home:"مصاريف البيت",month:"المصاريف",months:"ا�
 let tab="home", cameFromHome=false;
 function applyRoute(){
   const h=location.hash.slice(1); const t=PAGES[h]&&h!=="home"?h:"home";
+  if(t==="month"&&tab!=="month") closeSecs();
   tab=t;
   Object.keys(PAGES).forEach(x=>$("#tab-"+x).hidden=x!==t);
   $("#pageTitle").textContent=t==="home"?"":PAGES[t];
