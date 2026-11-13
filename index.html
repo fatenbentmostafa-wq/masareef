@@ -658,8 +658,8 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
 <div class="toast" id="toast" hidden></div>
 <nav class="tabbar" aria-label="التنقل">
   <button type="button" data-nav="home"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg><span>الرئيسية</span></button>
-  <button type="button" data-nav="newmonth"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/></svg><span>إدخال شهر</span></button>
   <button type="button" data-nav="months"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>الشهور</span></button>
+  <button type="button" data-nav="summary"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h4"/></svg><span>الملخص</span></button>
   <button type="button" data-nav="commits"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4.5" width="14" height="16.5" rx="2.5"/><path d="M9 4.5V3h6v1.5"/><path d="M8.5 11l1.5 1.5L13 9.5M8.5 16.5h7"/></svg><span>الالتزامات</span></button>
   <button type="button" data-nav="data"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v6.5c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8V5.5"/><path d="M4.5 12v6.5c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8V12"/></svg><span>الداتا</span></button>
   <button type="button" data-nav="settings"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.8l1.6 2.3 2.7-.6.6 2.7 2.3 1.6-1.2 2.5 1.2 2.5-2.3 1.6-.6 2.7-2.7-.6L12 21.2l-1.6-2.3-2.7.6-.6-2.7-2.3-1.6L6 12.7 4.8 10.2l2.3-1.6.6-2.7 2.7.6z"/></svg><span>الإعدادات</span></button>
@@ -1726,7 +1726,7 @@ function applyRoute(){
   $("#pageTitle").textContent=t==="home"?"":PAGES[t];
   $("#backBtn").hidden=t==="home";
   document.querySelector("header").hidden=t==="home";
-  const navKey={home:"home",month:"newmonth",months:"months",commits:"commits",data:"data",settings:"settings"}[t];
+  const navKey={home:"home",months:"months",summary:"summary",commits:"commits",data:"data",settings:"settings"}[t];
   document.querySelectorAll(".tabbar [data-nav]").forEach(b=>{ if(b.dataset.nav===navKey) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
   showUpdated();
   renderAll(); window.scrollTo(0,0);
@@ -1784,7 +1784,7 @@ $("#homeMonthSel").addEventListener("change",e=>{ homeMonth=e.target.value; home
 function openNewMonth(){
   showTab("months");
   setTimeout(()=>{ if($("#nmPanel").hidden) $("#newMonth").click(); $("#newMonth").scrollIntoView({behavior:"smooth",block:"start"});
-    document.querySelectorAll(".tabbar [data-nav]").forEach(b=>{ if(b.dataset.nav==="newmonth") b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); }); },80);
+ },80);
 }
 $("#homeNewMonth").addEventListener("click",openNewMonth);
 document.addEventListener("click",e=>{
