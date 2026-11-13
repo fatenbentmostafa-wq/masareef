@@ -346,7 +346,7 @@ svg.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .g6 .g6-ch{position:absolute;left:14px;top:16px;width:16px;height:16px;color:var(--muted)}
 .c-gold{--cc:var(--t3);--cs:var(--t3s)} .c-mint{--cc:var(--t1);--cs:var(--t1s)} .c-blue{--cc:var(--t2);--cs:var(--t2s)}
 .c-purple{--cc:var(--t4);--cs:var(--t4s)} .c-pink{--cc:var(--t5);--cs:var(--t5s)} .c-green{--cc:var(--t6);--cs:var(--t6s)}
-.actrow{display:grid;grid-template-columns:56px 1fr 56px;gap:10px;align-items:center}
+.actrow{display:grid;grid-template-columns:1fr;gap:10px;align-items:center}
 .sqbtn{height:56px;border-radius:16px;display:grid;place-items:center;padding:0;background:var(--paper);border:1px solid var(--line);color:var(--ink)}
 .bigadd{height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:1.05rem;color:#06231C;border:0;background:linear-gradient(180deg,#5FE6C6,#2FBF9B);box-shadow:0 10px 24px -12px rgba(63,216,180,.7)}
 .bigadd svg.i{stroke-width:2.4}
@@ -434,9 +434,7 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
     </div>
 
     <div class="actrow">
-      <button type="button" class="sqbtn" id="homePdf" aria-label="تقرير PDF للشهر"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/></svg></button>
-      <button type="button" class="bigadd" id="homeAdd"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>إضافة مصروف جديد</button>
-      <button type="button" class="sqbtn" data-go="months" aria-label="الشهور والتحليل"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"/><path d="M7 17v-5M11 17V8M15 17v-7M19 17V5"/></svg></button>
+      <button type="button" class="bigadd" id="homeNewMonth"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>إضافة شهر جديد</button>
     </div>
   </section>
 
@@ -937,7 +935,7 @@ function commitDraft(){
 }
 $("#saveMonth").addEventListener("click",()=>{
   if(!commitDraft()) return;
-  openMonths.add(cur);
+  openMonths.add(cur); try{localStorage.setItem("house-budget-lastmonth",cur)}catch(e){} homePicked=false;
   showTab("months"); toast("اتسجل "+monthName(cur));
 });
 $("#saveNow").addEventListener("click",()=>{
@@ -1671,13 +1669,14 @@ function showTab(t){
 }
 window.addEventListener("hashchange",()=>{ if(!location.hash) cameFromHome=false; applyRoute(); });
 $("#backBtn").addEventListener("click",()=>showTab("home"));
-function pickHomeMonth(){ const now=nowKey(); return state.months[now]||drafts[now]?now:(Object.keys(state.months).sort().pop()||now); }
-let homeMonth=null;
+function lastEntered(){ let lm=null; try{lm=localStorage.getItem("house-budget-lastmonth")}catch(e){} if(lm&&state.months[lm]&&state.months[lm].items&&state.months[lm].items.length) return lm; const ks=Object.keys(state.months).filter(k=>state.months[k].items&&state.months[k].items.length).sort(); return ks.pop()||nowKey(); }
+let homeMonth=null, homePicked=false;
+function pickHomeMonth(){ return homePicked&&homeMonth?homeMonth:lastEntered(); }
 const DN_COLORS=["#3FD8B4","#F2B43C","#6CB3F5","#B39CF5","#6B7C77"];
 function renderHome(){
   const keys=Object.keys(state.months).filter(x=>state.months[x].items.length).sort().reverse();
   const now=nowKey(); const opts=[...new Set([now,...keys])].sort().reverse();
-  if(!homeMonth||!opts.includes(homeMonth)) homeMonth=state.months[now]?now:(keys[0]||now);
+  if(!homePicked||!homeMonth||!opts.includes(homeMonth)) homeMonth=lastEntered();
   $("#homeMonthSel").innerHTML=opts.map(k=>{const [y,mm]=k.split("-");return `<option value="${k}" ${k===homeMonth?"selected":""}>${new Date(+y,+mm-1,1).toLocaleDateString("ar-EG-u-nu-latn",{month:"long"})} ${y}</option>`}).join("");
   const m=state.months[homeMonth]||{income:"",items:[]}, total=sumItems(m), inc=+m.income||0;
   const pct=inc?Math.round(total/inc*100):0;
@@ -1709,14 +1708,10 @@ function renderBell(){
   $("#notifPanel").innerHTML=n.length? n.map(x=>`<button type="button" class="nt" data-go="${x.go}"><span>${esc(x.t)}</span>${x.v!=null?`<b class="${x.lvl===2?"neg":"due"}">${money(x.v)}</b>`:""}</button>`).join("")
     : `<p class="hint" style="margin:6px 0">مفيش تنبيهات دلوقتي ✓</p>`;
 }
-$("#homeMonthSel").addEventListener("change",e=>{ homeMonth=e.target.value; renderHome(); });
-$("#homeAdd").addEventListener("click",()=>{
-  cur=nowKey(); showTab("month");
-  setTimeout(()=>{ const b=document.querySelector('[data-add="basic"]'); if(b) b.click(); },60);
-});
-$("#homePdf").addEventListener("click",()=>{
-  if(!state.months[homeMonth]){ toast("الشهر ده لسه ماتسجلش"); return; }
-  showTab("months"); setTimeout(()=>{ $("#pdfMonth").value=homeMonth; $("#pdfBtn").click(); },80);
+$("#homeMonthSel").addEventListener("change",e=>{ homeMonth=e.target.value; homePicked=true; renderHome(); });
+$("#homeNewMonth").addEventListener("click",()=>{
+  showTab("months");
+  setTimeout(()=>{ if($("#nmPanel").hidden) $("#newMonth").click(); $("#newMonth").scrollIntoView({behavior:"smooth",block:"start"}); },80);
 });
 document.addEventListener("click",e=>{
   const g=e.target.closest("[data-go]"); if(!g||g.closest("#tab-month")) return;
@@ -1747,7 +1742,7 @@ function renderAllInner(fromSnap){
   if(tab==="owed") renderOwed();
 }
 
-loadLocal();
+loadLocal(); cur=lastEntered();
 state.commits=normCommits(state.commits);
 state.savings=state.savings||[];
 state.owed=state.owed||[];
