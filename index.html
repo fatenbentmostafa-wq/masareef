@@ -551,6 +551,12 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
         <button type="button" class="sharebtn" id="installBtn" hidden><svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3"/></svg>تثبيت التطبيق</button>
       </div>
     </div>
+    <div class="card dc" id="aboutCard">
+      <h2>عن البرنامج</h2>
+      <div class="kv"><span>نسخة البرنامج</span><b id="abContent">—</b></div>
+      <div class="kv" id="abAppRow" hidden><span>نسخة التطبيق</span><b id="abApp">—</b></div>
+      <p class="hint" style="margin:6px 0 0">البرنامج بيتحدث لوحده أول ما تفتحه وهو متصل بالنت.</p>
+    </div>
   </section>
 
   <!-- 1. monthly expenses (entry form) -->
@@ -1386,6 +1392,7 @@ $("#nmGo").addEventListener("click",()=>{
 function loadScript(src){return new Promise((res,rej)=>{ if(document.querySelector(`script[src="${src}"]`)&&window.__loaded&&window.__loaded[src]) return res();
   const s=document.createElement("script"); s.src=src; s.onload=()=>{(window.__loaded||(window.__loaded={}))[src]=1;res()}; s.onerror=()=>rej(new Error("load")); document.head.append(s); })}
 async function saveFile(name,data){
+  if(NATIVE){ try{ if(await nativeShareFiles([{name,data}],name)) return "saved"; }catch(e){ return "failed"; } }
   let dl=null;
   try{ dl=window.claude&&claude.use? await claude.use("downloads") : null; }catch(e){}
   if(dl){
@@ -1607,11 +1614,41 @@ $("#owList").addEventListener("click",e=>{
 /* ---------- share ---------- */
 const ICONS={"house": "<path d=\"M3 11l9-7 9 7\"/><path d=\"M5 9.5V20h14V9.5\"/><path d=\"M10 20v-5h4v5\"/>", "cal": "<rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"2.5\"/><path d=\"M3 10h18M8 3v4M16 3v4\"/>", "bell": "<path d=\"M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z\"/><path d=\"M10 20a2 2 0 0 0 4 0\"/>", "user": "<circle cx=\"12\" cy=\"8.5\" r=\"3.8\"/><path d=\"M4.5 20c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5\"/>", "wallet": "<path d=\"M4 7.5A2.5 2.5 0 0 1 6.5 5H17v3\"/><rect x=\"4\" y=\"8\" width=\"16\" height=\"11\" rx=\"2.5\"/><path d=\"M15 13.5h2.5\"/>", "target": "<circle cx=\"12\" cy=\"12\" r=\"8\"/><circle cx=\"12\" cy=\"12\" r=\"4.5\"/><circle cx=\"12\" cy=\"12\" r=\"1.2\"/><path d=\"M15 9l4.5-4.5M17 4.5h2.5V7\"/>", "coins": "<ellipse cx=\"12\" cy=\"6.5\" rx=\"6.5\" ry=\"2.5\"/><path d=\"M5.5 6.5v5c0 1.4 2.9 2.5 6.5 2.5s6.5-1.1 6.5-2.5v-5\"/><path d=\"M5.5 11.5v5c0 1.4 2.9 2.5 6.5 2.5s6.5-1.1 6.5-2.5v-5\"/>", "piggy": "<path d=\"M5 11c0-3.3 3.1-6 7-6 2.2 0 4.2.9 5.5 2.3L20 6v4.2c.6.6 1 1.3 1 2.1v1.4h-1.6c-.5 1.3-1.4 2.4-2.6 3.1V20h-3v-2h-3v2h-3v-3.2C6 15.7 5 13.5 5 11z\"/><path d=\"M10 8.5h4\"/>", "clip": "<rect x=\"5\" y=\"4.5\" width=\"14\" height=\"16.5\" rx=\"2.5\"/><path d=\"M9 4.5V3h6v1.5\"/><path d=\"M8.5 11l1.5 1.5L13 9.5M8.5 16.5h7\"/>", "db": "<ellipse cx=\"12\" cy=\"5.5\" rx=\"7.5\" ry=\"2.8\"/><path d=\"M4.5 5.5v6.5c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8V5.5\"/><path d=\"M4.5 12v6.5c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8V12\"/>", "hand": "<path d=\"M3 12.5l3.2-2.7c.8-.7 1.9-.9 2.9-.6l3.4 1c.9.3 1.3 1.3.8 2.1-.4.6-1.2.9-1.9.7l-2.2-.6\"/><path d=\"M3 18.5l2.5-1.2c.6-.3 1.3-.4 2-.2l4.3 1.2c.9.2 1.8 0 2.5-.5l5.2-4.1c.7-.6.8-1.6.2-2.2-.5-.5-1.3-.6-1.9-.2l-3.6 2.4\"/><circle cx=\"16.5\" cy=\"5.5\" r=\"2.5\"/>", "chart": "<path d=\"M4 20h16\"/><path d=\"M7 17v-5M11 17V8M15 17v-7M19 17V5\"/>", "doc": "<path d=\"M6 3h8l4 4v14H6z\"/><path d=\"M14 3v4h4M9 12h6M9 16h6\"/>", "plus": "<path d=\"M12 5v14M5 12h14\"/>", "gear": "<circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M12 2.8l1.6 2.3 2.7-.6.6 2.7 2.3 1.6-1.2 2.5 1.2 2.5-2.3 1.6-.6 2.7-2.7-.6L12 21.2l-1.6-2.3-2.7.6-.6-2.7-2.3-1.6L6 12.7 4.8 10.2l2.3-1.6.6-2.7 2.7.6z\"/>", "chev": "<path d=\"M15 6l-6 6 6 6\"/>"};
 const IN_ARTIFACT=!!(window.claude&&window.claude.use);
+/* ---------- native app (Capacitor) bridge ---------- */
+const NATIVE=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+const NP=n=>NATIVE&&window.Capacitor.Plugins?window.Capacitor.Plugins[n]:null;
+const b64Of=async data=>{ if(typeof data==="string"&&data.startsWith("data:")) return data.split(",")[1];
+  const blob=data instanceof Blob?data:new Blob([data]); const u=await readUrl(blob); return u.split(",")[1]; };
+async function nativeShareFiles(list,title,text){ // list: [{name,data}] data = dataURL|Blob|string
+  const FS=NP("Filesystem"), SH=NP("Share"); if(!FS||!SH) return false;
+  const files=[];
+  for(const f of list){ const safe=String(f.name).replace(/[\\/:*?"<>|]+/g," ");
+    const r=await FS.writeFile({path:safe,data:await b64Of(f.data),directory:"CACHE",recursive:true}); files.push(r.uri); }
+  allowAway();
+  try{ await SH.share({title:title||"مصاريف البيت",text:text||undefined,files,dialogTitle:title||"مشاركة"}); }
+  catch(e){ if(!/cancel/i.test(String(e&&e.message||e))) throw e; }
+  return true;
+}
+async function googleSignIn(){
+  const FA=NP("FirebaseAuthentication");
+  if(FA){ const r=await FA.signInWithGoogle({skipNativeAuth:true});
+    const tok=r&&r.credential&&r.credential.idToken; if(!tok) throw new Error("no-token");
+    return firebase.auth().signInWithCredential(firebase.auth.GoogleAuthProvider.credential(tok)); }
+  const p=new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({prompt:"select_account"});
+  return firebase.auth().signInWithPopup(p);
+}
+if(NATIVE){ document.documentElement.classList.add("native");
+  try{ const SB=NP("StatusBar"); if(SB){ SB.setBackgroundColor({color:"#08130F"}).catch(()=>{}); SB.setStyle({style:"DARK"}).catch(()=>{}); } }catch(e){}
+}
+(async()=>{ try{ const r=await fetch("sw.js",{cache:"no-store"}); const m=(await r.text()).match(/VERSION = "v(\d+)"/); if(m) $("#abContent").textContent="v"+m[1]; }catch(e){}
+  try{ const A=NP("App"); if(A){ const i=await A.getInfo(); $("#abApp").textContent=i.version+" ("+i.build+")"; $("#abAppRow").hidden=false; } }catch(e){} })();
 $("#shareBtn").hidden=IN_ARTIFACT;
+if(NATIVE) setTimeout(()=>{ const ib=document.getElementById("installBtn"); if(ib) ib.remove(); },0);
 $("#shareBtn").addEventListener("click",async()=>{
   const d=new Date(), p=n=>String(n).padStart(2,"0"), h12=d.getHours()%12||12, ap=d.getHours()<12?"AM":"PM";
   const name=`مصاريف-البيت-${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${h12}-${p(d.getMinutes())}${ap}.html`;
   const html=buildHtml({app:"house-budget",v:2,savedAt:d.toISOString(),months:state.months,commits:state.commits,savings:state.savings,owed:state.owed});
+  if(NATIVE){ try{ if(await nativeShareFiles([{name,data:new Blob([html],{type:"text/html"})}],"مصاريف البيت")){ try{localStorage.setItem("house-budget-lastsave",d.toISOString())}catch(e){} showLastSave(); return; } }catch(e){ toast("الشير ماتمش"); return; } }
   const file=new File([html],name,{type:"text/html"});
   try{
     if(navigator.canShare&&navigator.canShare({files:[file]})){
@@ -1654,14 +1691,15 @@ function signedOutUI(){
 $("#sbLogin").addEventListener("click",async()=>{
   if(!fb){ toast("استنى ثانية… المزامنة لسه بتحمّل"); return; }
   const p=new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({prompt:"select_account"});
-  try{ await firebase.auth().signInWithPopup(p); }
+  try{ await googleSignIn(); }
   catch(e){
+    if(NATIVE){ if(!/cancel/i.test(String(e&&(e.message||e.code)||""))) toast("تسجيل الدخول ماكملش: "+(e&&(e.code||e.message)||"")); return; }
     if(e&&(e.code==="auth/popup-blocked"||e.code==="auth/operation-not-supported-in-this-environment")) { try{ await firebase.auth().signInWithRedirect(p); }catch(x){ toast("ماقدرتش أفتح تسجيل الدخول"); } }
     else if(!(e&&e.code==="auth/popup-closed-by-user"||e&&e.code==="auth/cancelled-popup-request")) toast("تسجيل الدخول ماكملش: "+(e&&e.code||""));
   }
 });
 $("#sbMembers").addEventListener("click",()=>$("#houseCard").scrollIntoView({behavior:"smooth"}));
-$("#sbLogout").addEventListener("click",async()=>{ flushAll(); try{ await firebase.auth().signOut(); }catch(e){} toast("اتعمل تسجيل خروج. الداتا لسه على الموبايل ده."); });
+$("#sbLogout").addEventListener("click",async()=>{ flushAll(); try{ await firebase.auth().signOut(); }catch(e){} try{ const FA=NP("FirebaseAuthentication"); FA&&await FA.signOut(); }catch(e){} toast("اتعمل تسجيل خروج. الداتا لسه على الموبايل ده."); });
 async function connectHouse(u){
   const db=firebase.firestore(), email=(u.email||"").toLowerCase();
   $("#sbSub").textContent="بيوصل للسيرفر…"; $("#sbLogin").hidden=true;
@@ -1752,6 +1790,7 @@ const rnd=n=>crypto.getRandomValues(new Uint8Array(n));
 let lockCred=null; try{ lockCred=localStorage.getItem(LOCK_KEY); }catch(e){}
 let hiddenAt=0;
 async function lockSupported(){
+  if(NATIVE){ const NB=NP("NativeBiometric"); if(!NB) return false; try{ const r=await NB.isAvailable({useFallback:true}); return !!(r&&r.isAvailable); }catch(e){ return false; } }
   try{ return !IN_ARTIFACT && window.isSecureContext && window.PublicKeyCredential && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); }catch(e){ return false; }
 }
 function renderLockCard(){
@@ -1762,6 +1801,7 @@ function renderLockCard(){
 async function verifyUser(){
   verifying=true;
   try{
+  if(NATIVE){ await NP("NativeBiometric").verifyIdentity({reason:"افتح مصاريف البيت",title:"مصاريف البيت",subtitle:"بصمتك أو الـ PIN",useFallback:true,maxAttempts:5}); return true; }
   const a=await navigator.credentials.get({publicKey:{challenge:rnd(32),allowCredentials:[{type:"public-key",id:unb64(lockCred)}],userVerification:"required",timeout:60000}});
   return !!a;
   } finally { setTimeout(()=>{ verifying=false; },800); }
@@ -1771,12 +1811,11 @@ function hideLock(){ document.documentElement.classList.remove("locked"); $("#lo
 async function tryUnlock(){
   if(verifying) return;
   try{ if(await verifyUser()) hideLock(); }
-  catch(e){ $("#lockErr").textContent=e&&e.name==="NotAllowedError"?"ماتمش التأكيد. دوس فتح وجرّب تاني.":"حصلت مشكلة في البصمة. جرّب تاني."; $("#unlockGoogle").hidden=!(typeof fbUser!=="undefined"&&fbUser); }
+  catch(e){ $("#lockErr").textContent=NATIVE?"ماتمش التأكيد. دوس فتح وجرّب تاني.":e&&e.name==="NotAllowedError"?"ماتمش التأكيد. دوس فتح وجرّب تاني.":"حصلت مشكلة في البصمة. جرّب تاني."; $("#unlockGoogle").hidden=!(typeof fbUser!=="undefined"&&fbUser); }
 }
 $("#unlockBtn").addEventListener("click",tryUnlock);
 $("#unlockGoogle").addEventListener("click",async()=>{
-  try{ const p=new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({prompt:"select_account"});
-    const r=await firebase.auth().signInWithPopup(p);
+  try{ const r=await googleSignIn();
     if(r&&r.user&&fbUser&&r.user.email===fbUser.email){ hideLock(); toast("اتفتح بحساب جوجل. لو البصمة مش شغالة، تقدر توقف القفل من الإعدادات."); }
     else $("#lockErr").textContent="لازم تدخل بنفس الحساب المتزامن.";
   }catch(e){ $("#lockErr").textContent="ماقدرتش أفتح بجوجل."; }
@@ -1785,6 +1824,11 @@ $("#lockToggle").addEventListener("click",async()=>{
   if(lockCred){
     try{ if(!(await verifyUser())) return; }catch(e){ toast("لازم تأكد ببصمتك عشان تقفل القفل"); return; }
     lockCred=null; try{ localStorage.removeItem(LOCK_KEY); }catch(e){} renderLockCard(); toast("القفل اتقفل"); return;
+  }
+  if(NATIVE){
+    try{ await verifyUser(); lockCred="native"; try{ localStorage.setItem(LOCK_KEY,lockCred); }catch(e){} renderLockCard(); toast("القفل اشتغل ✓ من المرة الجاية التطبيق هيطلب بصمتك"); }
+    catch(e){ toast("اتلغى تشغيل القفل"); }
+    return;
   }
   try{
     const c=await navigator.credentials.create({publicKey:{challenge:rnd(32),rp:{name:"مصاريف البيت"},user:{id:rnd(16),name:"masareef",displayName:"مصاريف البيت"},
@@ -1807,6 +1851,9 @@ document.addEventListener("visibilitychange",()=>{
     if(!verifying&&!$("#lockScreen").hidden) tryUnlock();
   }
 });
+if(NATIVE){ const A=NP("App"); if(A&&A.addListener){
+  A.addListener("pause",()=>{ if(lockCred&&!verifying&&!awayOk) showLock(); });
+  A.addListener("resume",()=>{ if(!lockCred) return; if(awayOk){ awayOk=false; return; } if(!verifying&&!$("#lockScreen").hidden) tryUnlock(); }); } }
 // file picker, share sheet, Google sign-in, PDF save: don't relock for these
 document.addEventListener("click",e=>{ if(e.target.closest("#bkLoad,#shareBtn,#bkSave,#pdfBtn,#homePdf,#sbLogin,#unlockGoogle,[data-att],[data-share],#vwAdd,.vw-open,#asMic")) allowAway(); },true);
 (async()=>{ const ok=await lockSupported(); $("#lockCard").hidden=!ok; if(ok){ renderLockCard(); if(lockCred&&!NOLOCK_RELOAD){ showLock(); tryUnlock(); return; } } hideLock(); })();
@@ -1956,6 +2003,7 @@ async function shareItem(it,onlyId,k){
   const base=(it.name||"مستند")+(k?" - "+monthTag(k):"");
   const files=os.map((o,x)=>dataToFile(o,base+(os.length>1?" ("+(x+1)+")":"")));
   const text=`${it.name||""}${k?" · "+monthName(k):""}${+it.cost?" · "+fmtReal(+it.cost)+" ج.م":""}`;
+  if(NATIVE){ try{ await nativeShareFiles(files.map(f=>({name:f.name,data:f})),it.name||"مستند",text); }catch(e){ toast("الشير ماتمش"); } return; }
   allowAway();
   if(navigator.canShare&&navigator.canShare({files})){
     try{ await navigator.share({files,title:it.name||"مستند",text}); }catch(e){ if(e&&e.name!=="AbortError") toast("الشير ماتمش"); }
@@ -1995,7 +2043,9 @@ $("#vwAdd").addEventListener("click",()=>askAttach(vw&&vw.item));
 $("#vwBody").addEventListener("click",async e=>{
   const sh=e.target.closest("[data-vshare]"); if(sh&&vw){ shareItem(vw.item,sh.dataset.vshare,vw.k); return; }
   const op=e.target.closest("[data-vopen]");
-  if(op){ const o=await getFile(op.dataset.vopen); if(o){ allowAway(); window.open(dataToBlobUrl(o.data),"_blank"); } return; }
+  if(op){ const o=await getFile(op.dataset.vopen); if(!o) return;
+    if(NATIVE&&vw){ shareItem(vw.item,op.dataset.vopen,vw.k); return; }
+    allowAway(); window.open(dataToBlobUrl(o.data),"_blank"); return; }
   const dl=e.target.closest("[data-vdel]");
   if(dl&&vw&&vw.editable){ const it=vw.item, id=dl.dataset.vdel, before=[...(it.att||[])];
     it.att=before.filter(x=>x!==id); touch(); syncAttToSaved(it); paintViewer(); if(tab==="month") renderForm();
