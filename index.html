@@ -59,6 +59,11 @@ button:disabled{opacity:.45;cursor:default}
 
 .row .ctl{grid-column:2 / 4;display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:.78rem;color:var(--muted)}
 .row .ctl .cost{width:108px;flex:none;font-weight:600}
+.voidb{display:inline-flex;align-items:center;height:30px;padding:0 10px;border-radius:9px;border:1px dashed var(--line);background:transparent;color:var(--muted);font:inherit;font-size:.78rem;white-space:nowrap}
+.voidb.on{border-style:solid;border-color:var(--neg);color:var(--neg);background:rgba(255,107,107,.12);font-weight:700}
+.row.void .name,.row.void .cost{opacity:.5}
+.vtag{display:inline-block;margin-inline-start:6px;padding:1px 7px;border-radius:7px;font-size:.72rem;font-weight:700;color:var(--neg);background:rgba(255,107,107,.12);vertical-align:middle}
+.sum-it.void .nm,.sum-it.void>span:nth-child(3){opacity:.5}
 .attb{display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 10px;border-radius:9px;border:1px dashed var(--line);background:transparent;color:var(--muted);font:inherit;font-size:.78rem;white-space:nowrap}
 .attb svg.i{width:15px;height:15px}
 .attb.has{border-style:solid;border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:700}
@@ -81,6 +86,14 @@ button:disabled{opacity:.45;cursor:default}
 .as-box b{font-size:1.05rem;text-align:center;margin-bottom:4px}
 .as-box button{height:54px;border-radius:14px;border:1px solid var(--line);background:var(--paper2);color:var(--ink);font:inherit;font-size:1rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px}
 .as-box button svg.i{width:22px;height:22px;color:var(--accent)}
+.rec-st{display:flex;align-items:center;justify-content:center;gap:10px;font-size:1.6rem;font-weight:700;padding:10px 0}
+.rec-st small{font-size:.75rem;font-weight:400;color:var(--muted)}
+.rec-dot{width:14px;height:14px;border-radius:50%;background:var(--neg);animation:recp 1s ease-in-out infinite}
+@keyframes recp{50%{opacity:.25}}
+.as-box button.rec-stop{background:var(--neg);border-color:var(--neg);color:#fff}
+.as-box button.rec-stop svg.i{color:#fff}
+.vw-audio{width:100%;display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--paper)}
+.vw-audio audio{width:100%}
 .as-box button.cn{background:transparent;font-weight:400;color:var(--muted)}
 .sum-sel{display:flex;gap:10px;align-items:center}
 .sum-sel select{flex:1}
@@ -93,7 +106,7 @@ button:disabled{opacity:.45;cursor:default}
 .sum-sec.s-basic h3{color:var(--t1)} .sum-sec.s-commit h3{color:var(--t3)} .sum-sec.s-external h3{color:var(--t2)}
 .sum-it{width:100%;display:grid;grid-template-columns:22px minmax(0,1fr) auto 36px;gap:8px;align-items:center;padding:12px 14px;border:0;border-bottom:1px dashed var(--line);background:none;color:var(--ink);font:inherit;text-align:right}
 .sum-it:last-child{border-bottom:0}
-.sum-it .nm{font-weight:700;overflow-wrap:anywhere}
+.sum-it .nm{display:block;font-weight:700;overflow-wrap:anywhere}
 .sum-it .st{font-size:.95rem;color:var(--muted)} .sum-it .st.ok{color:var(--paid)}
 .sum-it .cl{display:grid;place-items:center}
 .shx{width:36px;height:36px;border-radius:11px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;padding:0}.shx svg.i{width:18px;height:18px}
@@ -668,11 +681,20 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
 <div id="report" aria-hidden="true"></div>
 <input type="file" id="attInput" accept="image/*,application/pdf" multiple hidden>
 <input type="file" id="attCam" accept="image/*" capture="environment" hidden>
+<div class="asheet" id="recSheet" hidden>
+  <div class="as-box" role="dialog" aria-label="تسجيل صوت">
+    <b>تسجيل صوت</b>
+    <div class="rec-st"><span class="rec-dot"></span><span id="recTime">0:00</span><small>أقصى مدة 3 دقايق</small></div>
+    <button type="button" id="recStop" class="rec-stop"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>وقّف واحفظ</button>
+    <button type="button" id="recCancel" class="cn">إلغاء</button>
+  </div>
+</div>
 <div class="asheet" id="attSheet" hidden>
   <div class="as-box" role="dialog" aria-label="رفع المستند">
     <b>رفع المستند</b>
     <button type="button" id="asCam"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>صوّر بالكاميرا</button>
     <button type="button" id="asPick"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>من الصور أو ملف PDF</button>
+    <button type="button" id="asMic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>سجّل صوت</button>
     <button type="button" id="asCancel" class="cn">إلغاء</button>
   </div>
 </div>
@@ -800,8 +822,9 @@ async function initDb(){
 const emptyMonth=()=>({income:"",items:[]});
 const getMonth=k=>state.months[k]||emptyMonth();
 function editMonth(k){ if(!state.months[k]) state.months[k]=emptyMonth(); schedule("m:"+k); return state.months[k]; }
-const sumItems=m=>m.items.reduce((a,i)=>a+(+i.cost||0),0);
-const sumPaid=m=>m.items.reduce((a,i)=>a+(i.paid?(+i.cost||0):0),0);
+const AMT=i=>i&&i.void?0:(+i.cost||0);
+const sumItems=m=>m.items.reduce((a,i)=>a+AMT(i),0);
+const sumPaid=m=>m.items.reduce((a,i)=>a+(i.paid?AMT(i):0),0);
 const commitById=id=>state.commits.find(c=>c.id===id);
 const isDebt=c=>c&&c.type==="مديونية";
 const activeIn=(c,k)=>(c.start||"")<=k&&(isDebt(c)||k<=c.end);
@@ -810,7 +833,7 @@ const stillDue=(c,k)=>!isDebt(c)&&activeIn(c,k)&&!isDone(c);
 function debtPayments(c){
   const rows=[];
   for(const [k,m] of Object.entries(state.months)) for(const i of m.items)
-    if(i.cid===c.id&&i.paid&&(+i.cost||0)) rows.push({k,amt:+i.cost,src:"item",title:i.name});
+    if(i.cid===c.id&&i.paid&&AMT(i)) rows.push({k,amt:AMT(i),src:"item",title:i.name});
   (c.payments||[]).forEach(p=>rows.push({k:p.month,amt:+p.amount||0,src:"manual",title:p.note||"دفعة",id:p.id}));
   rows.sort((a,b)=>a.k.localeCompare(b.k));
   return rows;
@@ -859,7 +882,7 @@ function commitOptions(sel){
 }
 const UP='<svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg>', DOWN='<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
 const rowHtml=(i,first,last)=>`
-  <div class="row${i.paid?" paid":""}${i.cid?" is-c":""}" data-id="${i.id}">
+  <div class="row${i.paid?" paid":""}${i.cid?" is-c":""}${i.void?" void":""}" data-id="${i.id}">
     <input type="checkbox" class="chk" aria-label="اتدفع" ${i.paid?"checked":""}>
     <textarea class="name" id="n-${i.id}" rows="1" placeholder="اسم البند" aria-label="وصف المصروف">${esc(i.name)}</textarea>
     <button class="x" type="button" aria-label="حذف البند">×</button>
@@ -869,12 +892,13 @@ const rowHtml=(i,first,last)=>`
       <button type="button" class="mv" data-mv="down" aria-label="لتحت" ${last?"disabled":""}>${DOWN}</button>
       <select class="sc" id="s-${i.id}" aria-label="القسم">${SECS.map(([k,n])=>`<option value="${k}" ${k===i.sec?"selected":""}>${{basic:"أساسية",commit:"التزامات",external:"خارجية"}[k]}</option>`).join("")}</select>
       ${i.sec==="commit"?`<select class="lk" id="l-${i.id}" aria-label="ربط بالتزام">${commitOptions(i.cid)}</select>`:""}
+      <button type="button" class="voidb${i.void?" on":""}" data-void aria-pressed="${i.void?"true":"false"}">${i.void?"ملغي ✕":"ملغي"}</button>
       <button type="button" class="attb${(i.att||[]).length?" has":""}" data-att aria-label="رفع المستند"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5l-7.8 7.8a5 5 0 0 1-7.1-7.1l8.2-8.2a3.4 3.4 0 0 1 4.8 4.8l-8.2 8.2a1.7 1.7 0 0 1-2.4-2.4l7.5-7.5"/></svg>${(i.att||[]).length?`المستند (${i.att.length})`:"رفع المستند"}</button>${(i.att||[]).length?`<button type="button" class="attb has shb" data-share aria-label="شير"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></svg>شير</button>`:""}
     </div>
   </div>`;
 const CHEV='<svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>';
-const secTotal=(items,sec)=>items.filter(i=>i.sec===sec).reduce((a,i)=>a+(+i.cost||0),0);
-const secPaid=(items,sec)=>items.filter(i=>i.sec===sec&&i.paid).reduce((a,i)=>a+(+i.cost||0),0);
+const secTotal=(items,sec)=>items.filter(i=>i.sec===sec).reduce((a,i)=>a+AMT(i),0);
+const secPaid=(items,sec)=>items.filter(i=>i.sec===sec&&i.paid).reduce((a,i)=>a+AMT(i),0);
 function renderForm(focusSel){
   draft=loadDraft(cur);
   $("#monthPick").value=cur;
@@ -1034,8 +1058,8 @@ function renderMonths(){
       <span class="mo-sub"><span>الدخل ${money(inc)}</span><span>اتدفع ${money(p)}</span><span class="due">لسه ${money(t-p)}</span><span class="${inc-t<0?"neg":"pos"}">الباقي ${money(inc-t)}</span></span>
     </summary><div class="mo-body">
       ${SECS.map(([sk,sn])=>{ const its=m.items.filter(i=>secOf(i)===sk); if(!its.length) return "";
-        return `<div class="s-${sk}"><div class="mi-h"><span>${sn}</span><span>${money(its.reduce((a,i)=>a+(+i.cost||0),0))}</span></div>`+
-        its.map(i=>`<label class="mi ck"><span class="lbl"><input type="checkbox" class="chk" data-id="${i.id}" ${i.paid?"checked":""} aria-label="اتدفع">${esc(i.name)||"—"}${i.cid?`<span class="tag">${esc(typeOf(commitById(i.cid))||"التزام")}</span>`:""}</span><span>${money(i.cost)}</span></label>`).join("")+`</div>`}).join("")}
+        return `<div class="s-${sk}"><div class="mi-h"><span>${sn}</span><span>${money(its.reduce((a,i)=>a+AMT(i),0))}</span></div>`+
+        its.map(i=>`<label class="mi ck"><span class="lbl"><input type="checkbox" class="chk" data-id="${i.id}" ${i.paid?"checked":""} aria-label="اتدفع">${esc(i.name)||"—"}${i.void?'<span class="vtag">ملغي</span>':""}${i.cid?`<span class="tag">${esc(typeOf(commitById(i.cid))||"التزام")}</span>`:""}</span><span>${money(i.cost)}</span></label>`).join("")+`</div>`}).join("")}
       <div class="tl big" style="font-size:1rem"><span>الإجمالي</span><span>${money(t)}</span></div>
       <div class="btns"><button type="button" class="add" data-open="${k}">تعديل البنود</button><button type="button" class="danger" data-del="${k}">مسح الشهر</button></div>
     </div></details>`}).join("");
@@ -1143,7 +1167,7 @@ function renderCommits(){
 function paySchedule(c){
   const paid={};
   for(const [k,m] of Object.entries(state.months)) for(const i of m.items)
-    if(i.cid===c.id&&i.paid) paid[k]=(paid[k]||0)+(+i.cost||0);
+    if(i.cid===c.id&&i.paid) paid[k]=(paid[k]||0)+AMT(i);
   const pre=+c.pre||0, out=[]; let n=0;
   for(let k=c.start;k<=c.end;k=addMonths(k,1),n++){
     if(paid[k]!=null) out.push({k,paid:true,amt:paid[k],src:"item"});
@@ -1303,12 +1327,12 @@ async function saveFile(name,data){
 function reportHtml(k){ const wasHidden=HIDE; HIDE=false; try{ return reportHtmlInner(k); } finally{ HIDE=wasHidden; } }
 function reportHtmlInner(k){
   const m=state.months[k], total=sumItems(m), paid=sumPaid(m), inc=+m.income||0;
-  const cTotal=m.items.reduce((a,i)=>a+(i.cid?(+i.cost||0):0),0);
+  const cTotal=m.items.reduce((a,i)=>a+(i.cid?AMT(i):0),0);
   const n=v=>fmt(v)+" ج.م";
   let x=0;
   const rows=SECS.map(([sk,sn])=>{ const its=m.items.filter(i=>secOf(i)===sk); if(!its.length) return "";
-    return `<tr><td colspan="5" style="font-weight:700;color:#0E6E62;background:#EEF2F0;border-bottom:0">${sn} — ${n(its.reduce((a,i)=>a+(+i.cost||0),0))}</td></tr>`+
-    its.map(i=>`<tr><td class="n">${++x}</td><td style="font-weight:700">${esc(i.name)||"—"}</td><td>${i.cid?esc(typeOf(commitById(i.cid))||"التزام"):sn}</td><td class="n">${n(i.cost)}</td><td class="${i.paid?"ok":"no"}">${i.paid?"اتدفع ✓":"لسه"}</td></tr>`).join("")}).join("");
+    return `<tr><td colspan="5" style="font-weight:700;color:#0E6E62;background:#EEF2F0;border-bottom:0">${sn} — ${n(its.reduce((a,i)=>a+AMT(i),0))}</td></tr>`+
+    its.map(i=>`<tr><td class="n">${++x}</td><td style="font-weight:700">${esc(i.name)||"—"}</td><td>${i.cid?esc(typeOf(commitById(i.cid))||"التزام"):sn}</td><td class="n"${i.void?' style="text-decoration:line-through;color:#999"':""}>${n(i.cost)}</td><td class="${i.void?"no":i.paid?"ok":"no"}">${i.void?"ملغي":i.paid?"اتدفع ✓":"لسه"}</td></tr>`).join("")}).join("");
   const cs=state.commits.filter(c=>activeIn(c,k));
   const crow=cs.map(c=>{const s=commitStats(c);return s.debt
     ? `<tr><td>${esc(c.name)}</td><td>مديونية</td><td class="n">—</td><td class="n">${n(s.paidAmt)}</td><td class="n">—</td><td class="n">${n(s.leftAmt)}</td></tr>`
@@ -1320,7 +1344,7 @@ function reportHtmlInner(k){
     <h3>الملخص</h3>
     <div class="sum">
       <div><span>الدخل</span><b>${n(inc)}</b></div>
-      ${SECS.map(([sk,sn])=>`<div><span>${sn}</span><b>${n(m.items.filter(i=>secOf(i)===sk).reduce((a,i)=>a+(+i.cost||0),0))}</b></div>`).join("")}
+      ${SECS.map(([sk,sn])=>`<div><span>${sn}</span><b>${n(m.items.filter(i=>secOf(i)===sk).reduce((a,i)=>a+AMT(i),0))}</b></div>`).join("")}
       <div><span>اتدفع</span><b class="ok">${n(paid)}</b></div>
       <div><span>لسه ماتدفعش</span><b class="no">${n(total-paid)}</b></div>
       <div class="tot"><span>إجمالي المصاريف</span><span>${n(total)}</span></div>
@@ -1398,7 +1422,7 @@ const isSavingItem=i=>/مدخر|ادخار|توفير/.test(i.name||"");
 function savingsLedger(){
   const rows=[];
   for(const [k,m] of Object.entries(state.months)) for(const i of m.items)
-    if(isSavingItem(i)&&i.paid&&(+i.cost||0)) rows.push({k,amt:+i.cost,kind:"in",title:i.name,src:"month"});
+    if(isSavingItem(i)&&i.paid&&AMT(i)) rows.push({k,amt:AMT(i),kind:"in",title:i.name,src:"month"});
   for(const e of state.savings) rows.push({k:e.month,amt:+e.amount||0,kind:e.kind,title:e.note||(e.kind==="in"?"إيداع":"سحب"),src:"manual",id:e.id,at:e.at||""});
   rows.sort((a,b)=>a.k===b.k?(a.src===b.src?(a.at||"").localeCompare(b.at||""):a.src==="month"?-1:1):a.k.localeCompare(b.k));
   let run=0; rows.forEach(r=>{ run+= r.kind==="out"?-r.amt:r.amt; r.run=run; });
@@ -1712,7 +1736,7 @@ document.addEventListener("visibilitychange",()=>{
   }
 });
 // file picker, share sheet, Google sign-in, PDF save: don't relock for these
-document.addEventListener("click",e=>{ if(e.target.closest("#bkLoad,#shareBtn,#bkSave,#pdfBtn,#homePdf,#sbLogin,#unlockGoogle,[data-att],[data-share],#vwAdd,.vw-open")) allowAway(); },true);
+document.addEventListener("click",e=>{ if(e.target.closest("#bkLoad,#shareBtn,#bkSave,#pdfBtn,#homePdf,#sbLogin,#unlockGoogle,[data-att],[data-share],#vwAdd,.vw-open,#asMic")) allowAway(); },true);
 (async()=>{ const ok=await lockSupported(); $("#lockCard").hidden=!ok; if(ok){ renderLockCard(); if(lockCred&&!NOLOCK_RELOAD){ showLock(); tryUnlock(); return; } } hideLock(); })();
 
 /* ---------- pages ---------- */
@@ -1825,6 +1849,10 @@ async function shrinkImage(f){
 async function pushFile(o){ const c=filesColl(); if(!c) return false;
   try{ await c.doc(o.id).set({id:o.id,type:o.type,name:o.name,at:o.at,data:o.data}); o.up=true; await idbPut(o); return true; }catch(e){ return false; } }
 async function pushPendingFiles(){ try{ (await idbAll()).filter(o=>!o.up).forEach(pushFile); }catch(e){} }
+async function storeData(type,data,name){
+  const o={id:"f"+Date.now().toString(36)+uid(),type,name:name||"",at:new Date().toISOString(),data,up:false};
+  await idbPut(o); pushFile(o); return o.id;
+}
 async function storeFile(f){
   const isPdf=f.type==="application/pdf"||/\.pdf$/i.test(f.name);
   let data;
@@ -1846,7 +1874,7 @@ function dataToBlobUrl(d){ const [h,b]=d.split(","); const mime=(h.match(/data:(
   const bin=atob(b), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i); return URL.createObjectURL(new Blob([u],{type:mime})); }
 function dataToFile(o,base){ const [h,b]=o.data.split(","); const mime=(h.match(/data:([^;]+)/)||[])[1]||"application/octet-stream";
   const bin=atob(b), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
-  const ext=o.type==="pdf"?"pdf":"jpg", nm=(String(base||"مستند").replace(/[\\/:*?"<>|]+/g," ").trim()||"مستند")+"."+ext;
+  const ext=o.type==="pdf"?"pdf":o.type==="audio"?(/mp4|aac|m4a/.test(mime)?"m4a":/ogg/.test(mime)?"ogg":"webm"):"jpg", nm=(String(base||"مستند").replace(/[\\/:*?"<>|]+/g," ").trim()||"مستند")+"."+ext;
   return new File([u],nm,{type:mime}); }
 async function shareItem(it,onlyId){
   const ids=onlyId?[onlyId]:(it.att||[]); if(!ids.length){ toast("مفيش مستند للبند ده"); return; }
@@ -1876,6 +1904,7 @@ async function paintViewer(){
   body.innerHTML=files.map((o,x)=>{ const id=ids[x];
     const del=vw.editable?`<button type="button" class="del" data-vdel="${id}">شيل</button>`:"";
     if(!o) return `<div class="vw-file"><span>المستند ده مش متاح على الموبايل ده${filesColl()?"":" (سجّل دخول علشان يتجاب من السيرفر)"}.</span>${del}</div>`;
+    if(o.type==="audio") return `<div class="vw-audio"><span>🎙 تسجيل صوت${o.at?" · "+new Date(o.at).toLocaleDateString("ar-EG",{day:"numeric",month:"long"}):""}</span><audio controls preload="metadata" src="${o.data}"></audio><div class="vw-row" style="display:flex;gap:8px;justify-content:center"><button type="button" class="vw-open" data-vshare="${id}">شير واتساب</button>${del}</div></div>`;
     if(o.type==="pdf") return `<div class="vw-file"><span>📄 ${esc(o.name||"ملف PDF")}</span><span class="vw-row" style="display:flex;gap:8px"><button type="button" class="vw-open" data-vopen="${id}">افتح</button><button type="button" class="vw-open" data-vshare="${id}">شير</button>${del}</span></div>`;
     return `<div class="vw-item"><img src="${o.data}" alt="صورة المستند"><div class="vw-row"><button type="button" class="vw-open" data-vopen="${id}">افتح كاملة</button><button type="button" class="vw-open" data-vshare="${id}">شير واتساب</button>${del}</div></div>`;
   }).join("");
@@ -1913,6 +1942,9 @@ function syncAttToSaved(it){
   saveLocal(); schedule("m:"+cur,0); return true;
 }
 $("#items").addEventListener("click",e=>{
+  const vb=e.target.closest("[data-void]");
+  if(vb){ const r=vb.closest(".row"), vi=draft.items.find(i=>i.id===r.dataset.id); if(!vi) return;
+    vi.void=!vi.void; if(!vi.void) delete vi.void; touch(); renderForm(); toast(vi.void?"البند اتلغى ومش هيتحسب في المصاريف":"رجع البند يتحسب تاني"); return; }
   const shb=e.target.closest("[data-share]");
   if(shb){ const r=shb.closest(".row"), si=draft.items.find(i=>i.id===r.dataset.id); if(si) shareItem(si); return; }
   const b=e.target.closest("[data-att]"); if(!b) return;
@@ -1924,6 +1956,9 @@ async function onAttFiles(e){
   const it=attTarget; attTarget=null; const fs=[...e.target.files]; if(!it||!fs.length) return;
   toast("بيرفع المستند…");
   const ids=[]; for(const f of fs){ try{ const id=await storeFile(f); if(id) ids.push(id); }catch(x){ toast("حصلت مشكلة في الملف ده"); } }
+  addAtt(it,ids);
+}
+function addAtt(it,ids){
   if(!ids.length) return;
   it.att=[...(it.att||[]),...ids]; touch();
   const saved=syncAttToSaved(it);
@@ -1933,6 +1968,41 @@ async function onAttFiles(e){
 }
 $("#attInput").addEventListener("change",onAttFiles);
 $("#attCam").addEventListener("change",onAttFiles);
+
+
+/* ---------- voice note ---------- */
+let rec=null; // {mr,stream,chunks,t0,timer,item,cancel}
+function pickAudioType(){ const c=["audio/mp4","audio/webm;codecs=opus","audio/webm","audio/ogg;codecs=opus"]; return window.MediaRecorder&&MediaRecorder.isTypeSupported?c.find(t=>MediaRecorder.isTypeSupported(t))||"":""; }
+async function startRec(it){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){ toast("الموبايل ده مش بيدعم تسجيل الصوت من البرنامج"); return; }
+  let stream; allowAway();
+  try{ stream=await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(e){ awayOk=false; toast("لازم تسمح للبرنامج يستخدم المايك"); return; }
+  if(document.visibilityState==="visible") awayOk=false;
+  const type=pickAudioType(); let mr;
+  try{ mr=new MediaRecorder(stream,{...(type?{mimeType:type}:{}),audioBitsPerSecond:24000}); }catch(e){ mr=new MediaRecorder(stream); }
+  rec={mr,stream,chunks:[],t0:Date.now(),item:it,cancel:false};
+  mr.ondataavailable=e=>{ if(e.data&&e.data.size) rec&&rec.chunks.push(e.data); };
+  mr.onstop=finishRec;
+  mr.start(1000);
+  $("#recTime").textContent="0:00"; $("#recSheet").hidden=false;
+  rec.timer=setInterval(()=>{ const s=Math.floor((Date.now()-rec.t0)/1000); $("#recTime").textContent=Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); if(s>=180) stopRec(false); },250);
+}
+function stopRec(cancel){ if(!rec) return; rec.cancel=cancel; clearInterval(rec.timer); $("#recSheet").hidden=true; try{ rec.mr.state!=="inactive"&&rec.mr.stop(); }catch(e){ finishRec(); } }
+async function finishRec(){
+  const r=rec; rec=null; if(!r) return;
+  try{ r.stream.getTracks().forEach(t=>t.stop()); }catch(e){}
+  if(r.cancel) return;
+  const blob=new Blob(r.chunks,{type:(r.mr.mimeType||"audio/webm").split(";")[0]});
+  if(!blob.size){ toast("التسجيل طلع فاضي"); return; }
+  if(blob.size>620000){ toast("التسجيل طويل قوي، سجّل أقصر"); return; }
+  const data=await readUrl(blob);
+  const id=await storeData("audio",data,"تسجيل صوت");
+  addAtt(r.item,[id]);
+}
+$("#asMic").addEventListener("click",()=>{ const it=attTarget; attTarget=null; $("#attSheet").hidden=true; if(it) startRec(it); });
+$("#recStop").addEventListener("click",()=>stopRec(false));
+$("#recCancel").addEventListener("click",()=>stopRec(true));
 
 /* ---------- monthly summary (read only) ---------- */
 let sumMonth=null;
@@ -1946,10 +2016,10 @@ function renderSummary(){
   const nAtt=m.items.reduce((a,i)=>a+((i.att||[]).length),0);
   const kpi=(t,v)=>`<div class="sum-kpi"><small>${t}</small><b>${v}</b></div>`;
   $("#sumBody").innerHTML=`<div class="sum-kpis">${kpi("الدخل",money(inc))}${kpi("إجمالي المصاريف",money(total))}${kpi("المدفوع",money(paid))}${kpi("الباقي من الدخل",money(inc-total))}</div>
-    <p class="hint" style="margin:0">${nAtt?`فيه ${nAtt} مستند. دوس على البند اللي جنبه 📎 علشان تشوف صورة التحويل.`:"مفيش مستندات متسجلة للشهر ده."}</p>`+
+    <p class="hint" style="margin:0">${nAtt?`فيه ${nAtt} مستند. دوس على البند اللي جنبه زرار الشير علشان تشوف المستند أو تسمع التسجيل.`:"مفيش مستندات متسجلة للشهر ده."}</p>`+
     SECS.map(([k,n])=>{ const its=m.items.filter(i=>secOf(i)===k); if(!its.length) return "";
       return `<div class="sum-sec s-${k}"><h3><span>${n}</span><span>${money(secTotal(m.items,k))}</span></h3>${its.map(i=>{ const has=(i.att||[]).length;
-        return `<div class="sum-it${has?" has":""}" data-sum="${i.id}" role="button" tabindex="0"><span class="st${i.paid?" ok":""}">${i.paid?"✓":"○"}</span><span class="nm">${esc(i.name)}</span><span>${money(+i.cost||0)}</span><span class="cl">${has?`<button type="button" class="shx" data-share="${i.id}" aria-label="شير"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></svg></button>`:""}</span></div>`;}).join("")}</div>`; }).join("");
+        return `<div class="sum-it${has?" has":""}${i.void?" void":""}" data-sum="${i.id}" role="button" tabindex="0"><span class="st${i.paid?" ok":""}">${i.paid?"✓":"○"}</span><span class="nm">${esc(i.name)}${i.void?'<span class="vtag">ملغي</span>':""}</span><span>${money(+i.cost||0)}</span><span class="cl">${has?`<button type="button" class="shx" data-share="${i.id}" aria-label="شير"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></svg></button>`:""}</span></div>`;}).join("")}</div>`; }).join("");
 }
 $("#sumMonth").addEventListener("change",e=>{ sumMonth=e.target.value; renderSummary(); });
 $("#sumBody").addEventListener("click",e=>{
