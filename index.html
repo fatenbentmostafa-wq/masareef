@@ -67,14 +67,17 @@ button:disabled{opacity:.45;cursor:default}
 .attb{display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 10px;border-radius:9px;border:1px dashed var(--line);background:transparent;color:var(--muted);font:inherit;font-size:.78rem;white-space:nowrap}
 .attb svg.i{width:15px;height:15px}
 .attb.has{border-style:solid;border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:700}
-.viewer{position:fixed;inset:0;z-index:40;background:rgba(3,9,7,.96);display:flex;flex-direction:column}
+.viewer{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;padding:max(18px,env(safe-area-inset-top,0px)) 14px max(18px,env(safe-area-inset-bottom,0px))}
+.vw-box{width:100%;max-width:520px;max-height:100%;display:flex;flex-direction:column;background:var(--paper);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);animation:vwin .18s ease-out}
+@keyframes vwin{from{transform:scale(.94);opacity:0}}
 .viewer[hidden]{display:none}
-.vw-top{display:flex;align-items:center;gap:10px;padding:calc(12px + env(safe-area-inset-top,0px)) 14px 10px;border-bottom:1px solid var(--line)}
-.vw-top b{flex:1;font-size:1.05rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vw-top{display:flex;align-items:center;gap:10px;padding:12px 14px 10px;border-bottom:1px solid var(--line)}
+.vw-top b{flex:1;font-size:1rem;min-width:0;line-height:1.4}
 .vw-top button{height:38px;min-width:38px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:inherit;padding:0 12px}
-.vw-body{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:14px;align-items:center}
-.vw-body img{max-width:100%;border-radius:12px;background:#fff}
-.vw-file{width:100%;display:flex;align-items:center;gap:10px;justify-content:space-between;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--paper)}
+.vw-body{flex:1;min-height:0;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:14px;align-items:center}
+.vw-body img{max-width:100%;max-height:55vh;object-fit:contain;border-radius:12px;background:#fff}
+.vw-file{width:100%;display:flex;align-items:center;gap:10px;justify-content:space-between;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--paper2)}
+.vw-file>span:first-child{min-width:0;overflow-wrap:anywhere}
 .vw-item{width:100%;display:flex;flex-direction:column;gap:8px;align-items:center}
 .vw-item .vw-row{display:flex;gap:8px;justify-content:center}
 .vw-item .vw-row button,.vw-file button{height:34px;border-radius:10px;border:1px solid var(--line);background:var(--paper2);color:var(--ink);font:inherit;font-size:.85rem;padding:0 12px}
@@ -92,7 +95,7 @@ button:disabled{opacity:.45;cursor:default}
 @keyframes recp{50%{opacity:.25}}
 .as-box button.rec-stop{background:var(--neg);border-color:var(--neg);color:#fff}
 .as-box button.rec-stop svg.i{color:#fff}
-.vw-audio{width:100%;display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--paper)}
+.vw-audio{width:100%;display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--paper2)}
 .vw-audio audio{width:100%}
 .as-box button.cn{background:transparent;font-weight:400;color:var(--muted)}
 .sum-sel{display:flex;gap:10px;align-items:center}
@@ -699,8 +702,10 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
   </div>
 </div>
 <div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-label="المستندات">
+ <div class="vw-box">
   <div class="vw-top"><b id="vwTitle"></b><button type="button" id="vwAdd" hidden>+ إضافة</button><button type="button" id="vwClose" aria-label="قفل">✕</button></div>
   <div class="vw-body" id="vwBody"></div>
+ </div>
 </div>
 
 <script id="seed" type="application/json">null</script>
@@ -1876,12 +1881,14 @@ function dataToFile(o,base){ const [h,b]=o.data.split(","); const mime=(h.match(
   const bin=atob(b), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
   const ext=o.type==="pdf"?"pdf":o.type==="audio"?(/mp4|aac|m4a/.test(mime)?"m4a":/ogg/.test(mime)?"ogg":"webm"):"jpg", nm=(String(base||"مستند").replace(/[\\/:*?"<>|]+/g," ").trim()||"مستند")+"."+ext;
   return new File([u],nm,{type:mime}); }
-async function shareItem(it,onlyId){
+const monthTag=k=>{ if(!k) return ""; const [y,m]=k.split("-"); return `شهر ${+m}-${y}`; };
+async function shareItem(it,onlyId,k){
   const ids=onlyId?[onlyId]:(it.att||[]); if(!ids.length){ toast("مفيش مستند للبند ده"); return; }
   const os=(await Promise.all(ids.map(getFile))).filter(Boolean);
   if(!os.length){ toast("المستند مش متاح على الموبايل ده"); return; }
-  const files=os.map((o,x)=>dataToFile(o,(it.name||"مستند")+(os.length>1?" "+(x+1):"")));
-  const text=`${it.name||""}${+it.cost?" · "+fmtReal(+it.cost)+" ج.م":""}`;
+  const base=(it.name||"مستند")+(k?" - "+monthTag(k):"");
+  const files=os.map((o,x)=>dataToFile(o,base+(os.length>1?" ("+(x+1)+")":"")));
+  const text=`${it.name||""}${k?" · "+monthName(k):""}${+it.cost?" · "+fmtReal(+it.cost)+" ج.م":""}`;
   allowAway();
   if(navigator.canShare&&navigator.canShare({files})){
     try{ await navigator.share({files,title:it.name||"مستند",text}); }catch(e){ if(e&&e.name!=="AbortError") toast("الشير ماتمش"); }
@@ -1891,8 +1898,8 @@ async function shareItem(it,onlyId){
   toast("الجهاز ده مش بيدعم الشير، فاتنزّل الملف. ابعته من واتساب.");
 }
 let vw=null; // {item, editable}
-async function openViewer(item,editable){
-  vw={item,editable}; $("#vwTitle").textContent=item.name||"المستند"; $("#vwAdd").hidden=!editable;
+async function openViewer(item,editable,k){
+  vw={item,editable,k}; $("#vwTitle").textContent=(item.name||"المستند")+(k?" · "+monthName(k):""); $("#vwAdd").hidden=!editable;
   $("#viewer").hidden=false; document.body.style.overflow="hidden";
   await paintViewer();
 }
@@ -1911,6 +1918,7 @@ async function paintViewer(){
 }
 function closeViewer(){ $("#viewer").hidden=true; document.body.style.overflow=""; vw=null; }
 $("#vwClose").addEventListener("click",closeViewer);
+$("#viewer").addEventListener("click",e=>{ if(e.target.id==="viewer") closeViewer(); });
 function askAttach(it){ attTarget=it; $("#attSheet").hidden=false; }
 $("#asCancel").addEventListener("click",()=>{ $("#attSheet").hidden=true; attTarget=null; });
 $("#attSheet").addEventListener("click",e=>{ if(e.target.id==="attSheet"){ $("#attSheet").hidden=true; attTarget=null; } });
@@ -1918,7 +1926,7 @@ $("#asCam").addEventListener("click",()=>{ $("#attSheet").hidden=true; allowAway
 $("#asPick").addEventListener("click",()=>{ $("#attSheet").hidden=true; allowAway(); $("#attInput").value=""; $("#attInput").click(); });
 $("#vwAdd").addEventListener("click",()=>askAttach(vw&&vw.item));
 $("#vwBody").addEventListener("click",async e=>{
-  const sh=e.target.closest("[data-vshare]"); if(sh&&vw){ shareItem(vw.item,sh.dataset.vshare); return; }
+  const sh=e.target.closest("[data-vshare]"); if(sh&&vw){ shareItem(vw.item,sh.dataset.vshare,vw.k); return; }
   const op=e.target.closest("[data-vopen]");
   if(op){ const o=await getFile(op.dataset.vopen); if(o){ allowAway(); window.open(dataToBlobUrl(o.data),"_blank"); } return; }
   const dl=e.target.closest("[data-vdel]");
@@ -1946,10 +1954,10 @@ $("#items").addEventListener("click",e=>{
   if(vb){ const r=vb.closest(".row"), vi=draft.items.find(i=>i.id===r.dataset.id); if(!vi) return;
     vi.void=!vi.void; if(!vi.void) delete vi.void; touch(); renderForm(); toast(vi.void?"البند اتلغى ومش هيتحسب في المصاريف":"رجع البند يتحسب تاني"); return; }
   const shb=e.target.closest("[data-share]");
-  if(shb){ const r=shb.closest(".row"), si=draft.items.find(i=>i.id===r.dataset.id); if(si) shareItem(si); return; }
+  if(shb){ const r=shb.closest(".row"), si=draft.items.find(i=>i.id===r.dataset.id); if(si) shareItem(si,null,cur); return; }
   const b=e.target.closest("[data-att]"); if(!b) return;
   const row=b.closest(".row"), it=draft.items.find(i=>i.id===row.dataset.id); if(!it) return;
-  if((it.att||[]).length){ openViewer(it,true); return; }
+  if((it.att||[]).length){ openViewer(it,true,cur); return; }
   askAttach(it);
 });
 async function onAttFiles(e){
@@ -2024,11 +2032,11 @@ function renderSummary(){
 $("#sumMonth").addEventListener("change",e=>{ sumMonth=e.target.value; renderSummary(); });
 $("#sumBody").addEventListener("click",e=>{
   const sh=e.target.closest("[data-share]");
-  if(sh){ const si=state.months[sumMonth].items.find(i=>i.id===sh.dataset.share); if(si) shareItem(si); return; }
+  if(sh){ const si=state.months[sumMonth].items.find(i=>i.id===sh.dataset.share); if(si) shareItem(si,null,sumMonth); return; }
   const b=e.target.closest("[data-sum]"); if(!b) return;
   const it=state.months[sumMonth].items.find(i=>i.id===b.dataset.sum); if(!it) return;
   if(!(it.att||[]).length){ toast("مفيش مستند للبند ده"); return; }
-  openViewer(it,false);
+  openViewer(it,false,sumMonth);
 });
 
 /* ---------- refresh from server (no fingerprint) ---------- */
