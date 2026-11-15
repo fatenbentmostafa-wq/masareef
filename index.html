@@ -41,6 +41,24 @@ h2{font-family:var(--f-display);font-weight:500;font-size:1.1rem;margin:0}
 .card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:.8rem;color:var(--muted);min-width:0}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.po{margin-top:12px;padding:12px;border:1px solid rgba(232,184,75,.35);border-radius:14px;background:rgba(232,184,75,.06)}
+.po[hidden]{display:none}
+.po-h{font-weight:700;color:var(--gold,#E8B84B);margin-bottom:8px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;padding:4px;border-radius:12px;background:var(--paper2);border:1px solid var(--line)}
+.seg label{position:relative}
+.seg input{position:absolute;opacity:0;inset:0}
+.seg span{display:block;text-align:center;padding:8px 6px;border-radius:9px;font-weight:700;font-size:.88rem;color:var(--muted)}
+.seg input:checked+span{background:var(--accent);color:#06231B}
+.po-row{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) 34px;gap:8px;align-items:end;margin-bottom:8px}
+.po-row button{height:40px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--neg);font:inherit;font-size:1.1rem}
+.po-add{width:100%;height:40px;border-radius:10px;border:1px dashed rgba(232,184,75,.6);background:transparent;color:var(--gold,#E8B84B);font:inherit;font-weight:700}
+.bar.has-po{position:relative;overflow:visible}
+.bar .podot{position:absolute;top:50%;width:14px;height:14px;margin:-7px -7px 0 0;border-radius:50%;background:#E8B84B;border:2px solid var(--paper);box-shadow:0 0 0 2px rgba(232,184,75,.35)}
+.pay.is-po{background:rgba(232,184,75,.08)}
+.potag{display:inline-flex;align-items:center;gap:4px;margin-inline-start:6px;padding:1px 8px;border-radius:8px;font-size:.74rem;font-weight:700;color:#E8B84B;background:rgba(232,184,75,.14)}
+.potag::before{content:"";width:8px;height:8px;border-radius:50%;background:#E8B84B}
+.po-list{display:flex;flex-direction:column;gap:6px;margin:6px 0 10px}
+.po-list div{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.88rem}
 input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;min-width:0}
 input:focus-visible,select:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 input[type=number]{font-variant-numeric:tabular-nums}
@@ -648,7 +666,22 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
         <label class="f nd">النهاية<input id="dEnd" type="month"></label>
         <label class="f nd">شهور اتدفعت قبل ما تسجّل هنا<input id="dPre" type="number" inputmode="numeric" min="0" value="0"></label>
         <label class="f od">مبلغ اتدفع قبل ما تسجّل هنا<input id="dPrePaid" type="number" inputmode="decimal" min="0" value="0"></label>
-        <label class="f" id="turnWrap">شهر قبض الجمعية<input id="dTurn" type="month"></label>
+      </div>
+      <div class="po" id="turnWrap" hidden>
+        <div class="po-h">قبض الجمعية</div>
+        <div class="seg" role="radiogroup" aria-label="طريقة القبض">
+          <label><input type="radio" name="poMode" value="one" checked><span>مرة واحدة</span></label>
+          <label><input type="radio" name="poMode" value="parts"><span>على أجزاء</span></label>
+        </div>
+        <div class="grid2" id="poOne">
+          <label class="f">شهر القبض<input id="dTurn" type="month"></label>
+          <label class="f">مبلغ القبض<input id="dTurnAmt" type="number" inputmode="decimal" min="0" placeholder="الإجمالي"></label>
+        </div>
+        <div id="poParts" hidden>
+          <div id="poRows"></div>
+          <button type="button" class="po-add" id="poAdd">+ جزء كمان</button>
+        </div>
+        <p class="hint" id="poHint" style="margin:6px 0 0"></p>
       </div>
       <p class="hint od">المديونية مالهاش قسط ثابت. بتدفع منها أي مبلغ في أي وقت: إما من بند في المصاريف مربوط بيها، أو تسجّل الدفعة من ملخص الالتزامات.</p>
       <div class="preview" id="dPreview" hidden></div>
@@ -1148,7 +1181,8 @@ function renderCommits(){
     if(s.debt) return debtCard(c,s,nowK);
     const due=activeIn(c,nowK);
     const paidNow=s.paidKeys.includes(nowK);
-    const turn=c.type==="جمعية"&&c.turn?`<div class="hint">قبض الجمعية: ${monthName(c.turn)}</div>`:"";
+    const turn=payoutListHtml(c), poKs=payoutsOf(c), poMap={}; poKs.forEach(p=>poMap[p.k]=(poMap[p.k]||0)+payoutAmt(c,p));
+    const dots=poKs.map(p=>{ const n=monthsBetween(c.start,p.k); return n>=1&&n<=s.totalM?`<span class="podot" style="right:${((n-.5)/s.totalM*100).toFixed(2)}%" title="قبض ${monthName(p.k)}"></span>`:""; }).join("");
     return `<details class="cmd" data-c="${c.id}" ${openCommits.has(c.id)?"open":""}><summary>${CHEV}<span class="cm-name">${esc(c.name)}<span class="tag">${esc(c.type)}</span></span><span class="sumq">${s.leftN?"باقي "+s.leftN+" شهر":"خلص ✓"}</span></summary><div class="cm">
       <div class="facts" style="font-size:.9rem">
         <span>دفعت<b><span class="num">${s.paidN}</span> شهر</b></span>
@@ -1156,15 +1190,15 @@ function renderCommits(){
         <span>القسط<b>${money(c.monthly)}</b></span>
       </div>
       <div class="hint">من ${monthName(c.start)} لـ ${monthName(c.end)}${due?` · الشهر ده: <b class="${paidNow?"pos":"due"}">${paidNow?"اتدفع ✓":"لسه"}</b>`:""}</div>
-      <div class="bar" role="progressbar" aria-valuenow="${s.paidN}" aria-valuemax="${s.totalM}"><i style="width:${s.paidN/s.totalM*100}%"></i></div>
+      <div class="bar${dots?" has-po":""}" role="progressbar" aria-valuenow="${s.paidN}" aria-valuemax="${s.totalM}"><i style="width:${s.paidN/s.totalM*100}%"></i>${dots}</div>
       <div class="facts">
         <span>اتدفع منه<b class="pos">${money(s.paidAmt)}</b></span>
         <span>المبلغ الباقي<b class="due">${money(s.leftAmt)}</b></span>
         <span>الإجمالي<b>${money(s.totalAmt)}</b></span>
       </div>${turn}
       <div class="pay-h">بيانات الدفع</div>
-      <div class="pays">${paySchedule(c).map(p=>`<div class="pay ${p.paid?"is-paid":p.k===nowK?"is-now":""}">
-        <span class="pm">${monthName(p.k)}${p.k===nowK?'<span class="tag">الشهر ده</span>':""}</span>
+      <div class="pays">${paySchedule(c).map(p=>`<div class="pay ${p.paid?"is-paid":p.k===nowK?"is-now":""}${poMap[p.k]?" is-po":""}">
+        <span class="pm">${monthName(p.k)}${p.k===nowK?'<span class="tag">الشهر ده</span>':""}${poMap[p.k]?`<span class="potag">قبض ${money(poMap[p.k])}</span>`:""}</span>
         <span class="pv">${p.paid?`<span class="pos">اتدفع ${money(p.amt)}</span>`:`<span class="${p.k<nowK?"neg":"due"}">${p.k<nowK?"متأخر":"لسه"}</span>`}</span></div>`).join("")}</div>
     </div></details>`}).join("");
 }
@@ -1181,6 +1215,37 @@ function paySchedule(c){
   }
   return out;
 }
+
+
+/* ---------- جمعية payouts ---------- */
+const payoutsOf=c=>{ if(!c||c.type!=="جمعية") return [];
+  if(Array.isArray(c.payouts)&&c.payouts.length) return c.payouts.filter(p=>p&&p.k).slice().sort((a,b)=>a.k<b.k?-1:1);
+  return c.turn?[{k:c.turn,amt:0}]:[]; };
+const payoutAmt=(c,p)=>+p.amt||(payoutsOf(c).length===1?commitStats(c).totalAmt:0);
+function poRowHtml(p){ return `<div class="po-row"><label class="f">الشهر<input type="month" class="po-k" value="${p&&p.k||""}"></label><label class="f">المبلغ<input type="number" inputmode="decimal" min="0" class="po-a" value="${p&&+p.amt?+p.amt:""}"></label><button type="button" class="po-x" aria-label="شيل الجزء">✕</button></div>`; }
+function poMode(){ return (document.querySelector('input[name="poMode"]:checked')||{}).value||"one"; }
+function setPoMode(m){ document.querySelectorAll('input[name="poMode"]').forEach(r=>r.checked=r.value===m); $("#poOne").hidden=m!=="one"; $("#poParts").hidden=m!=="parts";
+  if(m==="parts"&&!$("#poRows").children.length){ $("#poRows").innerHTML=poRowHtml({k:$("#dTurn").value,amt:$("#dTurnAmt").value})+poRowHtml(); } poHint(); }
+function formTotal(){ const s=$("#dStart").value,e=$("#dEnd").value,mo=+$("#dMonthly").value||0; return +$("#dValue").value||(s&&e&&e>=s?monthsBetween(s,e)*mo:0); }
+function readPayouts(){
+  if(poMode()==="one"){ const k=$("#dTurn").value; return k?[{k,amt:+$("#dTurnAmt").value||0}]:[]; }
+  return [...$("#poRows").querySelectorAll(".po-row")].map(r=>({k:r.querySelector(".po-k").value,amt:+r.querySelector(".po-a").value||0})).filter(p=>p.k).sort((a,b)=>a.k<b.k?-1:1);
+}
+function poHint(){ const T=formTotal(), ps=readPayouts(), h=$("#poHint");
+  if(poMode()==="one"){ $("#dTurnAmt").placeholder=T?fmt(T)+" (الإجمالي)":"الإجمالي"; h.textContent=ps.length?`هتقبض ${fmt(+ps[0].amt||T)} ج.م في ${monthName(ps[0].k)}`:"اختار شهر القبض."; return; }
+  const sum=ps.reduce((a,p)=>a+(+p.amt||0),0);
+  h.innerHTML=ps.length?`${ps.length} أجزاء · مجموعهم ${fmt(sum)} ج.م${T?` من ${fmt(T)}${Math.abs(T-sum)>0.5?` <b class="${sum>T?"neg":"due"}">(${sum>T?"زيادة":"ناقص"} ${fmt(Math.abs(T-sum))})</b>`:' <b class="pos">✓</b>'}`:""}`:"زوّد الأجزاء: لكل جزء شهر ومبلغ.";
+}
+document.querySelectorAll('input[name="poMode"]').forEach(r=>r.addEventListener("change",()=>setPoMode(r.value)));
+$("#poAdd").addEventListener("click",()=>{ $("#poRows").insertAdjacentHTML("beforeend",poRowHtml()); poHint(); });
+$("#poRows").addEventListener("click",e=>{ const x=e.target.closest(".po-x"); if(!x) return; x.closest(".po-row").remove(); poHint(); });
+$("#poRows").addEventListener("input",poHint);
+["dTurn","dTurnAmt","dStart","dEnd","dMonthly","dValue"].forEach(id=>$("#"+id).addEventListener("input",poHint));
+function fillPayouts(c){ const ps=payoutsOf(c); $("#poRows").innerHTML="";
+  if(c&&c.payMode==="parts"&&ps.length){ $("#poRows").innerHTML=ps.map(poRowHtml).join(""); $("#dTurn").value=""; $("#dTurnAmt").value=""; setPoMode("parts"); }
+  else { $("#dTurn").value=ps[0]?ps[0].k:""; $("#dTurnAmt").value=ps[0]&&+ps[0].amt?+ps[0].amt:""; setPoMode("one"); } }
+function payoutListHtml(c){ const ps=payoutsOf(c); if(!ps.length) return ""; const nowK=nowKey();
+  return `<div class="pay-h">${ps.length>1?"أجزاء القبض":"القبض"}</div><div class="po-list">${ps.map((p,x)=>`<div><span><span class="potag">${ps.length>1?"جزء "+(x+1):"قبض"}</span> ${monthName(p.k)}</span><b class="${p.k<=nowK?"pos":""}">${money(payoutAmt(c,p))}${p.k<nowK?" ✓":p.k===nowK?" · الشهر ده":""}</b></div>`).join("")}</div>`; }
 
 /* ---------- 4. commitments data ---------- */
 let editing=null;
@@ -1205,7 +1270,7 @@ function renderData(){
         <div class="kv"><span>عدد الشهور</span><b><span class="num">${monthsBetween(c.start,c.end)}</span> شهر</b></div>
         <div class="kv"><span>قيمة الالتزام الكلية</span><b>${money(commitStats(c).totalAmt)}</b></div>
         <div class="kv"><span>شهور اتدفعت قبل التسجيل</span><b class="num">${+c.pre||0}</b></div>
-        ${c.type==="جمعية"&&c.turn?`<div class="kv"><span>شهر القبض</span><b>${monthName(c.turn)}</b></div>`:""}`}
+        ${payoutsOf(c).map((p,x,a)=>`<div class="kv"><span>${a.length>1?"قبض جزء "+(x+1):"شهر القبض"}</span><b>${monthName(p.k)} · ${money(payoutAmt(c,p))}</b></div>`).join("")}`}
         <div class="acts"><button type="button" data-a="edit">تعديل</button><button type="button" data-a="del" class="danger">حذف</button></div>
       </div>
     </details>`).join("") : `<p class="empty" style="padding:8px">لسه مفيش التزامات مسجلة.</p>`;
@@ -1214,7 +1279,7 @@ function updatePreview(){
   const debt=$("#dType").value==="مديونية";
   document.querySelectorAll("#dForm .nd").forEach(el=>el.hidden=debt);
   document.querySelectorAll("#dForm .od").forEach(el=>el.hidden=!debt);
-  $("#turnWrap").hidden=$("#dType").value!=="جمعية";
+  $("#turnWrap").hidden=$("#dType").value!=="جمعية"; if(!$("#turnWrap").hidden) poHint();
   $("#valLbl").textContent=debt?"قيمة المديونية":"قيمة الالتزام الكلية";
   $("#dValue").required=debt; $("#dMonthly").required=!debt; $("#dStart").required=!debt; $("#dEnd").required=!debt;
   const s=$("#dStart").value,e=$("#dEnd").value,mo=+$("#dMonthly").value||0, P=$("#dPreview");
@@ -1230,7 +1295,7 @@ function updatePreview(){
 }
 ["dStart","dEnd","dMonthly","dType","dValue","dPrePaid"].forEach(id=>$("#"+id).addEventListener("input",updatePreview));
 $("#dType").addEventListener("change",updatePreview);
-function resetForm(){ $("#dForm").reset(); $("#dPre").value=0; $("#dPrePaid").value=0; $("#dStart").value=cur; editing=null; $("#dSave").textContent="إضافة"; $("#dCancel").hidden=true; updatePreview(); }
+function resetForm(){ $("#dForm").reset(); $("#poRows").innerHTML=""; setPoMode("one"); $("#dPre").value=0; $("#dPrePaid").value=0; $("#dStart").value=cur; editing=null; $("#dSave").textContent="إضافة"; $("#dCancel").hidden=true; updatePreview(); }
 $("#dCancel").addEventListener("click",resetForm);
 $("#dForm").addEventListener("submit",e=>{
   e.preventDefault();
@@ -1242,7 +1307,9 @@ $("#dForm").addEventListener("submit",e=>{
   } else {
     if(!start||!end||end<start){updatePreview();return}
     c={id:editing||uid(),name:$("#dName").value.trim(),type,monthly:+$("#dMonthly").value||0,start,end,value:+$("#dValue").value||0,
-      pre:Math.max(0,+$("#dPre").value|0),turn:type==="جمعية"?$("#dTurn").value:""};
+      pre:Math.max(0,+$("#dPre").value|0),turn:"",payouts:[],payMode:""};
+    if(type==="جمعية"){ const ps=readPayouts(); c.payouts=ps; c.payMode=poMode(); c.turn=ps[0]?ps[0].k:"";
+      const bad=ps.find(p=>p.k<start||p.k>end); if(bad){ toast("شهر القبض لازم يكون بين البداية والنهاية"); return; } }
   }
   if(editing) state.commits=state.commits.map(x=>x.id===editing?c:x); else state.commits.push(c);
   schedule("commits",50); resetForm(); renderData();
@@ -1252,7 +1319,7 @@ $("#dList").addEventListener("click",e=>{
   const id=b.closest(".dl").dataset.id; const c=commitById(id);
   if(b.dataset.a==="edit"){
     editing=id; $("#dName").value=c.name; $("#dType").value=c.type; $("#dMonthly").value=c.monthly||"";
-    $("#dStart").value=c.start||""; $("#dEnd").value=c.end||""; $("#dPre").value=c.pre||0; $("#dTurn").value=c.turn||"";
+    $("#dStart").value=c.start||""; $("#dEnd").value=c.end||""; $("#dPre").value=c.pre||0; fillPayouts(c);
     $("#dValue").value=c.value||""; $("#dPrePaid").value=c.prePaid||0;
     $("#dSave").textContent="حفظ التعديل"; $("#dCancel").hidden=false; updatePreview(); window.scrollTo(0,0); $("#dName").focus();
   }
