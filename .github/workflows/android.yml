@@ -68,12 +68,15 @@ jobs:
       - name: Signing key
         env:
           KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
-        run: echo "$KS_B64" | base64 -d > android/app/release.jks
+        run: printf '%s' "$KS_B64" | tr -d '\r\n\t ' | base64 -d > android/app/release.jks
 
       - name: Build APK
         working-directory: android-app/android
         run: |
           chmod +x gradlew
+          export KS_PASS="$(printf '%s' "$KS_PASS" | tr -d '\r\n\t ')"
+          echo "password length: ${#KS_PASS}"
+          keytool -list -keystore app/release.jks -storepass "$KS_PASS" >/dev/null && echo "keystore OK" || { echo "::error::Keystore password does not match the keystore"; exit 1; }
           ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Collect APK
