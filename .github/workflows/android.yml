@@ -1,0 +1,86 @@
+name: Build Android app
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "android-app/**"
+      - ".github/workflows/android.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-build
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android-app
+    env:
+      APP_VERSION_CODE: ${{ github.run_number }}
+      APP_VERSION_NAME: 1.0.${{ github.run_number }}
+      KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Check signing secrets
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: |
+          if [ -z "$KS_B64" ] || [ -z "$KS_PASS" ]; then
+            echo "::error::Missing ANDROID_KEYSTORE_B64 or ANDROID_KEYSTORE_PASSWORD repository secret"; exit 1; fi
+
+      - name: Install Capacitor
+        run: npm install --no-audit --no-fund --legacy-peer-deps
+
+      - name: Create Android project
+        run: npx cap add android
+
+      - name: App icon and splash
+        continue-on-error: true
+        run: npx --yes @capacitor/assets@3 generate --android --iconBackgroundColor "#08130F" --iconBackgroundColorDark "#08130F" --splashBackgroundColor "#08130F" --splashBackgroundColorDark "#08130F"
+
+      - name: Patch Android project
+        run: node scripts/patch-android.js
+
+      - name: Sync plugins
+        run: npx cap sync android
+
+      - name: Signing key
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: echo "$KS_B64" | base64 -d > android/app/release.jks
+
+      - name: Build APK
+        working-directory: android-app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon --stacktrace
+
+      - name: Collect APK
+        run: cp android/app/build/outputs/apk/release/app-release.apk ../masareef.apk
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: app
+          name: تطبيق مصاريف البيت
+          body: "نسخة التطبيق 1.0.${{ github.run_number }} — نزّل الملف masareef.apk وثبّته على الموبايل."
+          files: masareef.apk
+          make_latest: true
