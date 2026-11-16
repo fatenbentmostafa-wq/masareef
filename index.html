@@ -474,6 +474,84 @@ nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width
 nav button[aria-selected=true]{color:var(--accent);font-weight:600}
 @media (max-width:380px){.row{grid-template-columns:28px minmax(0,1fr) 24px}.row .ctl .cost{width:100px}.tiles{grid-template-columns:1fr 1fr}}
 @media (prefers-reduced-motion:no-preference){.bar i{transition:width .3s}}
+
+/* ---------- top bar, drawer, notifications, users ---------- */
+.dtop{display:grid!important;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:8px}
+#tab-home .dtop .roundbtn{width:44px;height:44px}
+#tab-home .dtop .roundbtn svg.i{width:22px;height:22px}
+.bellbtn .bdg{position:absolute;top:-5px;left:-5px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#E5484D;color:#fff;font-size:.72rem;font-weight:700;display:grid;place-items:center;border:2px solid var(--bg);font-variant-numeric:tabular-nums}
+.bellbtn .bdg[hidden]{display:none}
+.bellbtn.has svg.i{color:var(--t3)}
+.drawer-bg{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.55);opacity:0;transition:opacity .2s}
+.drawer-bg.on{opacity:1}
+.drawer-bg[hidden]{display:none}
+.drawer{position:fixed;top:0;bottom:0;right:0;z-index:31;width:min(86vw,340px);display:flex;flex-direction:column;background:var(--paper);border-left:1px solid var(--line);transform:translateX(105%);transition:transform .22s ease;box-shadow:-10px 0 40px rgba(0,0,0,.45);visibility:hidden}
+.drawer.on{transform:none;visibility:visible}
+.dr-head{padding:calc(20px + env(safe-area-inset-top,0px)) 16px 16px;background:radial-gradient(120% 90% at 100% 0%,#17463B 0%,#0B1E18 72%);border-bottom:1px solid var(--line);text-align:center}
+.dr-logo{width:64px;height:64px;border-radius:18px;margin:0 auto 8px;display:grid;place-items:center;background:var(--t1s);color:var(--t3);border:1px solid #2B5A4C}
+.dr-logo svg.i{width:34px;height:34px}
+.dr-head>b{display:block;font-size:1.4rem}
+.dr-sub{display:block;color:var(--t3);font-size:.78rem;letter-spacing:.04em;font-weight:700;margin-top:2px}
+.dr-house{margin-top:10px;font-size:.88rem;color:var(--muted)}
+.dr-house b{color:var(--ink)}
+.dr-admin{margin-top:12px;width:100%;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;border:2px solid var(--t3);background:rgba(232,184,75,.08);color:var(--ink);font:inherit;font-weight:700;text-align:right}
+.dr-admin[hidden]{display:none}
+.dr-admin svg.i{color:var(--t3);width:24px;height:24px;flex:none}
+.dr-admin span{flex:1}
+.dr-list{flex:1;overflow:auto;overscroll-behavior:contain}
+.dr-it{width:100%;display:flex;align-items:center;gap:14px;padding:11px 16px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);font:inherit;font-size:1rem;font-weight:600;text-align:right}
+.dr-it .di{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--cs,var(--paper2));color:var(--cc,var(--accent));flex:none}
+.dr-it .di svg.i{width:21px;height:21px}
+.dr-it>span:nth-child(2){flex:1}
+.dr-it svg.ch{width:16px;height:16px;color:var(--muted);flex:none}
+.dr-it[aria-current="page"]{background:rgba(61,217,179,.08)}
+.dr-it .cnt{min-width:22px;height:22px;border-radius:11px;padding:0 6px;background:#E5484D;color:#fff;font-size:.75rem;display:grid;place-items:center}
+.dr-it .cnt[hidden]{display:none}
+.dr-it.out{color:var(--neg)} .dr-it.out .di{background:rgba(255,107,107,.12);color:var(--neg)}
+.dr-it[hidden]{display:none}
+.dr-foot{display:flex;gap:12px;align-items:center;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--paper2)}
+.av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--t1s);color:var(--t1);font-weight:700;flex:none;font-size:1.05rem}
+.av svg.i{width:22px;height:22px}
+.dr-foot>div{min-width:0}
+.dr-foot small{display:block;color:var(--muted);font-size:.75rem}
+.dr-foot b{display:block;font-size:.95rem;overflow-wrap:anywhere}
+.c-teal{--cc:#5FD3E6;--cs:rgba(95,211,230,.14)}
+.nf-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:4px 0 12px}
+.nf-top>span{color:var(--muted)} .nf-top>span b{color:var(--ink);font-size:1.15rem}
+.nf-read{height:40px;padding:0 14px;border-radius:12px;border:0;background:var(--accent);color:#06231B;font:inherit;font-weight:700}
+.nf-read:disabled{opacity:.4}
+.nf-sec{margin:14px 2px 8px;color:var(--muted);font-size:.85rem;font-weight:700}
+.nf{width:100%;display:grid;grid-template-columns:42px minmax(0,1fr);gap:12px;padding:14px;margin-bottom:10px;border-radius:16px;background:var(--paper);border:1px solid var(--line);border-right:4px solid var(--line);color:var(--ink);font:inherit;text-align:right}
+.nf.unread{border-right-color:#4C8DF6;background:linear-gradient(270deg,rgba(76,141,246,.08),var(--paper) 60%)}
+.nf.alert.unread{border-right-color:#F0A030;background:linear-gradient(270deg,rgba(240,160,48,.09),var(--paper) 60%)}
+.nf .ni{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:1.3rem;background:var(--paper2)}
+.nf b{display:block;font-size:1rem;line-height:1.45}
+.nf time{display:block;color:var(--muted);font-size:.8rem;margin:2px 0 4px;direction:ltr;text-align:right;font-variant-numeric:tabular-nums}
+.nf p{margin:0;opacity:.85;font-size:.92rem;overflow-wrap:anywhere}
+.nf .nf-act{margin-top:8px;height:36px;padding:0 14px;border-radius:10px;border:1px solid var(--accent);background:var(--accent-soft);color:var(--accent);font:inherit;font-weight:700}
+.nf-empty{text-align:center;color:var(--muted);padding:40px 10px}
+.usr{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px 0;border-bottom:1px dashed var(--line)}
+.usr:last-child{border-bottom:0}
+.usr b{display:block;overflow-wrap:anywhere}
+.usr small{display:block;color:var(--muted);font-size:.8rem;overflow-wrap:anywhere}
+.usr .uctl{display:flex;gap:6px;align-items:center}
+.usr select{height:36px;border-radius:10px;padding:0 8px;font:inherit;font-size:.88rem}
+.usr .x{width:34px;height:36px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--neg);font-size:1.1rem}
+.rbadge{padding:3px 10px;border-radius:9px;font-size:.78rem;font-weight:700;white-space:nowrap}
+.r-admin{color:#E8B84B;background:rgba(232,184,75,.14)} .r-editor{color:var(--accent);background:var(--accent-soft)} .r-viewer{color:var(--muted);background:var(--paper2)}
+.usr-add{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.usr-add[hidden]{display:none}
+.usr-add .btn-main{grid-column:1/-1}
+.perm{width:100%;border-collapse:collapse;font-size:.86rem}
+.perm th,.perm td{padding:9px 4px;border-bottom:1px solid var(--line);text-align:center}
+.perm td:first-child{text-align:right}
+.perm td:not(:first-child){color:var(--accent);font-weight:700}
+#houseCard{display:none!important}
+header.ne #saveNow{display:none!important}
+.ro-banner{display:none}
+.ro .ro-banner{display:block;margin-bottom:12px;padding:12px 14px;border-radius:14px;border:1px solid rgba(232,184,75,.4);background:rgba(232,184,75,.08);color:var(--ink);font-size:.9rem;line-height:1.6}
+.ro #saveNow,.ro #homeNewMonth,.ro #newMonth,.ro #nmPanel,.ro #saveMonth,.ro #dForm,.ro #svForm,.ro #owForm,.ro #bkLoad,.ro #dList button,.ro #svList button,.ro #owList button,.ro #monthsList [data-del],.ro #vwAdd,.ro [data-vdel]{display:none!important}
+.ro #tab-month>*:not(.ro-banner){pointer-events:none}
 </style>
 
 </head>
@@ -494,7 +572,9 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
   <!-- 0. home: dashboard -->
   <section id="tab-home">
     <div class="dtop">
+      <button type="button" class="roundbtn menubtn" id="menuBtn" aria-label="القايمة" aria-controls="drawer" aria-expanded="false"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
       <div class="dtitle big"><b><svg class="i gold" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg>مصاريف البيت</b><span>إدارة مصاريف الأسرة</span></div>
+      <button type="button" class="roundbtn bellbtn" id="bellBtn" aria-label="الإشعارات"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 19.5a2 2 0 0 0 4 0"/></svg><span class="bdg" id="bellBadge" hidden>0</span></button>
     </div>
     <div class="dhead">
       <label class="mpill"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><select id="homeMonthSel" aria-label="الشهر المعروض"></select></label>
@@ -535,7 +615,7 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
     <div class="card syncbar" id="syncBar" hidden>
       <div class="sb-txt"><b id="sbTitle">مزامنة بين الموبايلات</b><span class="hint" id="sbSub">سجّل دخول بجوجل عشان داتاك تتحفظ على السيرفر وتظهر على أي موبايل.</span></div>
       <button type="button" class="btn-main" id="sbLogin"><svg viewBox="0 0 24 24"><path d="M7 17.5a4.5 4.5 0 0 1-.5-9 6 6 0 0 1 11.5 1.5 4 4 0 0 1-1 7.5z"/><path d="M12 11v6M9.5 13.5 12 11l2.5 2.5"/></svg>دخول بجوجل</button>
-      <button type="button" id="sbMembers" hidden>مشاركة البيت</button>
+      <button type="button" id="sbMembers" hidden>المستخدمين والصلاحيات</button>
     </div>
     <div class="card dc">
       <h2>نسخة احتياطية</h2>
@@ -551,6 +631,10 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
         <button type="button" class="sharebtn" id="installBtn" hidden><svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3"/></svg>تثبيت التطبيق</button>
       </div>
     </div>
+    <div class="card dc" id="remindCard" hidden>
+      <div class="lk-row"><span class="lk-ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 19.5a2 2 0 0 0 4 0"/></svg></span><div><b>تذكير على الموبايل</b><p class="hint" style="margin:2px 0 0">إشعار بمواعيد الأقساط وقبض الجمعيات والفلوس اللي ليك، حتى لو البرنامج مقفول.</p></div></div>
+      <button type="button" class="btn-main" id="remindToggle">تشغيل التذكير</button>
+    </div>
     <div class="card dc" id="aboutCard">
       <h2>عن البرنامج</h2>
       <div class="kv"><span>نسخة البرنامج</span><b id="abContent">—</b></div>
@@ -561,6 +645,7 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
 
   <!-- 1. monthly expenses (entry form) -->
   <section id="tab-month" hidden>
+    <div class="ro-banner">صلاحيتك «مشاهد»: تقدر تشوف المصاريف بس من غير تعديل. المستندات تفتحها من «ملخص الشهور».</div>
     <div class="card grid2">
       <label class="f">الشهر<input type="month" id="monthPick"></label>
       <label class="f">إجمالي الدخل الشهر ده<input type="number" inputmode="decimal" id="income" placeholder="0"></label>
@@ -635,6 +720,34 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
   <section id="tab-summary" hidden>
     <div class="sum-sel"><select id="sumMonth" aria-label="الشهر"></select></div>
     <div id="sumBody"></div>
+  </section>
+
+  <section id="tab-notifs" hidden>
+    <div class="nf-top"><span id="nfCount"></span><button type="button" class="nf-read" id="nfReadAll">تعليم الكل كمقروء</button></div>
+    <div id="nfList"></div>
+  </section>
+
+  <section id="tab-users" hidden>
+    <div class="card dc">
+      <h2>المستخدمين</h2>
+      <p class="hint" id="usrHint"></p>
+      <div id="usrList"></div>
+      <div class="usr-add" id="usrAdd" hidden>
+        <label class="f">إيميل جوجل<input type="email" id="usrEmail" placeholder="name@gmail.com" autocomplete="off"></label>
+        <label class="f">الصلاحية<select id="usrRole"><option value="editor">محرر</option><option value="viewer">مشاهد</option><option value="admin">مدير</option></select></label>
+        <button type="button" class="btn-main" id="usrAddBtn">إضافة</button>
+      </div>
+    </div>
+    <div class="card dc">
+      <h2>الصلاحيات</h2>
+      <table class="perm"><thead><tr><th></th><th>مدير</th><th>محرر</th><th>مشاهد</th></tr></thead><tbody>
+        <tr><td>يشوف كل الداتا والمستندات</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>يسجّل ويعدّل المصاريف</td><td>✓</td><td>✓</td><td>—</td></tr>
+        <tr><td>يضيف ويعدّل الالتزامات والمدخرات</td><td>✓</td><td>✓</td><td>—</td></tr>
+        <tr><td>يرفع مستندات ويسجّل صوت</td><td>✓</td><td>✓</td><td>—</td></tr>
+        <tr><td>يضيف ويشيل مستخدمين ويغيّر صلاحياتهم</td><td>✓</td><td>—</td><td>—</td></tr>
+      </tbody></table>
+    </div>
   </section>
 
   <section id="tab-owed" hidden>
@@ -723,6 +836,34 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
 <div id="report" aria-hidden="true"></div>
 <input type="file" id="attInput" accept="image/*,application/pdf" multiple hidden>
 <input type="file" id="attCam" accept="image/*" capture="environment" hidden>
+<div class="drawer-bg" id="drawerBg" hidden></div>
+<aside class="drawer" id="drawer" aria-label="القايمة" aria-hidden="true">
+  <div class="dr-head">
+    <div class="dr-logo"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg></div>
+    <b>مصاريف البيت</b>
+    <span class="dr-sub">إدارة مصاريف الأسرة</span>
+    <div class="dr-house" id="drHouse"></div>
+    <button type="button" class="dr-admin" data-dgo="users" id="drAdmin" hidden><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.5-3.5 3-5.5 6-5.5s5.5 2 6 5.5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.6c2.6.2 4.2 2 4.5 4.9"/></svg><span>المستخدمين والصلاحيات</span><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+  </div>
+  <div class="dr-list" id="drList">
+    <button type="button" class="dr-it c-mint" data-dgo="home"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg></span><span>الرئيسية</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button type="button" class="dr-it c-mint" data-dgo="month"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H17v3"/><rect x="4" y="8" width="16" height="11" rx="2.5"/><path d="M15 13.5h2.5"/></svg></span><span>المصاريف</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button type="button" class="dr-it c-blue" data-dgo="months"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><span>الشهور</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button type="button" class="dr-it c-teal" data-dgo="summary"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h4"/></svg></span><span>ملخص الشهور</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button type="button" class="dr-it c-gold" data-dgo="commits"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4.5" width="14" height="16.5" rx="2.5"/><path d="M9 4.5V3h6v1.5"/><path d="M8.5 11l1.5 1.5L13 9.5M8.5 16h7"/></svg></span><span>الالتزامات</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button type="button" class="dr-it c-purple" data-dgo="data"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v6.5c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8V5.5"/><path d="M4.5 12v6.5c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8V12"/></svg></span><span>الداتا</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button type="button" class="dr-it c-pink" data-dgo="savings"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11a7 6 0 0 1 13-2l2-1v4l-1.5.5A7 6 0 0 1 15 17v2h-2.5v-1.2a8 8 0 0 1-2 0V19H8v-2.3A6 6 0 0 1 5 11z"/><circle cx="15" cy="10.5" r=".8"/></svg></span><span>المدخرات</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button type="button" class="dr-it c-green" data-dgo="owed"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12l4-4 4 3 6-6"/><path d="M14 5h3v3"/><path d="M4 20h16"/></svg></span><span>فلوس ليا برا</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button type="button" class="dr-it c-gold" data-dgo="notifs"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 19.5a2 2 0 0 0 4 0"/></svg></span><span>الإشعارات</span><span class="cnt" id="drBell" hidden>0</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button type="button" class="dr-it c-blue" data-dgo="settings"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span><span>الإعدادات</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button type="button" class="dr-it c-teal" data-dgo="about"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></span><span>عن البرنامج</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button type="button" class="dr-it out" id="drOut" hidden><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/></svg></span><span>تسجيل خروج</span></button>
+  </div>
+  <div class="dr-foot">
+    <span class="av" id="drAv"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5c.7-4 3.7-6.3 7.5-6.3s6.8 2.3 7.5 6.3"/></svg></span>
+    <div><small id="drState">مش مسجّل دخول</small><b id="drName">على الموبايل ده بس</b><small id="drSync"></small></div>
+  </div>
+</aside>
 <div class="asheet" id="recSheet" hidden>
   <div class="as-box" role="dialog" aria-label="تسجيل صوت">
     <b>تسجيل صوت</b>
@@ -782,7 +923,7 @@ function schedule(key,ms=600){ markChanged(); dirtyUI();clearTimeout(timers[key]
 const chains={};
 function flush(key){
   saveLocal(); savedUI();
-  if(!backend) return;
+  if(!backend||!canEdit()) return;
   chains[key]=(chains[key]||Promise.resolve()).then(()=>{
     const clean=o=>JSON.parse(JSON.stringify(o));
     if(key==="commits") return backend.doc("commits").set(clean({list:state.commits}));
@@ -1072,11 +1213,12 @@ function commitDraft(){
 }
 $("#saveMonth").addEventListener("click",()=>{
   if(!commitDraft()) return;
+  logEvent("save",`${meName()} سجّل مصاريف ${monthName(cur)}`,`${state.months[cur]?state.months[cur].items.length:0} بند`,"summary");
   openMonths.add(cur); try{localStorage.setItem("house-budget-lastmonth",cur)}catch(e){} homePicked=false;
   showTab("months"); toast("اتسجل "+monthName(cur));
 });
 $("#saveNow").addEventListener("click",()=>{
-  if(tab==="month"&&draft&&draft.dirty){ if(!commitDraft()) return; renderForm(); }
+  if(tab==="month"&&draft&&draft.dirty){ if(!commitDraft()) return; renderForm(); logEvent("edit",`${meName()} عدّل مصاريف ${monthName(cur)}`,"","summary"); }
   flushAll(); toast("اتحفظ كل اللي عملته · "+fmtTime(new Date()));
 });
 let toastT;
@@ -1122,6 +1264,7 @@ $("#monthsList").addEventListener("click",e=>{
   if(b.dataset.del){
     const k=b.dataset.del, copy=state.months[k];
     delete state.months[k]; delete drafts[k]; saveDrafts(); schedule("m:"+k,0); renderMonths();
+    logEvent("delete",`${meName()} مسح شهر ${monthName(k)}`,"","months");
     toast("اتمسح "+monthName(k),()=>{ state.months[k]=copy; schedule("m:"+k,0); renderAll(); });
   }
 });
@@ -1317,6 +1460,7 @@ $("#dForm").addEventListener("submit",e=>{
     if(type==="جمعية"){ const ps=readPayouts(); c.payouts=ps; c.payMode=poMode(); c.turn=ps[0]?ps[0].k:"";
       const bad=ps.find(p=>p.k<start||p.k>end); if(bad){ toast("شهر القبض لازم يكون بين البداية والنهاية"); return; } }
   }
+  logEvent("commit",`${meName()} ${editing?"عدّل":"ضاف"} ${c.type} «${c.name}»`,"","commits");
   if(editing) state.commits=state.commits.map(x=>x.id===editing?c:x); else state.commits.push(c);
   schedule("commits",50); resetForm(); renderData();
 });
@@ -1528,6 +1672,7 @@ $("#svForm").addEventListener("submit",e=>{
   const kind=document.querySelector('input[name="svKind"]:checked').value;
   state.savings.push({id:uid(),kind,amount:amt,month:$("#svMonth").value||nowKey(),note:$("#svNote").value.trim(),at:new Date().toISOString()});
   schedule("savings",50); $("#svAmt").value=""; $("#svNote").value="";
+  logEvent("savings",`${meName()} ${kind==="in"?"ضاف للمدخرات":"سحب من المدخرات"}`,$("#svNote").value||"","savings");
   renderSavings(); toast(kind==="in"?"اتضاف للمدخرات":"اتسحب من المدخرات");
 });
 $("#svList").addEventListener("click",e=>{
@@ -1583,7 +1728,7 @@ $("#owForm").addEventListener("submit",e=>{
   const amt=+$("#owAmt").value; if(!(amt>0)) return;
   const base={who:$("#owWho").value.trim(),amount:amt,from:$("#owFrom").value||"",due:$("#owDue").value||"",note:$("#owNote").value.trim()};
   if(owEditing){ const o=state.owed.find(x=>x.id===owEditing); Object.assign(o,base); toast("اتعدّل"); }
-  else { state.owed.push({id:uid(),...base,received:[]}); toast("اتسجل: "+base.who); }
+  else { state.owed.push({id:uid(),...base,received:[]}); toast("اتسجل: "+base.who); logEvent("owed",`${meName()} سجّل فلوس عند ${base.who}`,base.due?"معادها "+base.due:"","owed"); }
   schedule("owed",50); owReset(); renderOwed();
 });
 $("#owList").addEventListener("toggle",e=>{ const d=e.target; if(d.dataset&&d.dataset.o){ d.open?openOwed.add(d.dataset.o):openOwed.delete(d.dataset.o); } },true);
@@ -1687,6 +1832,7 @@ function signedOutUI(){
   $("#sbSub").textContent="سجّل دخول بجوجل عشان داتاك تتحفظ على السيرفر وتظهر على أي موبايل.";
   $("#sbLogin").hidden=false; $("#sbMembers").hidden=true; $("#houseCard").hidden=true;
   setStatus("محفوظ على الموبايل ده");
+  unsubscribeHouseExtras(); applyRole();
 }
 $("#sbLogin").addEventListener("click",async()=>{
   if(!fb){ toast("استنى ثانية… المزامنة لسه بتحمّل"); return; }
@@ -1698,7 +1844,7 @@ $("#sbLogin").addEventListener("click",async()=>{
     else if(!(e&&e.code==="auth/popup-closed-by-user"||e&&e.code==="auth/cancelled-popup-request")) toast("تسجيل الدخول ماكملش: "+(e&&e.code||""));
   }
 });
-$("#sbMembers").addEventListener("click",()=>$("#houseCard").scrollIntoView({behavior:"smooth"}));
+$("#sbMembers").addEventListener("click",()=>showTab("users"));
 $("#sbLogout").addEventListener("click",async()=>{ flushAll(); try{ await firebase.auth().signOut(); }catch(e){} try{ const FA=NP("FirebaseAuthentication"); FA&&await FA.signOut(); }catch(e){} toast("اتعمل تسجيل خروج. الداتا لسه على الموبايل ده."); });
 async function connectHouse(u){
   const db=firebase.firestore(), email=(u.email||"").toLowerCase();
@@ -1732,7 +1878,8 @@ async function connectHouse(u){
   }
   attachBackend(dataColl,"متزامن ✓"); setTimeout(pushPendingFiles,1500);
   if(houseUnsub) houseUnsub();
-  houseUnsub=ref.onSnapshot(d=>{ house={id:ref.id,...d.data()}; renderHouse(); },()=>{});
+  houseUnsub=ref.onSnapshot(d=>{ house={id:ref.id,...d.data()}; renderHouse(); applyRole(); },()=>{});
+  houseRef=ref; subscribeHouseExtras(ref,u);
   $("#syncBar").classList.add("on"); $("#sbTitle").textContent="متزامن مع السيرفر"; 
   $("#sbSub").textContent=email+(created?" · اتعمل بيت جديد":""); $("#sbMembers").hidden=false;
 }
@@ -1859,7 +2006,7 @@ document.addEventListener("click",e=>{ if(e.target.closest("#bkLoad,#shareBtn,#b
 (async()=>{ const ok=await lockSupported(); $("#lockCard").hidden=!ok; if(ok){ renderLockCard(); if(lockCred&&!NOLOCK_RELOAD){ showLock(); tryUnlock(); return; } } hideLock(); })();
 
 /* ---------- pages ---------- */
-const PAGES={home:"مصاريف البيت",summary:"ملخص الشهور",month:"المصاريف",months:"الشهور",commits:"ملخص الالتزامات",data:"الداتا",savings:"المدخرات",owed:"فلوس ليا برا",settings:"الإعدادات"};
+const PAGES={home:"مصاريف البيت",notifs:"الإشعارات",users:"المستخدمين",summary:"ملخص الشهور",month:"المصاريف",months:"الشهور",commits:"ملخص الالتزامات",data:"الداتا",savings:"المدخرات",owed:"فلوس ليا برا",settings:"الإعدادات"};
 let tab="home", cameFromHome=false;
 function applyRoute(){
   const h=location.hash.slice(1); const t=PAGES[h]&&h!=="home"?h:"home";
@@ -1869,6 +2016,7 @@ function applyRoute(){
   $("#pageTitle").textContent=t==="home"?"":PAGES[t];
   $("#backBtn").hidden=t==="home";
   document.querySelector("header").hidden=t==="home";
+  document.querySelector("header").classList.toggle("ne",["notifs","users","summary","commits"].includes(t));
   const navKey={home:"home",months:"months",summary:"summary",commits:"commits",data:"data",settings:"settings"}[t];
   document.querySelectorAll(".tabbar [data-nav]").forEach(b=>{ if(b.dataset.nav===navKey) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
   showUpdated();
@@ -1965,7 +2113,7 @@ async function shrinkImage(f){
     return null;
   } finally { URL.revokeObjectURL(url); }
 }
-async function pushFile(o){ const c=filesColl(); if(!c) return false;
+async function pushFile(o){ const c=filesColl(); if(!c||!canEdit()) return false;
   try{ await c.doc(o.id).set({id:o.id,type:o.type,name:o.name,at:o.at,data:o.data}); o.up=true; await idbPut(o); return true; }catch(e){ return false; } }
 async function pushPendingFiles(){ try{ (await idbAll()).filter(o=>!o.up).forEach(pushFile); }catch(e){} }
 async function storeData(type,data,name){
@@ -2085,6 +2233,7 @@ async function onAttFiles(e){
 }
 function addAtt(it,ids){
   if(!ids.length) return;
+  logEvent("att",`${meName()} رفع مستند على «${it.name||"بند"}»`,monthName(cur),"summary");
   it.att=[...(it.att||[]),...ids]; touch();
   const saved=syncAttToSaved(it);
   if(tab==="month") renderForm();
@@ -2171,7 +2320,235 @@ document.addEventListener("click",async e=>{
     try{ const r=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration(); if(r) await r.update(); }catch(x){}
   } finally { setTimeout(()=>document.querySelectorAll("[data-refresh]").forEach(x=>x.classList.remove("spin")),600); }
 });
-function renderAll(fromSnap){ try{ renderAllInner(fromSnap); } finally { maskInputs(); } }
+
+/* ---------- roles ---------- */
+const ROLE_N={admin:"مدير",editor:"محرر",viewer:"مشاهد"};
+let houseRef=null, members={}, events=[], extrasUnsub=[];
+const myEmail=()=>(fbUser&&fbUser.email||"").toLowerCase();
+const meName=()=>String((fbUser&&fbUser.displayName)||myEmail()||"حد").split(/[\s@]/)[0];
+const ownerEmail=()=>house?(house.ownerEmail||(house.emails||[])[0]||""):"";
+function roleOf(email){ if(!house) return "admin"; const e=(email||"").toLowerCase(); if(e&&e===ownerEmail()) return "admin"; const r=(house.roles||{})[e]; return ROLE_N[r]?r:"editor"; }
+function myRole(){ if(!house||!fbUser) return "admin"; if(house.owner===fbUser.uid) return "admin"; return roleOf(myEmail()); }
+const canEdit=()=>myRole()!=="viewer";
+const isAdmin=()=>myRole()==="admin";
+function applyRole(){
+  const r=myRole(); document.documentElement.classList.toggle("ro",r==="viewer"); document.documentElement.classList.toggle("is-admin",r==="admin");
+  $("#drAdmin").hidden=!(house&&fbUser&&r==="admin");
+  // owner: remember owner email once (makes the owner explicit for everyone)
+  if(house&&fbUser&&house.owner===fbUser.uid&&!house.ownerEmail&&houseRef){ houseRef.update({ownerEmail:myEmail()}).catch(()=>{}); }
+  renderDrawerFoot(); if(tab==="users") renderUsers(); if(tab==="month") renderForm();
+}
+document.addEventListener("submit",e=>{ if(!canEdit()){ e.preventDefault(); e.stopImmediatePropagation(); toast("صلاحيتك «مشاهد»: مش متاح التعديل"); } },true);
+function subscribeHouseExtras(ref,u){
+  unsubscribeHouseExtras();
+  extrasUnsub.push(ref.collection("events").orderBy("at","desc").limit(60).onSnapshot(s=>{ events=s.docs.map(d=>({id:d.id,...d.data()})); nfRefresh(); },()=>{}));
+  extrasUnsub.push(ref.collection("members").onSnapshot(s=>{ members={}; s.docs.forEach(d=>members[d.id]=d.data()); if(tab==="users") renderUsers(); renderDrawerFoot(); },()=>{}));
+  const em=(u.email||"").toLowerCase();
+  ref.collection("members").doc(em).set({name:u.displayName||"",photo:u.photoURL||"",lastSeen:new Date().toISOString(),app:NATIVE?"app":"web"},{merge:true}).catch(()=>{});
+  let last=0; try{ last=+localStorage.getItem("house-budget-loginlog")||0; }catch(e){}
+  if(Date.now()-last>12*3600e3){ try{ localStorage.setItem("house-budget-loginlog",String(Date.now())); }catch(e){} setTimeout(()=>logEvent("login",`${meName()} دخل على البرنامج`,NATIVE?"من التطبيق":"من المتصفح"),1200); }
+}
+function unsubscribeHouseExtras(){ extrasUnsub.forEach(f=>{ try{f()}catch(e){} }); extrasUnsub=[]; events=[]; members={}; houseRef=null; nfRefresh(); }
+const recentLogs={};
+function logEvent(t,title,body,go){
+  if(!houseRef||!fbUser) return;
+  const k=t+"|"+title; if(recentLogs[k]&&Date.now()-recentLogs[k]<10*60e3) return; recentLogs[k]=Date.now();
+  houseRef.collection("events").add({t,title,body:body||"",go:go||"",by:fbUser.uid,email:myEmail(),name:fbUser.displayName||"",at:new Date().toISOString()}).catch(()=>{});
+}
+function renderUsers(){
+  const L=$("#usrList");
+  if(!house||!fbUser){ $("#usrHint").textContent="سجّل دخول بجوجل الأول من الإعدادات، وبعدها تقدر تضيف أهل البيت وتحدد صلاحياتهم."; L.innerHTML=`<button type="button" class="btn-main" onclick="showTab('settings')">روح للإعدادات</button>`; $("#usrAdd").hidden=true; return; }
+  const admin=isAdmin(), me=myEmail(), own=ownerEmail();
+  $("#usrHint").textContent=admin?"كل حد هنا بيدخل بحساب جوجل بتاعه على موبايله ويشوف نفس الداتا حسب صلاحيته.":"إدارة المستخدمين والصلاحيات للمدير بس.";
+  L.innerHTML=(house.emails||[]).map(e=>{
+    const m=members[e]||{}, r=roleOf(e), nm=m.name||e.split("@")[0], ini=(nm.trim()[0]||"?").toUpperCase();
+    const seen=m.lastSeen?"آخر دخول "+new Date(m.lastSeen).toLocaleDateString("ar-EG",{day:"numeric",month:"short"}):"لسه ما دخلش";
+    const ctl=admin&&e!==me&&e!==own
+      ?`<span class="uctl"><select data-role="${esc(e)}" aria-label="صلاحية ${esc(e)}">${Object.entries(ROLE_N).map(([k,v])=>`<option value="${k}" ${k===r?"selected":""}>${v}</option>`).join("")}</select><button type="button" class="x" data-urm="${esc(e)}" aria-label="شيل ${esc(e)}">×</button></span>`
+      :`<span class="rbadge r-${r}">${ROLE_N[r]}${e===own?" · صاحب البيت":""}</span>`;
+    return `<div class="usr"><span class="av">${esc(ini)}</span><div><b>${esc(nm)}${e===me?" (إنت)":""}</b><small>${esc(e)} · ${seen}</small></div>${ctl}</div>`;
+  }).join("");
+  $("#usrAdd").hidden=!admin;
+}
+$("#usrList").addEventListener("change",async e=>{
+  const sel=e.target.closest("[data-role]"); if(!sel||!houseRef||!isAdmin()) return;
+  const em=sel.dataset.role, r=sel.value;
+  try{ await houseRef.update(new firebase.firestore.FieldPath("roles",em),r); toast(`${em} بقى ${ROLE_N[r]}`); logEvent("role",`${meName()} خلّى ${(members[em]&&members[em].name)||em} ${ROLE_N[r]}`,"","users"); }
+  catch(x){ toast("ماقدرتش أغيّر الصلاحية"); renderUsers(); }
+});
+$("#usrList").addEventListener("click",async e=>{
+  const b=e.target.closest("[data-urm]"); if(!b||!houseRef||!isAdmin()) return;
+  const em=b.dataset.urm, prev=(house.roles||{})[em]||"editor";
+  try{ await houseRef.update("emails",firebase.firestore.FieldValue.arrayRemove(em),new firebase.firestore.FieldPath("roles",em),firebase.firestore.FieldValue.delete());
+    toast("اتشال "+em,async()=>{ await houseRef.update("emails",firebase.firestore.FieldValue.arrayUnion(em),new firebase.firestore.FieldPath("roles",em),prev); }); }
+  catch(x){ toast("ماقدرتش أشيله"); }
+});
+$("#usrAddBtn").addEventListener("click",async()=>{
+  const em=$("#usrEmail").value.trim().toLowerCase(), r=$("#usrRole").value;
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ $("#usrEmail").focus(); toast("اكتب إيميل صح"); return; }
+  if(!houseRef||!isAdmin()) return;
+  try{ await houseRef.update("emails",firebase.firestore.FieldValue.arrayUnion(em),new firebase.firestore.FieldPath("roles",em),r);
+    $("#usrEmail").value=""; toast(`اتضاف ${em} كـ${ROLE_N[r]}. يسجّل دخول بيه من موبايله.`); logEvent("role",`${meName()} ضاف ${em} كـ${ROLE_N[r]}`,"","users"); }
+  catch(x){ toast("ماقدرتش أضيفه. جرّب تاني."); }
+});
+
+/* ---------- drawer ---------- */
+function openDrawer(on){
+  const d=$("#drawer"), bg=$("#drawerBg");
+  if(on){ renderDrawerFoot(); bg.hidden=false; requestAnimationFrame(()=>{ bg.classList.add("on"); d.classList.add("on"); }); d.setAttribute("aria-hidden","false"); $("#menuBtn").setAttribute("aria-expanded","true");
+    document.querySelectorAll("#drList [data-dgo]").forEach(b=>{ if(b.dataset.dgo===tab) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); }); }
+  else { bg.classList.remove("on"); d.classList.remove("on"); d.setAttribute("aria-hidden","true"); $("#menuBtn").setAttribute("aria-expanded","false"); setTimeout(()=>{ if(!d.classList.contains("on")) bg.hidden=true; },220); }
+}
+$("#menuBtn").addEventListener("click",()=>openDrawer(true));
+$("#drawerBg").addEventListener("click",()=>openDrawer(false));
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&$("#drawer").classList.contains("on")) openDrawer(false); });
+$("#drawer").addEventListener("click",e=>{
+  const b=e.target.closest("[data-dgo]"); if(!b) return;
+  const g=b.dataset.dgo; openDrawer(false);
+  setTimeout(()=>{
+    if(g==="about"){ showTab("settings"); setTimeout(()=>$("#aboutCard").scrollIntoView({behavior:"smooth",block:"center"}),120); return; }
+    if(g==="month") cur=pickHomeMonth();
+    showTab(g);
+  },180);
+});
+$("#drOut").addEventListener("click",()=>{ openDrawer(false); $("#sbLogout").click(); });
+let touchX=null;
+$("#drawer").addEventListener("touchstart",e=>{ touchX=e.touches[0].clientX; },{passive:true});
+$("#drawer").addEventListener("touchend",e=>{ if(touchX!=null&&e.changedTouches[0].clientX-touchX>60) openDrawer(false); touchX=null; },{passive:true});
+function renderDrawerFoot(){
+  const signed=!!(house&&fbUser);
+  $("#drHouse").innerHTML=signed?`البيت: <b>${esc(house.name||"بيتنا")}</b> · ${(house.emails||[]).length} مستخدم`:"";
+  $("#drOut").hidden=!fbUser;
+  if(signed){ const nm=fbUser.displayName||myEmail(); $("#drState").textContent="مسجّل دخول"; $("#drName").textContent=`${nm.split(" ")[0]} · ${ROLE_N[myRole()]}`; $("#drAv").textContent=(nm.trim()[0]||"?").toUpperCase(); }
+  else { $("#drState").textContent="مش مسجّل دخول"; $("#drName").textContent="على الموبايل ده بس"; $("#drAv").innerHTML='<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5c.7-4 3.7-6.3 7.5-6.3s6.8 2.3 7.5 6.3"/></svg>'; }
+  let ls=""; try{ ls=localStorage.getItem("house-budget-changed")||""; }catch(e){}
+  $("#drSync").textContent=ls?"آخر تحديث "+new Date(ls).toLocaleString("en-GB",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"";
+}
+
+/* ---------- notifications ---------- */
+const NF_KEY="house-budget-notifs";
+let nf={seen:"",read:[],local:[]};
+try{ nf={...nf,...JSON.parse(localStorage.getItem(NF_KEY)||"{}")}; }catch(e){}
+const nfSave=()=>{ try{ nf.read=nf.read.slice(-300); nf.local=nf.local.slice(0,40); localStorage.setItem(NF_KEY,JSON.stringify(nf)); }catch(e){} };
+function nfPushLocal(o){ if(nf.local.some(x=>x.id===o.id)) return; nf.local.unshift({at:new Date().toISOString(),...o}); nfSave(); nfRefresh(); }
+const monthStartISO=k=>new Date(+k.slice(0,4),+k.slice(5,7)-1,1,9).toISOString();
+function nfAlerts(){
+  const out=[], nowK=nowKey(), nextK=addMonths(nowK,1), today=todayISO();
+  for(const c of state.commits){
+    if(c.type==="مديونية") continue;
+    if(c.start&&c.end&&c.start<=nowK&&nowK<=c.end){ const p=paySchedule(c).find(x=>x.k===nowK);
+      if(p&&!p.paid) out.push({id:`due:${c.id}:${nowK}`,t:"alert",ic:"💳",title:`${c.type==="جمعية"?"قسط جمعية":"قسط"} «${c.name}» لسه ما اتدفعش`,body:`${monthName(nowK)} · ${fmt(+c.monthly||0)} ج.م`,at:monthStartISO(nowK),go:"commits"}); }
+    for(const p of payoutsOf(c)) if(p.k===nowK||p.k===nextK)
+      out.push({id:`po:${c.id}:${p.k}`,t:"alert",ic:"💰",title:`قبض جمعية «${c.name}» ${p.k===nowK?"الشهر ده":"الشهر الجاي"}`,body:`${monthName(p.k)} · ${fmt(payoutAmt(c,p))} ج.م`,at:monthStartISO(p.k===nowK?nowK:nowK),go:"commits"});
+  }
+  for(const o of state.owed||[]){ if(!o.due||owLeft(o)<=0) continue;
+    const days=Math.round((new Date(o.due)-new Date(today))/864e5);
+    if(days<=3) out.push({id:`ow:${o.id}:${o.due}`,t:"alert",ic:"🤝",title:days<0?`فلوس عند ${o.who} معادها فات`:days===0?`النهارده معاد فلوسك عند ${o.who}`:`فلوسك عند ${o.who} معادها بعد ${days} ${days===1?"يوم":"أيام"}`,body:`باقي ${fmt(owLeft(o))} ج.م · المعاد ${o.due}`,at:new Date(o.due+"T09:00").toISOString(),go:"owed"}); }
+  return out;
+}
+const EV_IC={save:"🧾",edit:"✏️",commit:"📋",savings:"🐷",owed:"🤝",delete:"🗑️",att:"📎",login:"👤",role:"🛡️"};
+function nfItems(){
+  const uidMe=fbUser&&fbUser.uid, seen=nf.seen||"";
+  const alerts=nfAlerts().map(a=>({...a,unread:!nf.read.includes(a.id)}));
+  const feed=[...events.map(e=>({id:"ev:"+e.id,t:e.t,ic:EV_IC[e.t]||"🔔",title:e.title,body:e.body,at:e.at,go:e.go,unread:e.by!==uidMe&&e.at>seen})),
+              ...nf.local.map(l=>({...l,unread:!nf.read.includes(l.id)}))].sort((a,b)=>a.at<b.at?1:-1);
+  return {alerts,feed};
+}
+function nfUnread(){ const {alerts,feed}=nfItems(); return alerts.filter(x=>x.unread).length+feed.filter(x=>x.unread).length; }
+function nfRefresh(){
+  const n=nfUnread(), bd=$("#bellBadge"), dr=$("#drBell");
+  bd.hidden=!n; bd.textContent=n>99?"99+":n; dr.hidden=!n; dr.textContent=n>99?"99+":n;
+  $("#bellBtn").classList.toggle("has",!!n); $("#bellBtn").setAttribute("aria-label",n?`الإشعارات، ${n} جديد`:"الإشعارات");
+  if(tab==="notifs") renderNotifs();
+}
+const nfStamp=iso=>{ const d=new Date(iso); return isNaN(d)?"":d.toLocaleString("en-GB",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit"}).replace(",",""); };
+function nfCard(x){
+  return `<button type="button" class="nf ${x.t==="alert"?"alert":""} ${x.unread?"unread":""}" data-nf="${esc(x.id)}" data-go="${esc(x.go||"")}">
+    <span class="ni">${x.ic||"🔔"}</span><span><b>${esc(x.title)}</b><time>${nfStamp(x.at)}</time>${x.body?`<p>${esc(x.body)}</p>`:""}${x.act?`<span class="nf-act" data-url="${esc(x.act.url)}">${esc(x.act.label)}</span>`:""}</span></button>`;
+}
+function renderNotifs(){
+  const {alerts,feed}=nfItems(), n=alerts.filter(x=>x.unread).length+feed.filter(x=>x.unread).length;
+  $("#nfCount").innerHTML=`<b>${n}</b> مش مقروء`; $("#nfReadAll").disabled=!n;
+  let h="";
+  if(alerts.length) h+=`<div class="nf-sec">محتاج انتباهك</div>`+alerts.map(nfCard).join("");
+  if(feed.length) h+=`<div class="nf-sec">آخر الأحداث</div>`+feed.map(nfCard).join("");
+  if(!h) h=`<div class="nf-empty">مفيش إشعارات لسه.${fbUser?"":"<br>سجّل دخول بجوجل علشان تشوف مين ضاف أو عدّل في البيت."}</div>`;
+  $("#nfList").innerHTML=h;
+}
+$("#nfReadAll").addEventListener("click",()=>{ const {alerts}=nfItems(); nf.seen=new Date().toISOString(); nf.read=[...new Set([...nf.read,...alerts.map(a=>a.id),...nf.local.map(l=>l.id)])]; nfSave(); nfRefresh(); renderNotifs(); });
+$("#nfList").addEventListener("click",e=>{
+  const c=e.target.closest("[data-nf]"); if(!c) return;
+  const id=c.dataset.nf, url=e.target.closest("[data-url]");
+  if(id.startsWith("ev:")){ const ev=events.find(x=>"ev:"+x.id===id); if(ev&&ev.at>(nf.seen||"")){ nf.read.push(id); } }
+  if(!nf.read.includes(id)) nf.read.push(id);
+  nfSave();
+  if(url){ allowAway(); location.href=url.dataset.url; return; }
+  if(c.dataset.go){ if(c.dataset.go==="month") cur=pickHomeMonth(); showTab(c.dataset.go); } else { nfRefresh(); }
+});
+// event-type unread must respect individually-read events too
+const _nfItems=nfItems; nfItems=function(){ const r=_nfItems(); r.feed.forEach(x=>{ if(x.unread&&nf.read.includes(x.id)) x.unread=false; }); return r; };
+$("#bellBtn").addEventListener("click",()=>showTab("notifs"));
+// content + app version notices
+(async()=>{
+  try{ const r=await fetch("sw.js",{cache:"no-store"}); const m=(await r.text()).match(/VERSION = "v(\d+)"/); if(m){ const v="v"+m[1]; let seen=""; try{ seen=localStorage.getItem("house-budget-seenver")||""; }catch(e){}
+    if(seen&&seen!==v) nfPushLocal({id:"ver:"+v,t:"system",ic:"🔔",title:`البرنامج اتحدث لنسخة ${v}`,body:"تحسينات وإضافات جديدة.",go:""});
+    try{ localStorage.setItem("house-budget-seenver",v); }catch(e){} } }catch(e){}
+  try{ const A=NP("App"); if(!A) return; const info=await A.getInfo(); const mine=+(String(info.version).split(".").pop())||0;
+    const rel=await fetch("https://api.github.com/repos/fatenbentmostafa-wq/masareef/releases/tags/app",{cache:"no-store"}).then(r=>r.ok?r.json():null);
+    const m=rel&&String(rel.body||"").match(/1\.0\.(\d+)/); const latest=m?+m[1]:0;
+    if(latest>mine) nfPushLocal({id:"apk:"+latest,t:"alert",ic:"⬇️",title:"فيه تحديث جديد للتطبيق",body:`نسخة 1.0.${latest} جاهزة (عندك ${info.version}). نزّلها وثبّتها فوق القديمة، والداتا هتفضل زي ما هي.`,go:"",act:{label:"نزّل التحديث",url:"https://github.com/fatenbentmostafa-wq/masareef/releases/download/app/masareef.apk"}});
+  }catch(e){}
+})();
+
+/* ---------- phone reminders (native app) ---------- */
+const RM_KEY="house-budget-remind";
+const remindOn=()=>{ try{ return localStorage.getItem(RM_KEY)!=="0"; }catch(e){ return true; } };
+function reminderPlan(){
+  const list=[], now=new Date(), nowK=nowKey(), nextK=addMonths(nowK,1), at=(y,m,d)=>new Date(y,m,d,10,0,0);
+  const kd=k=>[+k.slice(0,4),+k.slice(5,7)-1];
+  for(const c of state.commits){
+    if(c.type==="مديونية"||!c.start||!c.end) continue;
+    const sch=paySchedule(c);
+    const cn=sch.find(x=>x.k===nowK); if(cn&&!cn.paid){ const [y,m]=kd(nowK); const d=at(y,m,25); if(d>now) list.push({at:d,title:`قسط «${c.name}» لسه ما اتدفعش`,body:`${monthName(nowK)} · ${fmtReal(+c.monthly||0)} ج.م`}); }
+    const nx=sch.find(x=>x.k===nextK); if(nx&&!nx.paid){ const [y,m]=kd(nextK); list.push({at:at(y,m,1),title:`قسط «${c.name}» مستحق الشهر ده`,body:`${monthName(nextK)} · ${fmtReal(+c.monthly||0)} ج.م`}); }
+    for(const p of payoutsOf(c)){ const [y,m]=kd(p.k); const d=at(y,m,1); if(d>now&&p.k<=addMonths(nowK,3)) list.push({at:d,title:`قبض جمعية «${c.name}» الشهر ده`,body:`${fmtReal(payoutAmt(c,p))} ج.م`}); }
+  }
+  for(const o of state.owed||[]){ if(!o.due||owLeft(o)<=0) continue; const [y,m,dd]=o.due.split("-").map(Number);
+    const d0=at(y,m-1,dd), d1=at(y,m-1,dd-1);
+    if(d1>now) list.push({at:d1,title:`بكرة معاد فلوسك عند ${o.who}`,body:`${fmtReal(owLeft(o))} ج.م`});
+    if(d0>now) list.push({at:d0,title:`النهارده معاد فلوسك عند ${o.who}`,body:`${fmtReal(owLeft(o))} ج.م`}); }
+  return list.sort((a,b)=>a.at-b.at).slice(0,48);
+}
+let rmT=null;
+function scheduleReminders(){ clearTimeout(rmT); rmT=setTimeout(doScheduleReminders,2500); }
+async function doScheduleReminders(){
+  const LN=NP("LocalNotifications"); if(!LN) return;
+  try{
+    const pend=await LN.getPending(); const ours=(pend&&pend.notifications||[]).filter(n=>n.id>=1000&&n.id<2000);
+    if(ours.length) await LN.cancel({notifications:ours.map(n=>({id:n.id}))});
+    if(!remindOn()) return;
+    const perm=await LN.checkPermissions(); if(perm.display!=="granted") return;
+    const plan=reminderPlan(); if(!plan.length) return;
+    await LN.schedule({notifications:plan.map((x,i)=>({id:1000+i,title:x.title,body:x.body,schedule:{at:x.at,allowWhileIdle:true},smallIcon:"ic_stat_notify",iconColor:"#3DD9B3"}))});
+  }catch(e){ console.warn("reminders",e); }
+}
+function renderRemindCard(){
+  const LN=NP("LocalNotifications"); $("#remindCard").hidden=!LN; if(!LN) return;
+  LN.checkPermissions().then(p=>{ const on=remindOn()&&p.display==="granted"; $("#remindToggle").textContent=on?"إيقاف التذكير":"تشغيل التذكير"; $("#remindToggle").classList.toggle("ghost",on); }).catch(()=>{});
+}
+$("#remindToggle").addEventListener("click",async()=>{
+  const LN=NP("LocalNotifications"); if(!LN) return;
+  const p=await LN.checkPermissions().catch(()=>({}));
+  if(remindOn()&&p.display==="granted"){ try{ localStorage.setItem(RM_KEY,"0"); }catch(e){} await doScheduleReminders(); toast("التذكير اتقفل"); renderRemindCard(); return; }
+  allowAway(); const r=await LN.requestPermissions().catch(()=>({}));
+  if(r.display!=="granted"){ toast("لازم تسمح للتطبيق بالإشعارات من إعدادات الموبايل"); renderRemindCard(); return; }
+  try{ localStorage.setItem(RM_KEY,"1"); }catch(e){} await doScheduleReminders(); toast(`التذكير اشتغل ✓ (${reminderPlan().length} تذكير جاي)`); renderRemindCard();
+});
+if(NP("LocalNotifications")){ const LN=NP("LocalNotifications");
+  LN.checkPermissions().then(p=>{ if(p.display==="prompt"&&remindOn()){ allowAway(); return LN.requestPermissions(); } }).then(()=>scheduleReminders()).catch(()=>{});
+  try{ LN.addListener&&LN.addListener("localNotificationActionPerformed",()=>{ setTimeout(()=>showTab("notifs"),300); }); }catch(e){}
+}
+function renderAll(fromSnap){ try{ renderAllInner(fromSnap); } finally { maskInputs(); try{ nfRefresh(); scheduleReminders(); if(tab==="settings") renderRemindCard(); }catch(e){} } }
 function renderAllInner(fromSnap){
   const a=document.activeElement, typing=fromSnap&&a&&(a.tagName==="INPUT"||a.tagName==="SELECT");
   if(tab==="month"){
@@ -2186,6 +2563,8 @@ function renderAllInner(fromSnap){
   if(tab==="savings") renderSavings();
   if(tab==="owed") renderOwed();
   if(tab==="summary") renderSummary();
+  if(tab==="notifs") renderNotifs();
+  if(tab==="users") renderUsers();
 }
 
 loadLocal(); cur=lastEntered();
