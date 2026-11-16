@@ -558,6 +558,8 @@ header.ne #saveNow{display:none!important}
 .ro-month #tab-month :is(.x,.mv,.add,.visb,.sc,.lk,.attb:not(.has),.voidb:not(.on)),.ro-month #copyBox{display:none!important}
 .hide-totals #totals,.hide-totals .sum-kpis,.hide-totals #tab-month label:has(#income),.hide-totals .stot,.hide-totals .sum-sec h3 span+span{display:none!important}
 .hide-shareapp #shareAppCard{display:none!important}
+.hide-newmonth #homeNewMonth,.hide-newmonth #newMonth,.hide-newmonth #nmPanel{display:none!important}
+.hide-totals .mo summary>span:nth-child(2),.hide-totals .mo-sub,.hide-totals .mi-h span+span,.hide-totals .mo-body .tl.big,.hide-totals #g6Month{display:none!important}
 .ro-months #newMonth,.ro-months #nmPanel,.ro-months #monthsList [data-del]{display:none!important}
 .ro-data #dForm,.ro-data #dList button{display:none!important}
 .ro-savings #svForm,.ro-savings #svList button{display:none!important}
@@ -2309,6 +2311,7 @@ function renderBell(){
 }
 $("#homeMonthSel").addEventListener("change",e=>{ homeMonth=e.target.value; homePicked=true; renderHome(); });
 function openNewMonth(){
+  if(!canSee("newmonth")){ toast("إضافة شهر جديد مش متاحة لك"); return; }
   showTab("months");
   setTimeout(()=>{ if($("#nmPanel").hidden) $("#newMonth").click(); $("#newMonth").scrollIntoView({behavior:"smooth",block:"start"});
  },80);
@@ -2568,13 +2571,14 @@ const meName=()=>String((fbUser&&fbUser.displayName)||myEmail()||"حد").split(/
 const ownerEmail=()=>house?(house.ownerEmail||(house.emails||[])[0]||""):"";
 function roleOf(email){ if(!house) return "admin"; const e=(email||"").toLowerCase(); if(e&&e===ownerEmail()) return "admin"; const r=(house.roles||{})[e]; return ROLE_N[r]?r:"editor"; }
 function myRole(){ if(!house||!fbUser) return "admin"; if(house.owner===fbUser.uid) return "admin"; return roleOf(myEmail()); }
-const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1],["totals","الدخل والإجماليات",0],["shareapp","إرسال البرنامج لحد",0]];
-const VIEWER_OFF=new Set(["totals","shareapp"]);
+const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1],["totals","الدخل والإجماليات",0],["newmonth","إضافة شهر جديد",0],["activity","نشاط البيت والتنبيهات في الجرس",0],["shareapp","إرسال البرنامج لحد",0]];
+const DEF_OFF={viewer:new Set(["totals","newmonth","activity","shareapp"]),editor:new Set(["totals","newmonth","activity"])};
+const VIEWER_OFF=new Set(["totals","newmonth","activity","shareapp"]);
 const PERM_EDITABLE=Object.fromEntries(PERM_ROWS.map(r=>[r[0],!!r[2]]));
 function permOf(p){
   const r=myRole(); if(r==="admin") return PERM_EDITABLE[p]?"edit":"view";
   const v=house&&house.perms&&house.perms[r]&&house.perms[r][p];
-  const d=v||(r==="viewer"?(VIEWER_OFF.has(p)?"none":"view"):(PERM_EDITABLE[p]?"edit":"view"));
+  const d=v||((DEF_OFF[r]&&DEF_OFF[r].has(p))?"none":r==="viewer"?"view":(PERM_EDITABLE[p]?"edit":"view"));
   return d==="edit"&&!PERM_EDITABLE[p]?"view":d;
 }
 const canSee=p=>!(p in PERM_EDITABLE)||permOf(p)!=="none";
@@ -2628,7 +2632,7 @@ function renderUsers(){
 }
 function renderPermGrid(){
   const admin=isAdmin(), P=(house&&house.perms)||{};
-  const val=(r,k)=>{ const v=P[r]&&P[r][k]; const d=v||(r==="viewer"?(VIEWER_OFF.has(k)?"none":"view"):(PERM_EDITABLE[k]?"edit":"view")); return d==="edit"&&!PERM_EDITABLE[k]?"view":d; };
+  const val=(r,k)=>{ const v=P[r]&&P[r][k]; const d=v||((DEF_OFF[r]&&DEF_OFF[r].has(k))?"none":r==="viewer"?"view":(PERM_EDITABLE[k]?"edit":"view")); return d==="edit"&&!PERM_EDITABLE[k]?"view":d; };
   const cell=(r,k,what)=>{ const v=val(r,k);
     if(what==="edit"&&!PERM_EDITABLE[k]) return `<td${what==="see"?' class="gsep"':""}><button type="button" class="pk na" disabled aria-label="عرض بس">–</button></td>`;
     const on=what==="see"?v!=="none":v==="edit";
@@ -2917,8 +2921,9 @@ function nfAlerts(){
 const EV_IC={save:"🧾",edit:"✏️",commit:"📋",savings:"🐷",owed:"🤝",delete:"🗑️",att:"📎",login:"👤",role:"🛡️"};
 function nfItems(){
   const uidMe=fbUser&&fbUser.uid, seen=nf.seen||"";
-  const alerts=nfAlerts().filter(a=>!a.go||canSee(a.go)).map(a=>({...a,unread:!nf.read.includes(a.id)}));
-  const feed=[...events.filter(e=>!e.go||canSee(e.go)).map(e=>({id:"ev:"+e.id,t:e.t,ic:EV_IC[e.t]||"🔔",title:e.title,body:e.body,at:e.at,go:e.go,unread:e.by!==uidMe&&e.at>seen})),
+  const act=canSee("activity");
+  const alerts=(act?nfAlerts():[]).filter(a=>!a.go||canSee(a.go)).map(a=>({...a,unread:!nf.read.includes(a.id)}));
+  const feed=[...(act?events:[]).filter(e=>!e.go||canSee(e.go)).map(e=>({id:"ev:"+e.id,t:e.t,ic:EV_IC[e.t]||"🔔",title:e.title,body:e.body,at:e.at,go:e.go,unread:e.by!==uidMe&&e.at>seen})),
               ...nf.local.map(l=>({...l,unread:!nf.read.includes(l.id)}))].sort((a,b)=>a.at<b.at?1:-1);
   return {alerts,feed};
 }
