@@ -556,7 +556,8 @@ header.ne #saveNow{display:none!important}
 .ro-month #saveNow,.ro-month #homeNewMonth,.ro-month #saveMonth{display:none!important}
 .ro-month #tab-month :is(input,textarea,select,button):not(#monthPick):not(.attb.has){pointer-events:none}
 .ro-month #tab-month :is(.x,.mv,.add,.visb,.sc,.lk,.attb:not(.has),.voidb:not(.on)),.ro-month #copyBox{display:none!important}
-.hide-totals #totals,.hide-totals .sum-kpis,.hide-totals #tab-month label:has(#income),.hide-totals .stot,.hide-totals .sum-sec h3 span+span{display:none!important}
+/* «الدخل» hidden: the income and what is left of it disappear; expense totals (only of the items the person can see) stay */
+.hide-totals #totals .tl:first-child,.hide-totals #totals .tl:last-child,.hide-totals .sum-kpis .sum-kpi:nth-child(1),.hide-totals .sum-kpis .sum-kpi:nth-child(4),.hide-totals #tab-month label:has(#income){display:none!important}
 .hide-shareapp #shareAppCard{display:none!important}
 .ploc{color:var(--accent);font-weight:700;text-decoration:underline}
 #tab-access:not([hidden]){display:flex;flex-direction:column;gap:12px}
@@ -566,7 +567,7 @@ header.ne #saveNow{display:none!important}
 /* signed-in users (not the admin): no password change, no backup, no server/sharing details */
 .is-user #pwCard,.is-user #backupCard,.is-user #houseCard,.is-user #syncBar,.is-user #sbMembers,.is-user #pdfBox,.is-user #drHouse,.is-user #drSync{display:none!important}
 .hide-newmonth #homeNewMonth,.hide-newmonth #newMonth,.hide-newmonth #nmPanel{display:none!important}
-.hide-totals .mo summary>span:nth-child(2),.hide-totals .mo-sub,.hide-totals .mi-h span+span,.hide-totals .mo-body .tl.big,.hide-totals #g6Month{display:none!important}
+.hide-totals .mo-sub>span:nth-child(1),.hide-totals .mo-sub>span:nth-child(4){display:none!important}
 .ro-months #newMonth,.ro-months #nmPanel,.ro-months #monthsList [data-del]{display:none!important}
 .ro-data #dForm,.ro-data #dList button{display:none!important}
 .ro-savings #svForm,.ro-savings #svList button{display:none!important}
@@ -2597,7 +2598,7 @@ const meName=()=>String((fbUser&&fbUser.displayName)||myEmail()||"حد").split(/
 const ownerEmail=()=>house?(house.ownerEmail||(house.emails||[])[0]||""):"";
 function roleOf(email){ if(!house) return "admin"; const e=(email||"").toLowerCase(); if(e&&e===ownerEmail()) return "admin"; const r=(house.roles||{})[e]; return ROLE_N[r]?r:"editor"; }
 function myRole(){ if(!house||!fbUser) return "admin"; if(house.owner===fbUser.uid) return "admin"; return roleOf(myEmail()); }
-const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1],["totals","الدخل والإجماليات",0],["newmonth","إضافة شهر جديد",0],["activity","نشاط البيت والتنبيهات في الجرس",0],["shareapp","إرسال البرنامج لحد",0]];
+const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1],["totals","الدخل والباقي منه",0],["newmonth","إضافة شهر جديد",0],["activity","نشاط البيت والتنبيهات في الجرس",0],["shareapp","إرسال البرنامج لحد",0]];
 const DEF_OFF={viewer:new Set(["totals","newmonth","activity","shareapp","owed","backup"]),editor:new Set(["totals","newmonth","activity","backup"])};
 const VIEWER_OFF=new Set(["totals","newmonth","activity","shareapp"]);
 const PERM_EDITABLE=Object.fromEntries(PERM_ROWS.map(r=>[r[0],!!r[2]]));
