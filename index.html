@@ -558,6 +558,7 @@ header.ne #saveNow{display:none!important}
 .ro-month #tab-month :is(.x,.mv,.add,.visb,.sc,.lk,.attb:not(.has),.voidb:not(.on)),.ro-month #copyBox{display:none!important}
 .hide-totals #totals,.hide-totals .sum-kpis,.hide-totals #tab-month label:has(#income),.hide-totals .stot,.hide-totals .sum-sec h3 span+span{display:none!important}
 .hide-shareapp #shareAppCard{display:none!important}
+.ploc{color:var(--accent);font-weight:700;text-decoration:underline}
 #tab-access:not([hidden]){display:flex;flex-direction:column;gap:12px}
 .pg .pg-sub{text-align:right;padding-top:12px;color:var(--accent)}
 .pg td small{display:block;color:var(--muted);font-size:.72rem}
@@ -2574,7 +2575,20 @@ document.addEventListener("click",async e=>{
 
 /* ---------- roles ---------- */
 const ROLE_N={admin:"مدير",editor:"محرر",viewer:"مشاهد"};
-let houseRef=null, members={}, events=[], extrasUnsub=[];
+let houseRef=null, members={}, events=[], locs=[], extrasUnsub=[];
+/* where editors/viewers opened the app from (only the admin can read these) */
+let locLast=0;
+function recordLoc(force){
+  if(!houseRef||!house||!fbUser||isAdmin()||!navigator.geolocation) return;
+  if(!force&&Date.now()-locLast<20*60e3) return; locLast=Date.now();
+  const ref=houseRef, em=myEmail(), uid=fbUser.uid;
+  navigator.geolocation.getCurrentPosition(p=>{
+    ref.collection("locs").add({by:uid,email:em,name:personName(em),lat:+p.coords.latitude.toFixed(6),lng:+p.coords.longitude.toFixed(6),acc:Math.round(p.coords.accuracy||0),at:new Date().toISOString(),app:NATIVE?"app":"web"}).catch(e=>console.warn("loc",e&&e.code));
+  },e=>console.warn("loc denied",e&&e.code),{enableHighAccuracy:true,timeout:20000,maximumAge:60000});
+}
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") recordLoc(false); });
+const mapUrl=l=>`https://www.google.com/maps?q=${l.lat},${l.lng}`;
+document.addEventListener("click",e=>{ const a=e.target.closest(".ploc"); if(!a) return; e.preventDefault(); allowAway(); location.href=a.href; });
 const myEmail=()=>(fbUser&&fbUser.email||"").toLowerCase();
 function personName(em,fb){ em=(em||"").toLowerCase(); const nm=(house&&house.names&&house.names[em])||(()=>{ try{ return members[em]&&members[em].name; }catch(e){ return ""; } })()||(fbUser&&myEmail()===em&&fbUser.displayName)||"";
   if(nm) return nm; if(fb) return fb; const u=house&&house.unames&&house.unames[em]; return u||em.split("@")[0].split(".")[0]; }
@@ -2629,10 +2643,11 @@ function subscribeHouseExtras(ref,u){
   extrasUnsub.push(ref.collection("members").onSnapshot(s=>{ members={}; s.docs.forEach(d=>members[d.id]=d.data()); if(tab==="users") renderUsers(); renderDrawerFoot(); },()=>{}));
   const em=(u.email||"").toLowerCase();
   ref.collection("members").doc(em).set({name:u.displayName||"",photo:u.photoURL||"",lastSeen:new Date().toISOString(),app:NATIVE?"app":"web"},{merge:true}).catch(()=>{});
+  setTimeout(()=>{ if(houseRef===ref){ if(isAdmin()) extrasUnsub.push(ref.collection("locs").orderBy("at","desc").limit(60).onSnapshot(s=>{ locs=s.docs.map(d=>({id:d.id,...d.data()})); nfRefresh(); if(tab==="users") renderUsers(); },()=>{})); else recordLoc(true); } },2500);
   let last=0; try{ last=+localStorage.getItem("house-budget-loginlog")||0; }catch(e){}
   if(Date.now()-last>12*3600e3){ try{ localStorage.setItem("house-budget-loginlog",String(Date.now())); }catch(e){} setTimeout(()=>logEvent("login",`${meName()} دخل على البرنامج`,NATIVE?"من التطبيق":"من المتصفح"),1200); }
 }
-function unsubscribeHouseExtras(){ extrasUnsub.forEach(f=>{ try{f()}catch(e){} }); extrasUnsub=[]; events=[]; members={}; nfRefresh(); }
+function unsubscribeHouseExtras(){ extrasUnsub.forEach(f=>{ try{f()}catch(e){} }); extrasUnsub=[]; events=[]; locs=[]; members={}; nfRefresh(); }
 const recentLogs={};
 function logEvent(t,title,body,go){
   if(!houseRef||!fbUser) return;
@@ -2654,7 +2669,7 @@ function renderUsers(){
     const seen=e===me?nfStamp(new Date().toISOString()):m.lastSeen?nfStamp(m.lastSeen):"لسه ما دخلش";
     const acts=admin&&e!==own&&e!==me?`<span class="pa"><button type="button" class="pe" data-ue="${esc(e)}">تعديل</button><button type="button" class="pr" data-ur="${esc(e)}">مسح</button></span>`:admin&&e===me&&e!==own?"":"";
     return `<div class="pp"><div class="pn">${esc(nm)}${e===me?" (إنت)":""} <small>· ${ROLE_N[r]}${e===own?" · صاحب البيت":""}</small></div><div class="pu">${esc(uname)}</div>
-      <div class="ps"><span class="dot ${online?"on":""}"></span>${online?"متصل":"مش متصل"} · آخر دخول <span dir="ltr">${esc(seen)}</span></div>${acts}</div>`;
+      <div class="ps"><span class="dot ${online?"on":""}"></span>${online?"متصل":"مش متصل"} · آخر دخول <span dir="ltr">${esc(seen)}</span></div>${(()=>{ const l=admin&&locs.find(x=>x.email===e); return l?`<div class="ps">📍 آخر مكان فتح منه: <span dir="ltr">${esc(nfStamp(l.at))}</span> · <a href="${mapUrl(l)}" class="ploc" target="_blank" rel="noopener">الخريطة</a></div>`:""; })()}${acts}</div>`;
   }).join("");
 }
 function renderPermGrid(){
@@ -2982,6 +2997,7 @@ function nfItems(){
   const act=canSee("activity");
   const alerts=(act?nfAlerts():[]).filter(a=>!a.go||canSee(a.go)).map(a=>({...a,unread:!nf.read.includes(a.id)}));
   const feed=[...(act?events:[]).filter(e=>!e.go||canSee(e.go)).map(e=>({id:"ev:"+e.id,t:e.t,ic:EV_IC[e.t]||"🔔",title:e.title,body:e.body,at:e.at,go:e.go,unread:e.by!==uidMe&&e.at>seen})),
+              ...(isAdmin()?locs:[]).map(l=>({id:"loc:"+l.id,t:"login",ic:"📍",title:`${l.name||(l.email||"").split("@")[0]} فتح البرنامج من هنا`,body:`${l.app==="web"?"من المتصفح":"من التطبيق"} · الدقة حوالي ${l.acc||"?"} متر`,at:l.at,act:{label:"افتح على الخريطة",url:mapUrl(l)},unread:l.at>seen})),
               ...nf.local.map(l=>({...l,unread:!nf.read.includes(l.id)}))].sort((a,b)=>a.at<b.at?1:-1);
   return {alerts,feed};
 }

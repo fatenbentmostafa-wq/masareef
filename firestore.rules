@@ -1,0 +1,115 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isPw() { return request.auth.token.firebase.sign_in_provider == 'password'; }
+    function signedIn() {
+      return request.auth != null && (request.auth.token.email_verified == true
+        || (isPw() && request.auth.token.email.matches('.*@masareef-elbeit[.]firebaseapp[.]com$')));
+    }
+    // username/password accounts must be the exact account the admin created
+    function uidOk(d) { return !isPw() || d.get('uids', {}).get(me(), '') == request.auth.uid; }
+    function me() { return request.auth.token.email.lower(); }
+    function hdoc(houseId) { return get(/databases/$(database)/documents/houses/$(houseId)).data; }
+    function member(houseId) { let d = hdoc(houseId); return signedIn() && me() in d.emails && uidOk(d); }
+    function roleIn(d) {
+      return (d.owner == request.auth.uid || d.get('ownerEmail', '') == me()) ? 'admin'
+           : d.get('roles', {}).get(me(), 'editor');
+    }
+    function role(houseId) { return roleIn(hdoc(houseId)); }
+    function canWrite(houseId) { return member(houseId) && role(houseId) in ['admin', 'editor']; }
+    function isAdmin(houseId) { return member(houseId) && role(houseId) == 'admin'; }
+    // per-page permission set by the admin in the app: 'none' | 'view' | 'edit'
+    function perm(houseId, p) {
+      let d = hdoc(houseId);
+      let r = roleIn(d);
+      return r == 'admin' ? 'edit' : d.get('perms', {}).get(r, {}).get(p, r == 'viewer' ? 'view' : 'edit');
+    }
+    function canEditPage(houseId, p) { return member(houseId) && perm(houseId, p) == 'edit'; }
+
+    // A "house" is shared by the Google accounts listed in emails.
+    // roles: { email: 'admin' | 'editor' | 'viewer' } (missing = editor, owner = admin)
+    match /houses/{houseId} {
+      allow create: if signedIn()
+        && request.resource.data.owner == request.auth.uid
+        && me() in request.resource.data.emails;
+      allow read: if signedIn() && me() in resource.data.emails && uidOk(resource.data);
+      // admins manage members/roles; nobody can change the owner
+      allow update: if signedIn() && me() in resource.data.emails && uidOk(resource.data)
+        && request.resource.data.owner == resource.data.owner
+        && (
+          (roleIn(resource.data) == 'admin'
+            && (request.resource.data.get('ownerEmail', '') == resource.data.get('ownerEmail', '')
+                || (resource.data.get('ownerEmail', '') == '' && resource.data.owner == request.auth.uid)))
+          // any member may leave the house (remove only themselves)
+          || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['emails'])
+              && !(me() in request.resource.data.emails)
+              && resource.data.owner != request.auth.uid)
+        );
+      allow delete: if signedIn() && resource.data.owner == request.auth.uid;
+
+      match /data/{docId} {
+        allow read: if member(houseId);
+        allow write: if member(houseId) && (
+             (docId.matches('month-.*') && (perm(houseId, 'month') == 'edit' || perm(houseId, 'months') == 'edit'))
+          || (docId == 'commits' && perm(houseId, 'data') == 'edit')
+          || (docId == 'savings' && perm(houseId, 'savings') == 'edit')
+          || (docId == 'owed' && perm(houseId, 'owed') == 'edit'));
+      }
+
+      // Receipts / documents / voice notes, one per doc.
+      match /files/{fileId} {
+        allow read: if member(houseId);
+        allow create, update: if canEditPage(houseId, 'docs')
+          && request.resource.data.data is string
+          && request.resource.data.data.size() < 1000000;
+        allow delete: if canEditPage(houseId, 'docs');
+      }
+
+      // Activity feed for the notification bell.
+      match /events/{eventId} {
+        allow read: if member(houseId);
+        allow create: if member(houseId)
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.title is string
+          && request.resource.data.title.size() < 300;
+        allow delete: if isAdmin(houseId);
+      }
+
+      // Items the admin hid from some people: only the admin and the listed people can read them.
+      match /private/{itemId} {
+        allow read: if member(houseId) && (isAdmin(houseId) || me() in resource.data.allow);
+        allow write: if isAdmin(houseId);
+      }
+
+      // Where editors/viewers opened the app from: they add their own, only the admin reads.
+      match /locs/{locId} {
+        allow read, delete: if isAdmin(houseId);
+        allow create: if member(houseId)
+          && request.resource.data.by == request.auth.uid
+          && request.resource.data.email == me()
+          && request.resource.data.lat is number && request.resource.data.lng is number;
+      }
+
+      // Each member's own profile (name, last seen).
+      match /members/{email} {
+        allow read: if member(houseId);
+        allow write: if member(houseId) && email == me();
+      }
+    }
+
+    // Username -> sign-in account (read before signing in; only the house admin writes it).
+    match /usernames/{name} {
+      allow get: if true;
+      allow list: if false;
+      allow create, update: if signedIn() && isAdmin(request.resource.data.house);
+      allow delete: if signedIn() && isAdmin(resource.data.house);
+    }
+
+    // Which house a username/password account belongs to (written by the admin when creating it).
+    match /logins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if signedIn() && isAdmin(request.resource.data.house);
+      allow delete: if signedIn() && isAdmin(resource.data.house);
+    }
+  }
+}
