@@ -551,7 +551,10 @@ header.ne #saveNow{display:none!important}
 .ro-banner{display:none}
 .ro-month .ro-banner{display:block;margin-bottom:12px;padding:12px 14px;border-radius:14px;border:1px solid rgba(232,184,75,.4);background:rgba(232,184,75,.08);color:var(--ink);font-size:.9rem;line-height:1.6}
 .ro-month #saveNow,.ro-month #homeNewMonth,.ro-month #saveMonth{display:none!important}
-.ro-month #tab-month>*:not(.ro-banner){pointer-events:none}
+.ro-month #tab-month :is(input,textarea,select,button):not(#monthPick):not(.attb.has){pointer-events:none}
+.ro-month #tab-month :is(.x,.mv,.add,.visb,.sc,.lk,.attb:not(.has),.voidb:not(.on)),.ro-month #copyBox{display:none!important}
+.hide-totals #totals,.hide-totals .sum-kpis,.hide-totals #tab-month label:has(#income),.hide-totals .stot,.hide-totals .sum-sec h3 span+span{display:none!important}
+.hide-shareapp #shareAppCard{display:none!important}
 .ro-months #newMonth,.ro-months #nmPanel,.ro-months #monthsList [data-del]{display:none!important}
 .ro-data #dForm,.ro-data #dList button{display:none!important}
 .ro-savings #svForm,.ro-savings #svList button{display:none!important}
@@ -781,7 +784,7 @@ h2.cap{font-size:.8rem;letter-spacing:.06em;color:var(--muted);text-transform:up
 
   <!-- 1. monthly expenses (entry form) -->
   <section id="tab-month" hidden>
-    <div class="ro-banner">صلاحيتك هنا «عرض بس»: تقدر تشوف المصاريف من غير تعديل. المستندات تفتحها من «ملخص الشهور».</div>
+    <div class="ro-banner">صلاحيتك هنا «عرض بس»: تقدر تشوف المصاريف من غير تعديل. دوس على القسم علشان يفتح، وعلى علامة المشبك علشان تشوف المستند.</div>
     <div class="card grid2">
       <label class="f">الشهر<input type="month" id="monthPick"></label>
       <label class="f">إجمالي الدخل الشهر ده<input type="number" inputmode="decimal" id="income" placeholder="0"></label>
@@ -2451,7 +2454,7 @@ $("#items").addEventListener("click",e=>{
   if(shb){ const r=shb.closest(".row"), si=draft.items.find(i=>i.id===r.dataset.id); if(si) shareItem(si,null,cur); return; }
   const b=e.target.closest("[data-att]"); if(!b) return;
   const row=b.closest(".row"), it=draft.items.find(i=>i.id===row.dataset.id); if(!it) return;
-  if((it.att||[]).length){ openViewer(it,true,cur); return; }
+  if((it.att||[]).length){ openViewer(it,canEditP("month"),cur); return; }
   askAttach(it);
 });
 async function onAttFiles(e){
@@ -2558,12 +2561,13 @@ const meName=()=>String((fbUser&&fbUser.displayName)||myEmail()||"حد").split(/
 const ownerEmail=()=>house?(house.ownerEmail||(house.emails||[])[0]||""):"";
 function roleOf(email){ if(!house) return "admin"; const e=(email||"").toLowerCase(); if(e&&e===ownerEmail()) return "admin"; const r=(house.roles||{})[e]; return ROLE_N[r]?r:"editor"; }
 function myRole(){ if(!house||!fbUser) return "admin"; if(house.owner===fbUser.uid) return "admin"; return roleOf(myEmail()); }
-const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1]];
+const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1],["totals","الدخل والإجماليات",0],["shareapp","إرسال البرنامج لحد",0]];
+const VIEWER_OFF=new Set(["totals","shareapp"]);
 const PERM_EDITABLE=Object.fromEntries(PERM_ROWS.map(r=>[r[0],!!r[2]]));
 function permOf(p){
   const r=myRole(); if(r==="admin") return PERM_EDITABLE[p]?"edit":"view";
   const v=house&&house.perms&&house.perms[r]&&house.perms[r][p];
-  const d=v||(r==="viewer"?"view":(PERM_EDITABLE[p]?"edit":"view"));
+  const d=v||(r==="viewer"?(VIEWER_OFF.has(p)?"none":"view"):(PERM_EDITABLE[p]?"edit":"view"));
   return d==="edit"&&!PERM_EDITABLE[p]?"view":d;
 }
 const canSee=p=>!(p in PERM_EDITABLE)||permOf(p)!=="none";
@@ -2617,13 +2621,13 @@ function renderUsers(){
 }
 function renderPermGrid(){
   const admin=isAdmin(), P=(house&&house.perms)||{};
-  const val=(r,k)=>{ const v=P[r]&&P[r][k]; const d=v||(r==="viewer"?"view":(PERM_EDITABLE[k]?"edit":"view")); return d==="edit"&&!PERM_EDITABLE[k]?"view":d; };
+  const val=(r,k)=>{ const v=P[r]&&P[r][k]; const d=v||(r==="viewer"?(VIEWER_OFF.has(k)?"none":"view"):(PERM_EDITABLE[k]?"edit":"view")); return d==="edit"&&!PERM_EDITABLE[k]?"view":d; };
   const cell=(r,k,what)=>{ const v=val(r,k);
     if(what==="edit"&&!PERM_EDITABLE[k]) return `<td${what==="see"?' class="gsep"':""}><button type="button" class="pk na" disabled aria-label="عرض بس">–</button></td>`;
     const on=what==="see"?v!=="none":v==="edit";
     return `<td${what==="see"?' class="gsep"':""}><button type="button" class="pk ${on?"on":"off"}" ${admin?"":"disabled"} data-pr="${r}" data-pk="${k}" data-pw="${what}" aria-pressed="${on}" aria-label="${ROLE_N[r]} ${what==="see"?"يشوف":"يعدّل"}">${on?"✓":"✗"}</button></td>`; };
   $("#permGrid").innerHTML=`<thead><tr><th rowspan="2">الصفحة</th><th colspan="2" class="grp gsep">محرر</th><th colspan="2" class="grp gsep">مشاهد</th></tr><tr><th class="gsep">يشوف</th><th>يعدّل</th><th class="gsep">يشوف</th><th>يعدّل</th></tr></thead><tbody>`+
-    PERM_ROWS.map(([k,l,ed])=>`<tr><td>${l}${ed?"":"<small>عرض بس</small>"}</td>${cell("editor",k,"see")}${cell("editor",k,"edit")}${cell("viewer",k,"see")}${cell("viewer",k,"edit")}</tr>`).join("")+`</tbody>`;
+    PERM_ROWS.map(([k,l,ed])=>`<tr><td>${l}${ed||VIEWER_OFF.has(k)?"":"<small>عرض بس</small>"}</td>${cell("editor",k,"see")}${cell("editor",k,"edit")}${cell("viewer",k,"see")}${cell("viewer",k,"edit")}</tr>`).join("")+`</tbody>`;
 }
 $("#permGrid").addEventListener("click",async e=>{
   const b=e.target.closest("[data-pr]"); if(!b||b.disabled||!houseRef||!isAdmin()) return;
