@@ -557,6 +557,7 @@ header.ne #saveNow{display:none!important}
 .ro-month #saveNow,.ro-month #homeNewMonth,.ro-month #saveMonth{display:none!important}
 .ro-month #tab-month :is(input,textarea,select,button):not(#monthPick):not(.attb.has){pointer-events:none}
 .ro-month #tab-month :is(.x,.mv,.add,.visb,.sc,.lk,.attb:not(.has),.voidb:not(.on)),.ro-month #copyBox{display:none!important}
+.mblk #saveMonth,.mblk #copyBox,.mblk .sec .btns,.mblk #tab-month label:has(#income){display:none!important}
 /* «الدخل» hidden: the income and what is left of it disappear; expense totals (only of the items the person can see) stay */
 .hide-totals #totals .tl:first-child,.hide-totals #totals .tl:last-child,.hide-totals .sum-kpis .sum-kpi:nth-child(1),.hide-totals .sum-kpis .sum-kpi:nth-child(4),.hide-totals #tab-month label:has(#income){display:none!important}
 .hide-shareapp #shareAppCard{display:none!important}
@@ -1379,12 +1380,14 @@ const CHEV='<svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></sv
 const secTotal=(items,sec)=>items.filter(i=>i.sec===sec).reduce((a,i)=>a+AMT(i),0);
 const secPaid=(items,sec)=>items.filter(i=>i.sec===sec&&i.paid).reduce((a,i)=>a+AMT(i),0);
 function renderForm(focusSel){
-  if(mvHidden(cur)&&!isAdmin()){ $("#monthPick").value=cur; $("#income").value=""; $("#monthTitle").textContent="بنود "+monthName(cur); $("#formNote").textContent="الشهر ده مش متاح لك."; $("#items").innerHTML='<div class="empty card" style="text-align:center;padding:22px">مفيش بيانات هنا</div>'; $("#totals").innerHTML=`<div class="tl big"><span>إجمالي المصاريف</span><span>${money(0)}</span></div><div class="tl"><span>اتدفع</span><span class="pos">${money(0)}</span></div><div class="tl"><span>لسه ماتدفعش</span><span class="due">${money(0)}</span></div>`; $("#copyBox").hidden=true; return; }
-  draft=loadDraft(cur);
+  const blk=mvHidden(cur)&&!isAdmin();
+  document.documentElement.classList.toggle("mblk",blk);
+  draft=blk?{income:"",items:[],dirty:false}:loadDraft(cur);
   $("#monthPick").value=cur;
-  $("#income").value=draft.income;
+  $("#income").value=blk?"":draft.income;
   $("#monthTitle").textContent="بنود "+monthName(cur);
-  $("#formNote").textContent=state.months[cur]
+  $("#formNote").textContent=blk?"الشهر ده مش متاح لك — بيظهر بصفر."
+    :state.months[cur]
     ? (draft.dirty?"فيه تعديلات لسه ماتسجلتش. دوس حفظ فوق أو إدخال تحت.":"الشهر ده متسجل. لو عدّلت فيه دوس حفظ.")
     : "اكتب البنود في كل قسم وفي الآخر دوس إدخال.";
   $("#items").innerHTML=SECS.map(([k,n])=>{
