@@ -2782,7 +2782,7 @@ function applyRole(){
   if(house&&fbUser&&house.owner===fbUser.uid&&!house.ownerEmail&&houseRef){ houseRef.update({ownerEmail:myEmail()}).catch(()=>{}); }
   renderDrawerFoot(); if(tab==="users") renderUsers(); if(tab==="access"){ renderPermGrid(); renderCvGrid(); renderMvGrid(); } applyCview(); if(tab==="months") renderMonths(); if(tab==="summary") renderSummary(); if(tab==="home") renderHome(); if(tab==="month") renderForm(); if(tab==="commits") renderCommits(); if(tab==="capture") renderCapture(); if(tab==="inbox") renderInbox(); if(tab==="chat") renderChat();
 }
-document.addEventListener("submit",e=>{ const fp={dForm:"data",svForm:"savings",owForm:"owed"}[e.target&&e.target.id]||"month"; if(!canEditP(fp)){ e.preventDefault(); e.stopImmediatePropagation(); toast("مش متاح لك التعديل هنا"); } },true);
+document.addEventListener("submit",e=>{ const map={dForm:"data",svForm:"savings",owForm:"owed"}, id=e.target&&e.target.id; if(!(id in map)) return; if(!canEditP(map[id])){ e.preventDefault(); e.stopImmediatePropagation(); toast("مش متاح لك التعديل هنا"); } },true);
 function subscribeHouseExtras(ref,u){
   unsubscribeHouseExtras();
   let evFirst=true, chatFirst=true;
