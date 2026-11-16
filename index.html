@@ -558,6 +558,10 @@ header.ne #saveNow{display:none!important}
 .ro-month #tab-month :is(.x,.mv,.add,.visb,.sc,.lk,.attb:not(.has),.voidb:not(.on)),.ro-month #copyBox{display:none!important}
 .hide-totals #totals,.hide-totals .sum-kpis,.hide-totals #tab-month label:has(#income),.hide-totals .stot,.hide-totals .sum-sec h3 span+span{display:none!important}
 .hide-shareapp #shareAppCard{display:none!important}
+#tab-access:not([hidden]){display:flex;flex-direction:column;gap:12px}
+.pg .pg-sub{text-align:right;padding-top:12px;color:var(--accent)}
+.pg td small{display:block;color:var(--muted);font-size:.72rem}
+.cvh-tiles #cTiles,.cvh-amt .cm-amt,.cvh-amt #g6Commit,.cvh-po .cm-po,.cvh-po .podot,.cvh-sch .cm-sch{display:none!important}
 /* signed-in users (not the admin): no password change, no backup, no server/sharing details */
 .is-user #pwCard,.is-user #backupCard,.is-user #houseCard,.is-user #syncBar,.is-user #sbMembers,.is-user #pdfBox,.is-user #drHouse,.is-user #drSync{display:none!important}
 .hide-newmonth #homeNewMonth,.hide-newmonth #newMonth,.hide-newmonth #nmPanel{display:none!important}
@@ -901,7 +905,12 @@ h2.cap{font-size:.8rem;letter-spacing:.06em;color:var(--muted);text-transform:up
   </section>
 
   <section id="tab-access" hidden>
-    <div class="card dc">
+    <div class="card dc" id="cvCard" style="order:2">
+      <h2>ملخص الالتزامات: مين يشوف إيه</h2>
+      <p class="hint" style="margin-top:0">علّم ✓ أو ✗ لكل جزء جوه صفحة «ملخص الالتزامات»، ولكل التزام لوحده. بيتطبق على طول. المدير بيشوف كل حاجة.</p>
+      <div class="pg-wrap"><table class="pg" id="cvGrid"></table></div>
+    </div>
+    <div class="card dc" style="order:1">
       <h2>تحديد صلاحيات الوصول</h2>
       <p class="hint" style="margin-top:0">علّم ✓ أو ✗ قصاد كل صفحة: «يشوف» يعني الصفحة تظهر له، و«يعدّل» يعني يقدر يضيف ويغيّر فيها. التغيير بيتطبق على طول على كل الموبايلات.</p>
       <div class="pg-wrap"><table class="pg" id="permGrid"></table></div>
@@ -1534,7 +1543,7 @@ $("#cList").addEventListener("click",e=>{
   }
 });
 function renderCommits(){
-  const cs=state.commits;
+  const cs=state.commits.filter(c=>!cvHidden(c.id));
   if(!cs.length){
     $("#cTiles").innerHTML="";
     $("#cList").innerHTML=`<div class="empty card">مفيش التزامات لسه. سجّلها الأول من تبويب "داتا"، وبعدين اربط بنود الشهر بيها.</div>`;return}
@@ -1556,19 +1565,19 @@ function renderCommits(){
       <div class="facts" style="font-size:.9rem">
         <span>دفعت<b><span class="num">${s.paidN}</span> شهر</b></span>
         <span>باقي<b>${s.leftN?`<span class="num">${s.leftN}</span> شهر`:'<span class="done">خلص ✓</span>'}</b></span>
-        <span>القسط<b>${money(c.monthly)}</b></span>
+        <span class="cm-amt">القسط<b>${money(c.monthly)}</b></span>
       </div>
       <div class="hint">من ${monthName(c.start)} لـ ${monthName(c.end)}${due?` · الشهر ده: <b class="${paidNow?"pos":"due"}">${paidNow?"اتدفع ✓":"لسه"}</b>`:""}</div>
       <div class="bar${dots?" has-po":""}" role="progressbar" aria-valuenow="${s.paidN}" aria-valuemax="${s.totalM}"><i style="width:${s.paidN/s.totalM*100}%"></i>${dots}</div>
-      <div class="facts">
+      <div class="facts cm-amt">
         <span>اتدفع منه<b class="pos">${money(s.paidAmt)}</b></span>
         <span>المبلغ الباقي<b class="due">${money(s.leftAmt)}</b></span>
         <span>الإجمالي<b>${money(s.totalAmt)}</b></span>
-      </div>${turn}
-      <div class="pay-h">بيانات الدفع</div>
-      <div class="pays">${paySchedule(c).map(p=>`<div class="pay ${p.paid?"is-paid":p.k===nowK?"is-now":""}${poMap[p.k]?" is-po":""}">
-        <span class="pm">${monthName(p.k)}${p.k===nowK?'<span class="tag">الشهر ده</span>':""}${poMap[p.k]?`<span class="potag">قبض ${money(poMap[p.k])}</span>`:""}</span>
-        <span class="pv">${p.paid?`<span class="pos">اتدفع ${money(p.amt)}</span>`:`<span class="${p.k<nowK?"neg":"due"}">${p.k<nowK?"متأخر":"لسه"}</span>`}</span></div>`).join("")}</div>
+      </div><div class="cm-po">${turn}</div>
+      <div class="pay-h cm-sch">بيانات الدفع</div>
+      <div class="pays cm-sch">${paySchedule(c).map(p=>`<div class="pay ${p.paid?"is-paid":p.k===nowK?"is-now":""}${poMap[p.k]?" is-po":""}">
+        <span class="pm">${monthName(p.k)}${p.k===nowK?'<span class="tag">الشهر ده</span>':""}${poMap[p.k]?`<span class="potag cm-po">قبض ${money(poMap[p.k])}</span>`:""}</span>
+        <span class="pv">${p.paid?`<span class="pos">اتدفع<span class="cm-amt"> ${money(p.amt)}</span></span>`:`<span class="${p.k<nowK?"neg":"due"}">${p.k<nowK?"متأخر":"لسه"}</span>`}</span></div>`).join("")}</div>
     </div></details>`}).join("");
 }
 
@@ -2589,6 +2598,21 @@ const canEditP=p=>permOf(p)==="edit";
 const canEditKey=k=>k==="commits"?canEditP("data"):k==="savings"?canEditP("savings"):k==="owed"?canEditP("owed"):(canEditP("month")||canEditP("months"));
 const canEdit=()=>canEditP("month");
 const isAdmin=()=>myRole()==="admin";
+/* what non-admins see inside «ملخص الالتزامات» (house.cview[role] = {parts:[hidden], ids:[hidden]}) */
+const CV_PARTS=[["tiles","المربعات اللي فوق (اتدفع / الباقي / مطلوب الشهر)"],["amt","المبالغ (القسط، المدفوع، الباقي، الإجمالي)"],["po","مواعيد ومبالغ القبض في الجمعيات"],["sch","بيانات الدفع شهر بشهر"]];
+const cvOf=r=>(house&&house.cview&&house.cview[r])||{};
+const cvHidden=id=>{ const r=myRole(); return r!=="admin"&&(cvOf(r).ids||[]).includes(id); };
+function applyCview(){ const r=myRole(), H=document.documentElement, hp=r==="admin"?[]:(cvOf(r).parts||[]); CV_PARTS.forEach(([k])=>H.classList.toggle("cvh-"+k,hp.includes(k))); }
+function renderCvGrid(){ const admin=isAdmin();
+  const cell=(r,kind,id)=>{ const on=!(cvOf(r)[kind]||[]).includes(id); return `<td class="gsep"><button type="button" class="pk ${on?"on":"off"}" ${admin?"":"disabled"} data-cvr="${r}" data-cvk="${kind}" data-cvi="${esc(id)}" aria-pressed="${on}">${on?"✓":"✗"}</button></td>`; };
+  const row=(lbl,kind,id)=>`<tr><td>${lbl}</td>${cell("editor",kind,id)}${cell("viewer",kind,id)}</tr>`;
+  $("#cvGrid").innerHTML=`<thead><tr><th>جوه الصفحة</th><th class="gsep">محرر يشوف</th><th class="gsep">مشاهد يشوف</th></tr></thead><tbody>`+
+    CV_PARTS.map(([k,l])=>row(l,"parts",k)).join("")+
+    (state.commits.length?`<tr><td colspan="3" class="pg-sub"><b>الالتزامات</b></td></tr>`+state.commits.map(c=>row(`${esc(c.name)}<small>${esc(c.type||"")}</small>`,"ids",c.id)).join(""):"")+`</tbody>`; }
+document.addEventListener("click",async e=>{ const b=e.target.closest("[data-cvr]"); if(!b||b.disabled||!houseRef||!isAdmin()) return;
+  const r=b.dataset.cvr, kind=b.dataset.cvk, id=b.dataset.cvi, cv=JSON.parse(JSON.stringify(house.cview||{})); cv[r]=cv[r]||{}; const l=cv[r][kind]||[];
+  cv[r][kind]=l.includes(id)?l.filter(x=>x!==id):[...l,id]; house.cview=cv; renderCvGrid();
+  try{ await houseRef.update({cview:cv}); }catch(x){ toast("ماتحفظش، جرّب تاني"); } });
 function applyRole(){
   const r=myRole(), H=document.documentElement; H.classList.toggle("is-admin",r==="admin"); H.classList.toggle("is-user",!!(house&&fbUser)&&r!=="admin");
   PERM_ROWS.forEach(([k])=>{ H.classList.toggle("hide-"+k,!canSee(k)); H.classList.toggle("ro-"+k,canSee(k)&&!canEditP(k)); });
@@ -2596,7 +2620,7 @@ function applyRole(){
   $("#drAdmin").hidden=!(house&&fbUser&&r==="admin");
   // owner: remember owner email once (makes the owner explicit for everyone)
   if(house&&fbUser&&house.owner===fbUser.uid&&!house.ownerEmail&&houseRef){ houseRef.update({ownerEmail:myEmail()}).catch(()=>{}); }
-  renderDrawerFoot(); if(tab==="users") renderUsers(); if(tab==="access") renderPermGrid(); if(tab==="month") renderForm();
+  renderDrawerFoot(); if(tab==="users") renderUsers(); if(tab==="access"){ renderPermGrid(); renderCvGrid(); } applyCview(); if(tab==="month") renderForm(); if(tab==="commits") renderCommits();
 }
 document.addEventListener("submit",e=>{ const fp={dForm:"data",svForm:"savings",owForm:"owed"}[e.target&&e.target.id]||"month"; if(!canEditP(fp)){ e.preventDefault(); e.stopImmediatePropagation(); toast("مش متاح لك التعديل هنا"); } },true);
 function subscribeHouseExtras(ref,u){
@@ -3169,7 +3193,7 @@ function renderAllInner(fromSnap){
   if(tab==="summary") renderSummary();
   if(tab==="notifs") renderNotifs();
   if(tab==="users") renderUsers();
-  if(tab==="access") renderPermGrid();
+  if(tab==="access"){ renderPermGrid(); renderCvGrid(); }
   if(tab==="calc") renderCalc();
 }
 
