@@ -563,6 +563,7 @@ header.ne #saveNow{display:none!important}
 #tab-access:not([hidden]){display:flex;flex-direction:column;gap:12px}
 .pg .pg-sub{text-align:right;padding-top:12px;color:var(--accent)}
 .pg td small{display:block;color:var(--muted);font-size:.72rem}
+.mvh-amt .mo summary>span:nth-child(2),.mvh-amt .mi-h span+span,.mvh-amt .mo-body .tl.big,.mvh-paid .mo-sub>span:nth-child(2),.mvh-paid .mo-sub>span:nth-child(3),.mvh-items .mo-body>div[class^="s-"]{display:none!important}
 .cvh-tiles #cTiles,.cvh-amt .cm-amt,.cvh-amt #g6Commit,.cvh-po .cm-po,.cvh-po .podot,.cvh-sch .cm-sch{display:none!important}
 /* signed-in users (not the admin): no password change, no backup, no server/sharing details */
 .is-user #pwCard,.is-user #backupCard,.is-user #houseCard,.is-user #syncBar,.is-user #sbMembers,.is-user #pdfBox,.is-user #drHouse,.is-user #drSync{display:none!important}
@@ -907,6 +908,11 @@ h2.cap{font-size:.8rem;letter-spacing:.06em;color:var(--muted);text-transform:up
   </section>
 
   <section id="tab-access" hidden>
+    <div class="card dc" id="mvCard" style="order:3">
+      <h2>الشهور: مين يشوف إيه</h2>
+      <p class="hint" style="margin-top:0">علّم ✓ أو ✗ لكل جزء جوه صفحة «الشهور»، ولكل شهر لوحده. الشهر اللي عليه ✗ مش هيظهر له في الشهور ولا الملخص ولا المصاريف ولا الرئيسية. المدير بيشوف كل حاجة.</p>
+      <div class="pg-wrap"><table class="pg" id="mvGrid"></table></div>
+    </div>
     <div class="card dc" id="cvCard" style="order:2">
       <h2>ملخص الالتزامات: مين يشوف إيه</h2>
       <p class="hint" style="margin-top:0">علّم ✓ أو ✗ لكل جزء جوه صفحة «ملخص الالتزامات»، ولكل التزام لوحده. بيتطبق على طول. المدير بيشوف كل حاجة.</p>
@@ -1316,6 +1322,7 @@ const CHEV='<svg class="chev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></sv
 const secTotal=(items,sec)=>items.filter(i=>i.sec===sec).reduce((a,i)=>a+AMT(i),0);
 const secPaid=(items,sec)=>items.filter(i=>i.sec===sec&&i.paid).reduce((a,i)=>a+AMT(i),0);
 function renderForm(focusSel){
+  if(mvHidden(cur)) cur=lastEntered();
   draft=loadDraft(cur);
   $("#monthPick").value=cur;
   $("#income").value=draft.income;
@@ -1339,7 +1346,7 @@ function renderForm(focusSel){
   if(focusSel){ const el=document.querySelector(focusSel); if(el) el.focus(); }
 }
 function formButtons(){
-  const srcs=Object.keys(state.months).filter(k=>k!==cur&&state.months[k].items.length).sort().reverse();
+  const srcs=Object.keys(state.months).filter(k=>k!==cur&&!mvHidden(k)&&state.months[k].items.length).sort().reverse();
   $("#copyBox").hidden=!srcs.length;
   const sel=$("#copyFrom"), keep=sel.value;
   sel.innerHTML=srcs.map(k=>`<option value="${k}">${monthName(k)} (${state.months[k].items.length} بند)</option>`).join("");
@@ -1373,7 +1380,7 @@ function fillRow(item){ // first empty row of that section, or a new one
   const e=draft.items.find(i=>i.sec===sec&&isEmpty(i));
   if(e) Object.assign(e,item,{id:e.id}); else draft.items.push({...blankItem(sec),...item});
 }
-$("#monthPick").addEventListener("change",e=>{ if(e.target.value){cur=e.target.value;closeSecs();renderForm();} });
+$("#monthPick").addEventListener("change",e=>{ if(e.target.value&&mvHidden(e.target.value)){ toast("الشهر ده مش متاح لك"); e.target.value=cur; return; } if(e.target.value){cur=e.target.value;closeSecs();renderForm();} });
 $("#income").addEventListener("input",e=>{ draft.income=e.target.value; touch(); renderTotals(); });
 $("#items").addEventListener("toggle",e=>{ const d=e.target; if(d.dataset&&d.dataset.sec){ if(d.open) d.querySelectorAll("textarea.name").forEach(grow); secOpen[d.dataset.sec]=d.open; } },true);
 $("#items").addEventListener("input",e=>{
@@ -1462,7 +1469,7 @@ function toast(t,undo){
 /* ---------- 2. months archive ---------- */
 const openMonths=new Set();
 function renderMonths(){
-  const keys=Object.keys(state.months).filter(k=>state.months[k].items.length||state.months[k].income).sort().reverse();
+  const keys=Object.keys(state.months).filter(k=>!mvHidden(k)&&(state.months[k].items.length||state.months[k].income)).sort().reverse();
   const ps=$("#pdfMonth"), keep=ps.value;
   ps.innerHTML=keys.map(k=>`<option value="${k}">${monthName(k)}</option>`).join("");
   if(keys.includes(keep)) ps.value=keep;
@@ -2282,13 +2289,13 @@ function showTab(t){
 }
 window.addEventListener("hashchange",()=>{ if(!location.hash) cameFromHome=false; applyRoute(); });
 $("#backBtn").addEventListener("click",()=>showTab("home"));
-function lastEntered(){ let lm=null; try{lm=localStorage.getItem("house-budget-lastmonth")}catch(e){} if(lm&&state.months[lm]&&state.months[lm].items&&state.months[lm].items.length) return lm; const ks=Object.keys(state.months).filter(k=>state.months[k].items&&state.months[k].items.length).sort(); return ks.pop()||nowKey(); }
+function lastEntered(){ let lm=null; try{lm=localStorage.getItem("house-budget-lastmonth")}catch(e){} if(lm&&!mvHidden(lm)&&state.months[lm]&&state.months[lm].items&&state.months[lm].items.length) return lm; const ks=Object.keys(state.months).filter(k=>!mvHidden(k)&&state.months[k].items&&state.months[k].items.length).sort(); return ks.pop()||nowKey(); }
 let homeMonth=null, homePicked=false;
 function pickHomeMonth(){ return homePicked&&homeMonth?homeMonth:lastEntered(); }
 const DN_COLORS=["#3FD8B4","#F2B43C","#6CB3F5","#B39CF5","#6B7C77"];
 function renderHome(){
-  const keys=Object.keys(state.months).filter(x=>state.months[x].items.length).sort().reverse();
-  const now=nowKey(); const opts=[...new Set([now,...keys])].sort().reverse();
+  const keys=Object.keys(state.months).filter(x=>!mvHidden(x)&&state.months[x].items.length).sort().reverse();
+  const now=nowKey(); const opts=[...new Set([...(mvHidden(now)?[]:[now]),...keys])].sort().reverse();
   if(!homePicked||!homeMonth||!opts.includes(homeMonth)) homeMonth=lastEntered();
   $("#homeMonthSel").innerHTML=opts.map(k=>{const [y,mm]=k.split("-");return `<option value="${k}" ${k===homeMonth?"selected":""}>${new Date(+y,+mm-1,1).toLocaleDateString("ar-EG-u-nu-latn",{month:"long"})} ${y}</option>`}).join("");
   const m=state.months[homeMonth]||{income:"",items:[]}, total=sumItems(m), inc=+m.income||0;
@@ -2535,7 +2542,7 @@ $("#recCancel").addEventListener("click",()=>stopRec(true));
 let sumMonth=null;
 function renderSummary(){
   adoptDraftAtt();
-  const keys=Object.keys(state.months).filter(k=>state.months[k].items.length).sort().reverse();
+  const keys=Object.keys(state.months).filter(k=>!mvHidden(k)&&state.months[k].items.length).sort().reverse();
   if(!keys.length){ $("#sumMonth").innerHTML=""; $("#sumBody").innerHTML=`<div class="empty card">لسه مفيش شهور متسجلة.</div>`; return; }
   if(!sumMonth||!keys.includes(sumMonth)) sumMonth=keys.includes(homeMonth)?homeMonth:keys[0];
   $("#sumMonth").innerHTML=keys.map(k=>`<option value="${k}" ${k===sumMonth?"selected":""}>${monthName(k)}</option>`).join("");
@@ -2619,7 +2626,23 @@ const cvOf=r=>(house&&house.cview&&house.cview[r])||{};
 // a commitment is hidden from a role if the admin unticked it, or if its expense item is hidden from that role
 const cvAuto=(r,c)=>!!c&&(hiddenRolesFor(c.name).includes(r)||Object.values(state.months).some(m=>m.items.some(i=>i.cid===c.id&&i.priv&&i.priv.roles&&!i.priv.roles.includes(r))));
 const cvHidden=id=>{ const r=myRole(); if(r==="admin") return false; return (cvOf(r).ids||[]).includes(id)||cvAuto(r,commitById(id)); };
-function applyCview(){ const r=myRole(), H=document.documentElement, hp=r==="admin"?[]:(cvOf(r).parts||[]); CV_PARTS.forEach(([k])=>H.classList.toggle("cvh-"+k,hp.includes(k))); }
+const MV_PARTS=[["amt","إجمالي كل شهر وإجمالي كل قسم"],["paid","اتدفع كام ولسه كام"],["items","البنود جوه كل شهر"]];
+const mvOf=r=>(house&&house.mview&&house.mview[r])||{};
+const mvHidden=k=>{ const r=myRole(); return r!=="admin"&&!!house&&!!fbUser&&(mvOf(r).ids||[]).includes(k); };
+function renderMvGrid(){ const admin=isAdmin();
+  const cell=(r,kind,id)=>{ const on=!(mvOf(r)[kind]||[]).includes(id); return `<td class="gsep"><button type="button" class="pk ${on?"on":"off"}" ${admin?"":"disabled"} data-mvr="${r}" data-mvk="${kind}" data-mvi="${esc(id)}" aria-pressed="${on}">${on?"✓":"✗"}</button></td>`; };
+  const row=(lbl,kind,id)=>`<tr><td>${lbl}</td>${cell("editor",kind,id)}${cell("viewer",kind,id)}</tr>`;
+  const ks=Object.keys(state.months).filter(k=>state.months[k].items.length||state.months[k].income).sort().reverse();
+  $("#mvGrid").innerHTML=`<thead><tr><th>جوه الصفحة</th><th class="gsep">محرر يشوف</th><th class="gsep">مشاهد يشوف</th></tr></thead><tbody>`+
+    MV_PARTS.map(([k,l])=>row(l,"parts",k)).join("")+
+    (ks.length?`<tr><td colspan="3" class="pg-sub"><b>الشهور</b></td></tr>`+ks.map(k=>row(monthName(k),"ids",k)).join(""):"")+`</tbody>`; }
+document.addEventListener("click",async e=>{ const b=e.target.closest("[data-mvr]"); if(!b||b.disabled||!houseRef||!isAdmin()) return;
+  const r=b.dataset.mvr, kind=b.dataset.mvk, id=b.dataset.mvi, mv=JSON.parse(JSON.stringify(house.mview||{})); mv[r]=mv[r]||{}; const l=mv[r][kind]||[];
+  mv[r][kind]=l.includes(id)?l.filter(x=>x!==id):[...l,id]; house.mview=mv; renderMvGrid();
+  try{ await houseRef.update({mview:mv}); }catch(x){ toast("ماتحفظش، جرّب تاني"); } });
+function applyCview(){ const r=myRole(), H=document.documentElement, hp=r==="admin"?[]:(cvOf(r).parts||[]); CV_PARTS.forEach(([k])=>H.classList.toggle("cvh-"+k,hp.includes(k)));
+  const mp=r==="admin"?[]:(mvOf(r).parts||[]); MV_PARTS.forEach(([k])=>H.classList.toggle("mvh-"+k,mp.includes(k)));
+  if(r!=="admin"&&mvHidden(cur)){ cur=lastEntered(); } }
 function renderCvGrid(){ const admin=isAdmin();
   const cell=(r,kind,id)=>{ const on=!(cvOf(r)[kind]||[]).includes(id); return `<td class="gsep"><button type="button" class="pk ${on?"on":"off"}" ${admin?"":"disabled"} data-cvr="${r}" data-cvk="${kind}" data-cvi="${esc(id)}" aria-pressed="${on}">${on?"✓":"✗"}</button></td>`; };
   const autoCell=`<td class="gsep"><button type="button" class="pk off" disabled title="مخفي علشان البند بتاعه مخفي">✗</button></td>`;
@@ -2638,7 +2661,7 @@ function applyRole(){
   $("#drAdmin").hidden=!(house&&fbUser&&r==="admin");
   // owner: remember owner email once (makes the owner explicit for everyone)
   if(house&&fbUser&&house.owner===fbUser.uid&&!house.ownerEmail&&houseRef){ houseRef.update({ownerEmail:myEmail()}).catch(()=>{}); }
-  renderDrawerFoot(); if(tab==="users") renderUsers(); if(tab==="access"){ renderPermGrid(); renderCvGrid(); } applyCview(); if(tab==="month") renderForm(); if(tab==="commits") renderCommits();
+  renderDrawerFoot(); if(tab==="users") renderUsers(); if(tab==="access"){ renderPermGrid(); renderCvGrid(); renderMvGrid(); } applyCview(); if(tab==="months") renderMonths(); if(tab==="summary") renderSummary(); if(tab==="home") renderHome(); if(tab==="month") renderForm(); if(tab==="commits") renderCommits();
 }
 document.addEventListener("submit",e=>{ const fp={dForm:"data",svForm:"savings",owForm:"owed"}[e.target&&e.target.id]||"month"; if(!canEditP(fp)){ e.preventDefault(); e.stopImmediatePropagation(); toast("مش متاح لك التعديل هنا"); } },true);
 function subscribeHouseExtras(ref,u){
@@ -3213,7 +3236,7 @@ function renderAllInner(fromSnap){
   if(tab==="summary") renderSummary();
   if(tab==="notifs") renderNotifs();
   if(tab==="users") renderUsers();
-  if(tab==="access"){ renderPermGrid(); renderCvGrid(); }
+  if(tab==="access"){ renderPermGrid(); renderCvGrid(); renderMvGrid(); }
   if(tab==="calc") renderCalc();
 }
 
