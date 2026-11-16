@@ -560,6 +560,16 @@ header.ne #saveNow{display:none!important}
 .hide-totals #totals .tl:first-child,.hide-totals #totals .tl:last-child,.hide-totals .sum-kpis .sum-kpi:nth-child(1),.hide-totals .sum-kpis .sum-kpi:nth-child(4),.hide-totals #tab-month label:has(#income){display:none!important}
 .hide-shareapp #shareAppCard{display:none!important}
 .ploc{color:var(--accent);font-weight:700;text-decoration:underline}
+.cap-btns{display:grid;gap:8px;margin-top:6px}
+.cap-btns button{height:48px;border-radius:12px;font-weight:700}
+.inb{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;padding:12px}
+#capMine .inb{padding:10px 0}#capMine .inb+.inb{border-top:1px dashed var(--line)}
+.inb-t{min-width:0}.inb-t b{display:block}.inb-t small{color:var(--muted);font-size:.78rem}.inb-t p{margin:5px 0 0}
+.inb-a{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+.inb-a button{padding:7px 11px;border-radius:9px}
+.inb-wait{color:var(--accent);font-size:.78rem;align-self:center;white-space:nowrap}
+.inb-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+#inbList{display:flex;flex-direction:column;gap:10px}
 #tab-access:not([hidden]){display:flex;flex-direction:column;gap:12px}
 .pg .pg-sub{text-align:right;padding-top:12px;color:var(--accent)}
 .pg td small{display:block;color:var(--muted);font-size:.72rem}
@@ -926,6 +936,28 @@ h2.cap{font-size:.8rem;letter-spacing:.06em;color:var(--muted);text-transform:up
     </div>
   </section>
 
+  <section id="tab-capture" hidden>
+    <div class="card dc">
+      <h2>ابعت فاتورة أو تسجيل للمدير</h2>
+      <p class="hint" style="margin-top:0">صوّر الفاتورة بنفسك أو سجّل بيانات الدفع، وهتتبعت للمدير يرتّبها في مكانها.</p>
+      <label class="f">ملاحظة (اختياري)<input id="capNote" placeholder="مثلاً: فاتورة كهرباء شهر 11"></label>
+      <div class="cap-btns">
+        <button type="button" class="btn-main" id="capCamBtn">📷 صوّر بالكاميرا</button>
+        <button type="button" id="capPickBtn">🖼 صورة أو PDF</button>
+        <button type="button" id="capMicBtn">🎙 سجّل صوت</button>
+      </div>
+    </div>
+    <div class="card" id="capMine"></div>
+  </section>
+
+  <section id="tab-inbox" hidden>
+    <div class="card dc">
+      <div class="inb-head"><h2 id="inbCount">الوارد</h2><button type="button" class="btn-main" id="inbReq">＋ اطلب</button></div>
+      <p class="hint" style="margin:6px 0 0">الفواتير والتسجيلات اللي بعتهالك أهل البيت. افتحها ورتّبها في الشهر والبند المناسب.</p>
+    </div>
+    <div id="inbList"></div>
+  </section>
+
   <section id="tab-calc" hidden>
     <div class="calc">
       <div class="cl-disp" aria-live="polite"><div class="cl-expr" id="clExpr"></div><div class="cl-res" id="clRes">0</div></div>
@@ -1027,6 +1059,8 @@ h2.cap{font-size:.8rem;letter-spacing:.06em;color:var(--muted);text-transform:up
 <div id="report" aria-hidden="true"></div>
 <input type="file" id="attInput" accept="image/*,application/pdf" multiple hidden>
 <input type="file" id="attCam" accept="image/*" capture="environment" hidden>
+<input type="file" id="capPick" accept="image/*,application/pdf" multiple hidden>
+<input type="file" id="capCam" accept="image/*" capture="environment" hidden>
 <div class="docfull" id="docFull" hidden role="dialog" aria-modal="true" aria-label="عرض المستند">
   <div class="df-top">
     <button type="button" id="dfClose" aria-label="قفل">✕</button>
@@ -1086,6 +1120,8 @@ h2.cap{font-size:.8rem;letter-spacing:.06em;color:var(--muted);text-transform:up
     <button type="button" class="dr-it c-green" data-dgo="owed"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12l4-4 4 3 6-6"/><path d="M14 5h3v3"/><path d="M4 20h16"/></svg></span><span>فلوس ليا برا</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button type="button" class="dr-it c-gold adm" data-dgo="users"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.5-3.5 3-5.5 6-5.5s5.5 2 6 5.5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.6c2.6.2 4.2 2 4.5 4.9"/></svg></span><span>المستخدمين</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button type="button" class="dr-it c-gold adm" data-dgo="access"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12l2.2 2.2 4.2-4.4"/></svg></span><span>تحديد صلاحيات الوصول</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button type="button" class="dr-it c-mint" data-dgo="capture" id="drCap" hidden><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 11l4 4 4-4M5 19h14"/></svg></span><span>ابعت للمدير</span></button>
+    <button type="button" class="dr-it c-gold adm" data-dgo="inbox"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h5l2 3h4l2-3h5M5 6h14l2 7v5H3v-5z"/></svg></span><span>الوارد</span></button>
     <button type="button" class="dr-it c-gold" data-dgo="notifs"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 19.5a2 2 0 0 0 4 0"/></svg></span><span>الإشعارات</span><span class="cnt" id="drBell" hidden>0</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button type="button" class="dr-it c-blue" data-dgo="calc"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8 7h8M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18h.01M12 18h3.5"/></svg></span><span>الآلة الحاسبة</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button type="button" class="dr-it c-blue" data-dgo="settings"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span><span>الإعدادات</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
@@ -1103,6 +1139,24 @@ h2.cap{font-size:.8rem;letter-spacing:.06em;color:var(--muted);text-transform:up
     <div class="rec-st"><span class="rec-dot"></span><span id="recTime">0:00</span><small>أقصى مدة 3 دقايق</small></div>
     <button type="button" id="recStop" class="rec-stop"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>وقّف واحفظ</button>
     <button type="button" id="recCancel" class="cn">إلغاء</button>
+  </div>
+</div>
+<div class="asheet" id="fileSheet" hidden>
+  <div class="as-box" role="dialog" aria-label="رتّب في مكانها">
+    <b>رتّبها في مكانها</b>
+    <label class="f">الشهر<select id="fileMonth"></select></label>
+    <label class="f">البند<select id="fileItem"></select></label>
+    <button type="button" class="btn-main" id="fileGo">رتّب هنا</button>
+    <button type="button" id="fileCancel" class="cn">إلغاء</button>
+  </div>
+</div>
+<div class="asheet" id="reqSheet" hidden>
+  <div class="as-box" role="dialog" aria-label="اطلب تصوير أو تسجيل">
+    <b>اطلب تصوير أو تسجيل</b>
+    <label class="f">مين<select id="reqWho"></select></label>
+    <label class="f">محتاج إيه<textarea id="reqText" rows="2" placeholder="مثلاً: صوّرلي فاتورة الكهرباء، أو سجّلي بيانات دفعة الجمعية"></textarea></label>
+    <button type="button" class="btn-main" id="reqGo">ابعت الطلب</button>
+    <button type="button" id="reqCancel" class="cn">إلغاء</button>
   </div>
 </div>
 <div class="asheet" id="attSheet" hidden>
@@ -2264,18 +2318,18 @@ document.addEventListener("click",e=>{ if(e.target.closest("#bkLoad,#shareBtn,#b
 (async()=>{ const ok=await lockSupported(); $("#lockCard").hidden=!ok; if(ok){ renderLockCard(); if(lockCred&&!NOLOCK_RELOAD){ showLock(); tryUnlock(); return; } } hideLock(); })();
 
 /* ---------- pages ---------- */
-const PAGES={home:"مصاريف البيت",notifs:"الإشعارات",users:"المستخدمين",access:"صلاحيات الوصول",calc:"الآلة الحاسبة",summary:"ملخص الشهور",month:"المصاريف",months:"الشهور",commits:"ملخص الالتزامات",data:"الداتا",savings:"المدخرات",owed:"فلوس ليا برا",settings:"الإعدادات"};
+const PAGES={home:"مصاريف البيت",notifs:"الإشعارات",capture:"ابعت للمدير",inbox:"الوارد",users:"المستخدمين",access:"صلاحيات الوصول",calc:"الآلة الحاسبة",summary:"ملخص الشهور",month:"المصاريف",months:"الشهور",commits:"ملخص الالتزامات",data:"الداتا",savings:"المدخرات",owed:"فلوس ليا برا",settings:"الإعدادات"};
 let tab="home", cameFromHome=false;
 function applyRoute(){
   const h=location.hash.slice(1); let t=PAGES[h]&&h!=="home"?h:"home";
-  if(t!=="home"&&typeof canSee==="function"&&!canSee(t)){ t="home"; history.replaceState(null,"",location.pathname+location.search); setTimeout(()=>toast("الصفحة دي مش متاحة لك"),50); }
+  if(t!=="home"&&typeof canSee==="function"&&(!canSee(t)||(t==="inbox"&&typeof isAdmin==="function"&&!isAdmin()))){ t="home"; history.replaceState(null,"",location.pathname+location.search); setTimeout(()=>toast("الصفحة دي مش متاحة لك"),50); }
   if(t==="month"&&tab!=="month") closeSecs();
   tab=t;
   Object.keys(PAGES).forEach(x=>$("#tab-"+x).hidden=x!==t);
   $("#pageTitle").textContent=t==="home"?"":PAGES[t];
   $("#backBtn").hidden=t==="home";
   document.querySelector("header").hidden=t==="home";
-  document.querySelector("header").classList.toggle("ne",["notifs","users","access","summary","commits","calc"].includes(t));
+  document.querySelector("header").classList.toggle("ne",["notifs","users","access","summary","commits","calc","capture","inbox"].includes(t));
   const navKey={home:"home",months:"months",summary:"summary",commits:"commits",data:"data",settings:"settings"}[t];
   document.querySelectorAll(".tabbar [data-nav]").forEach(b=>{ if(b.dataset.nav===navKey) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
   showUpdated();
@@ -2532,6 +2586,7 @@ async function finishRec(){
   if(blob.size>620000){ toast("التسجيل طويل قوي، سجّل أقصر"); return; }
   const data=await readUrl(blob);
   const id=await storeData("audio",data,"تسجيل صوت");
+  if(r.item&&r.item.__inbox){ await pushEvent({t:"inbox",title:`${meName()} بعت تسجيل صوت`,body:r.item.note||"",fileId:id,kind:"audio",go:"inbox"}); toast("اتبعت للمدير ✓"); if(tab==="capture") renderCapture(); return; }
   addAtt(r.item,[id]);
 }
 $("#asMic").addEventListener("click",()=>{ const it=attTarget; attTarget=null; $("#attSheet").hidden=true; if(it) startRec(it); });
@@ -2605,16 +2660,15 @@ const meName=()=>String((fbUser&&fbUser.displayName)||myEmail()||"حد").split(/
 const ownerEmail=()=>house?(house.ownerEmail||(house.emails||[])[0]||""):"";
 function roleOf(email){ if(!house) return "admin"; const e=(email||"").toLowerCase(); if(e&&e===ownerEmail()) return "admin"; const r=(house.roles||{})[e]; return ROLE_N[r]?r:"editor"; }
 function myRole(){ if(!house||!fbUser) return "admin"; if(house.owner===fbUser.uid) return "admin"; return roleOf(myEmail()); }
-const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1],["totals","الدخل والباقي منه",0],["newmonth","إضافة شهر جديد",0],["activity","نشاط البيت والتنبيهات في الجرس",0],["shareapp","إرسال البرنامج لحد",0]];
-const DEF_OFF={viewer:new Set(["totals","newmonth","activity","shareapp","owed","backup"]),editor:new Set(["totals","newmonth","activity","backup"])};
+const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["capture","رفع فواتير وتسجيلات للمدير",0],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1],["totals","الدخل والباقي منه",0],["newmonth","إضافة شهر جديد",0],["activity","نشاط البيت والتنبيهات في الجرس",0],["shareapp","إرسال البرنامج لحد",0]];
+const DEF_OFF={viewer:new Set(["totals","newmonth","activity","shareapp","owed","backup","capture"]),editor:new Set(["totals","newmonth","activity","backup"])};
 const VIEWER_OFF=new Set(["totals","newmonth","activity","shareapp"]);
 const PERM_EDITABLE=Object.fromEntries(PERM_ROWS.map(r=>[r[0],!!r[2]]));
-function permOf(p){
-  const r=myRole(); if(r==="admin") return PERM_EDITABLE[p]?"edit":"view";
+function permForRole(r,p){ if(r==="admin") return PERM_EDITABLE[p]?"edit":"view";
   const v=house&&house.perms&&house.perms[r]&&house.perms[r][p];
   const d=v||((DEF_OFF[r]&&DEF_OFF[r].has(p))?"none":r==="viewer"?"view":(PERM_EDITABLE[p]?"edit":"view"));
-  return d==="edit"&&!PERM_EDITABLE[p]?"view":d;
-}
+  return d==="edit"&&!PERM_EDITABLE[p]?"view":d; }
+function permOf(p){ return permForRole(myRole(),p); }
 const canSee=p=>!(p in PERM_EDITABLE)||permOf(p)!=="none";
 const canEditP=p=>permOf(p)==="edit";
 const canEditKey=k=>k==="commits"?canEditP("data"):k==="savings"?canEditP("savings"):k==="owed"?canEditP("owed"):(canEditP("month")||canEditP("months"));
@@ -2658,10 +2712,10 @@ function applyRole(){
   const r=myRole(), H=document.documentElement; H.classList.toggle("is-admin",r==="admin"); H.classList.toggle("is-user",!!(house&&fbUser)&&r!=="admin");
   PERM_ROWS.forEach(([k])=>{ H.classList.toggle("hide-"+k,!canSee(k)); H.classList.toggle("ro-"+k,canSee(k)&&!canEditP(k)); });
   if(tab!=="home"&&!canSee(tab)){ toast("الصفحة دي مش متاحة لك"); showTab("home"); }
-  $("#drAdmin").hidden=!(house&&fbUser&&r==="admin");
+  $("#drAdmin").hidden=!(house&&fbUser&&r==="admin"); if($("#drCap")) $("#drCap").hidden=!(canSee("capture")&&!isAdmin());
   // owner: remember owner email once (makes the owner explicit for everyone)
   if(house&&fbUser&&house.owner===fbUser.uid&&!house.ownerEmail&&houseRef){ houseRef.update({ownerEmail:myEmail()}).catch(()=>{}); }
-  renderDrawerFoot(); if(tab==="users") renderUsers(); if(tab==="access"){ renderPermGrid(); renderCvGrid(); renderMvGrid(); } applyCview(); if(tab==="months") renderMonths(); if(tab==="summary") renderSummary(); if(tab==="home") renderHome(); if(tab==="month") renderForm(); if(tab==="commits") renderCommits();
+  renderDrawerFoot(); if(tab==="users") renderUsers(); if(tab==="access"){ renderPermGrid(); renderCvGrid(); renderMvGrid(); } applyCview(); if(tab==="months") renderMonths(); if(tab==="summary") renderSummary(); if(tab==="home") renderHome(); if(tab==="month") renderForm(); if(tab==="commits") renderCommits(); if(tab==="capture") renderCapture(); if(tab==="inbox") renderInbox();
 }
 document.addEventListener("submit",e=>{ const fp={dForm:"data",svForm:"savings",owForm:"owed"}[e.target&&e.target.id]||"month"; if(!canEditP(fp)){ e.preventDefault(); e.stopImmediatePropagation(); toast("مش متاح لك التعديل هنا"); } },true);
 function subscribeHouseExtras(ref,u){
@@ -2758,6 +2812,56 @@ $("#usrAddBtn").addEventListener("click",async()=>{
   catch(x){ toast("ماقدرتش أضيفه. جرّب تاني."); }
 });
 
+
+/* ---------- capture inbox: users send, admin files ---------- */
+function pushEvent(o){ if(!houseRef||!fbUser) return Promise.resolve(); return houseRef.collection("events").add({by:fbUser.uid,email:myEmail(),name:fbUser.displayName||meName(),at:new Date().toISOString(),...o}); }
+const capSeeFor=e=>permForRole(roleOf(e),"capture")!=="none";
+async function sendCapFiles(e){
+  const fs=[...e.target.files]; e.target.value=""; if(!fs.length) return;
+  const note=($("#capNote").value||"").trim(); toast("بيبعت للمدير…");
+  let ok=0; for(const f of fs){ try{ const id=await storeFile(f); if(id){ await pushEvent({t:"inbox",title:`${meName()} بعت فاتورة`,body:note,fileId:id,kind:/pdf/i.test(f.type||"")?"pdf":"img",go:"inbox"}); ok++; } }catch(x){} }
+  if(ok){ $("#capNote").value=""; toast("اتبعت للمدير ✓"); if(tab==="capture") renderCapture(); } else toast("حصلت مشكلة في الملف");
+}
+function renderCapture(){ const uid=fbUser&&fbUser.uid, mine=events.filter(e=>e.t==="inbox"&&e.by===uid).sort((a,b)=>a.at<b.at?1:-1);
+  $("#capMine").innerHTML= mine.length? `<h2 style="margin-bottom:4px">اللي بعته</h2>`+mine.map(e=>`<div class="inb"><div class="inb-t"><b>${e.kind==="audio"?"🎙 تسجيل":e.kind==="pdf"?"📄 PDF":"📷 صورة"}</b><small>${nfStamp(e.at)}</small>${e.body?`<p>${esc(e.body)}</p>`:""}</div><span class="inb-wait">عند المدير</span></div>`).join("") : `<p class="empty" style="padding:8px">لسه مابعتش حاجة.</p>`;
+}
+let fileEv=null;
+function renderInbox(){ const items=events.filter(e=>e.t==="inbox").sort((a,b)=>a.at<b.at?1:-1);
+  $("#inbCount").textContent=items.length?`الوارد (${items.length})`:"الوارد";
+  $("#inbList").innerHTML= items.length? items.map(e=>`<div class="card inb" data-ev="${e.id}"><div class="inb-t"><b>${esc(e.name||personName(e.email))}</b><small>${e.kind==="audio"?"🎙 تسجيل صوت":e.kind==="pdf"?"📄 PDF":"📷 صورة"} · ${nfStamp(e.at)}</small>${e.body?`<p>${esc(e.body)}</p>`:""}</div><div class="inb-a"><button type="button" data-inbopen>افتح</button><button type="button" class="btn-main" data-inbfile>رتّبها</button><button type="button" class="x" data-inbdel aria-label="مسح">×</button></div></div>`).join("") : `<p class="empty card">لسه محدش بعت حاجة.</p>`;
+}
+function fillFileItems(){ const m=state.months[$("#fileMonth").value]; $("#fileItem").innerHTML=(m?m.items:[]).filter(i=>!isEmpty(i)).map(i=>`<option value="${i.id}">${esc(i.name||"بند")}</option>`).join("")||`<option value="">مفيش بنود في الشهر ده</option>`; }
+document.addEventListener("click",e=>{
+  if(e.target.closest("#capPickBtn")){ allowAway(); $("#capPick").click(); return; }
+  if(e.target.closest("#capCamBtn")){ allowAway(); $("#capCam").click(); return; }
+  if(e.target.closest("#capMicBtn")){ startRec({__inbox:true,note:($("#capNote").value||"").trim()}); return; }
+  if(e.target.closest("#inbReq")){ const others=(house&&house.emails||[]).filter(x=>roleOf(x)!=="admin"&&capSeeFor(x)); $("#reqWho").innerHTML=others.map(x=>`<option value="${esc(x)}">${esc(personName(x))}</option>`).join("")||`<option value="">مفيش مستخدمين مسموحلهم</option>`; $("#reqText").value=""; $("#reqSheet").hidden=false; return; }
+  if(e.target.id==="fileSheet"||e.target.closest("#fileCancel")){ $("#fileSheet").hidden=true; fileEv=null; return; }
+  if(e.target.id==="reqSheet"||e.target.closest("#reqCancel")){ $("#reqSheet").hidden=true; return; }
+});
+$("#capPick")&&$("#capPick").addEventListener("change",sendCapFiles);
+$("#capCam")&&$("#capCam").addEventListener("change",sendCapFiles);
+$("#fileMonth")&&$("#fileMonth").addEventListener("change",fillFileItems);
+$("#inbList")&&$("#inbList").addEventListener("click",e=>{
+  const row=e.target.closest("[data-ev]"); if(!row) return; const ev=events.find(x=>x.id===row.dataset.ev); if(!ev) return;
+  if(e.target.closest("[data-inbopen]")){ openViewer({name:ev.name||"فاتورة",att:[ev.fileId]},false,null); return; }
+  if(e.target.closest("[data-inbdel]")){ if(houseRef) houseRef.collection("events").doc(ev.id).delete().catch(()=>{}); toast("اتمسحت"); return; }
+  if(e.target.closest("[data-inbfile]")){ fileEv=ev; const ks=Object.keys(state.months).filter(k=>state.months[k].items.length).sort().reverse(); if(!ks.length){ toast("سجّل شهر الأول"); return; } $("#fileMonth").innerHTML=ks.map(k=>`<option value="${k}">${monthName(k)}</option>`).join(""); fillFileItems(); $("#fileSheet").hidden=false; }
+});
+$("#fileGo")&&$("#fileGo").addEventListener("click",()=>{
+  const ev=fileEv; if(!ev) return; const mk=$("#fileMonth").value, itemId=$("#fileItem").value, m=state.months[mk], it=m&&m.items.find(i=>i.id===itemId);
+  if(!it){ toast("اختار بند"); return; }
+  it.att=[...(it.att||[]),ev.fileId]; if(drafts[mk]){ const di=drafts[mk].items.find(i=>i.id===itemId); if(di) di.att=[...(di.att||[]),ev.fileId]; }
+  saveLocal(); schedule("m:"+mk,0);
+  if(houseRef) houseRef.collection("events").doc(ev.id).delete().catch(()=>{});
+  logEvent("att",`${meName()} رتّب فاتورة في «${it.name||"بند"}»`,monthName(mk),"summary");
+  $("#fileSheet").hidden=true; fileEv=null; toast("اترتّبت في مكانها ✓"); if(tab==="month"&&cur===mk) renderForm();
+});
+$("#reqGo")&&$("#reqGo").addEventListener("click",()=>{
+  const to=$("#reqWho").value, txt=($("#reqText").value||"").trim(); if(!to){ toast("اختار مستخدم"); return; }
+  pushEvent({t:"request",title:"المدير طلب منك تصوير أو تسجيل",body:txt||"صوّر فاتورة أو سجّل بيانات دفع",target:to,go:"capture"});
+  $("#reqSheet").hidden=true; toast("اتبعت الطلب ✓");
+});
 
 /* ---------- private items (per-item visibility) ---------- */
 let pubMonths=null, privDocs={}, privUnsub=null;
@@ -3018,12 +3122,14 @@ function nfAlerts(){
     if(days<=3) out.push({id:`ow:${o.id}:${o.due}`,t:"alert",ic:"🤝",title:days<0?`فلوس عند ${o.who} معادها فات`:days===0?`النهارده معاد فلوسك عند ${o.who}`:`فلوسك عند ${o.who} معادها بعد ${days} ${days===1?"يوم":"أيام"}`,body:`باقي ${fmt(owLeft(o))} ج.م · المعاد ${o.due}`,at:new Date(o.due+"T09:00").toISOString(),go:"owed"}); }
   return out;
 }
-const EV_IC={save:"🧾",edit:"✏️",commit:"📋",savings:"🐷",owed:"🤝",delete:"🗑️",att:"📎",login:"👤",role:"🛡️"};
+const EV_IC={save:"🧾",edit:"✏️",commit:"📋",savings:"🐷",owed:"🤝",delete:"🗑️",att:"📎",login:"👤",role:"🛡️",inbox:"📥",request:"📸"};
 function nfItems(){
   const uidMe=fbUser&&fbUser.uid, seen=nf.seen||"";
   const act=canSee("activity");
   const alerts=(act?nfAlerts():[]).filter(a=>!a.go||canSee(a.go)).map(a=>({...a,unread:!nf.read.includes(a.id)}));
-  const feed=[...(act?events:[]).filter(e=>!e.go||canSee(e.go)).map(e=>({id:"ev:"+e.id,t:e.t,ic:EV_IC[e.t]||"🔔",title:e.title,body:e.body,at:e.at,go:e.go,unread:e.by!==uidMe&&e.at>seen})),
+  const me2=myEmail();
+  const evShow=events.filter(e=>!e.go||canSee(e.go)).filter(e=> e.t==="request" ? e.target===me2 : e.t==="inbox" ? isAdmin() : act );
+  const feed=[...evShow.map(e=>({id:"ev:"+e.id,t:e.t,ic:EV_IC[e.t]||"🔔",title:e.title,body:e.body,at:e.at,go:e.go,unread:e.by!==uidMe&&e.at>seen})),
               ...(isAdmin()?locs:[]).map(l=>({id:"loc:"+l.id,t:"login",ic:"📍",title:`${l.name||(l.email||"").split("@")[0]} فتح البرنامج من هنا`,body:`${l.app==="web"?"من المتصفح":"من التطبيق"} · الدقة حوالي ${l.acc||"?"} متر`,at:l.at,act:{label:"افتح على الخريطة",url:mapUrl(l)},unread:l.at>seen})),
               ...nf.local.map(l=>({...l,unread:!nf.read.includes(l.id)}))].sort((a,b)=>a.at<b.at?1:-1);
   return {alerts,feed};
@@ -3237,6 +3343,8 @@ function renderAllInner(fromSnap){
   if(tab==="notifs") renderNotifs();
   if(tab==="users") renderUsers();
   if(tab==="access"){ renderPermGrid(); renderCvGrid(); renderMvGrid(); }
+  if(tab==="capture") renderCapture();
+  if(tab==="inbox") renderInbox();
   if(tab==="calc") renderCalc();
 }
 
