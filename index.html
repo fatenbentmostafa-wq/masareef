@@ -1144,6 +1144,7 @@ function flush(key){
     if(key==="savings") return backend.doc("savings").set(clean({list:state.savings}));
     if(key==="owed") return backend.doc("owed").set(clean({list:state.owed}));
     const mk=key.slice(2); const m=state.months[mk];
+    if(m&&isAdmin()&&house) applyRulesToMonth(m);
     if(isAdmin()&&privColl()) syncPrivate(mk,m).catch(e=>console.warn("private",e));
     return m? backend.doc("month-"+mk).set(clean({...m,items:m.items.filter(i=>!i.priv)})) : backend.doc("month-"+mk).delete();
   }).catch(e=>{ setStatus(e&&e.code==="quota_exceeded"?"المساحة امتلأت":"ماتحفظش، جرّب تاني"); });
@@ -1709,7 +1710,7 @@ function copyItems(items,k,withCost){
   return items
     .filter(i=>!i.cid||(commitById(i.cid)&&commitDueIn(commitById(i.cid),k)))
     .filter(i=>!i.priv||isAdmin())
-    .map(i=>({id:uid(),name:i.name,cost:withCost?i.cost:"",paid:false,cid:i.cid||"",sec:secOf(i),...(i.priv?{priv:{allow:[...(i.priv.allow||[])]}}:{})}));
+    .map(i=>({id:uid(),name:i.name,cost:withCost?i.cost:"",paid:false,cid:i.cid||"",sec:secOf(i),...(i.priv?{priv:JSON.parse(JSON.stringify(i.priv))}:{})}));
 }
 function nextFreeMonth(){
   const keys=Object.keys(state.months).filter(k=>state.months[k].items.length).sort();
@@ -2105,7 +2106,7 @@ async function connectHouse(u){
   attachBackend(dataColl,"متزامن ✓"); setTimeout(pushPendingFiles,1500);
   if(houseUnsub) houseUnsub();
   let privFor=null;
-  houseUnsub=ref.onSnapshot(d=>{ house={id:ref.id,...d.data()}; renderHouse(); applyRole(); const k=myRole()+"|"+myEmail(); if(privFor!==k){ privFor=k; subscribePrivate(); } },()=>{});
+  houseUnsub=ref.onSnapshot(d=>{ house={id:ref.id,...d.data()}; renderHouse(); applyRole(); applyPermPreset(); applyHideRules(); const k=myRole()+"|"+myEmail(); if(privFor!==k){ privFor=k; subscribePrivate(); } },()=>{});
   renderAuthUI(); setTimeout(maybeAskBio,1500);
   houseRef=ref; subscribeHouseExtras(ref,u);
   $("#syncBar").classList.add("on"); $("#sbTitle").textContent="متزامن مع السيرفر"; 
@@ -2572,7 +2573,7 @@ const ownerEmail=()=>house?(house.ownerEmail||(house.emails||[])[0]||""):"";
 function roleOf(email){ if(!house) return "admin"; const e=(email||"").toLowerCase(); if(e&&e===ownerEmail()) return "admin"; const r=(house.roles||{})[e]; return ROLE_N[r]?r:"editor"; }
 function myRole(){ if(!house||!fbUser) return "admin"; if(house.owner===fbUser.uid) return "admin"; return roleOf(myEmail()); }
 const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1],["totals","الدخل والإجماليات",0],["newmonth","إضافة شهر جديد",0],["activity","نشاط البيت والتنبيهات في الجرس",0],["shareapp","إرسال البرنامج لحد",0]];
-const DEF_OFF={viewer:new Set(["totals","newmonth","activity","shareapp"]),editor:new Set(["totals","newmonth","activity"])};
+const DEF_OFF={viewer:new Set(["totals","newmonth","activity","shareapp","owed","backup"]),editor:new Set(["totals","newmonth","activity"])};
 const VIEWER_OFF=new Set(["totals","newmonth","activity","shareapp"]);
 const PERM_EDITABLE=Object.fromEntries(PERM_ROWS.map(r=>[r[0],!!r[2]]));
 function permOf(p){
@@ -2693,13 +2694,38 @@ $("#usrAddBtn").addEventListener("click",async()=>{
 /* ---------- private items (per-item visibility) ---------- */
 let pubMonths=null, privDocs={}, privUnsub=null;
 const privColl=()=>houseRef?houseRef.collection("private"):null;
-function visLabel(i){ const allow=(i.priv&&i.priv.allow)||[]; const others=(house&&house.emails||[]).filter(e=>roleOf(e)!=="admin");
+/* items hidden by role (editor / viewer), set from the permissions sheet or the item's lock button */
+const HROLES=["editor","viewer"], HROLE_N={editor:"المحرر",viewer:"المشاهد"};
+const nName=x=>String(x||"").trim().replace(/\s+/g," ").toLowerCase();
+// the permissions sheet the owner filled in (applied once to the house)
+const PERM_PRESET={id:"sheet-2026-11-16",
+  perms:{editor:{month:"edit",months:"edit",summary:"view",commits:"view",data:"edit",savings:"edit",owed:"edit",docs:"edit",notifs:"view",calc:"view",backup:"edit",totals:"none",newmonth:"none",activity:"none",shareapp:"view"},
+         viewer:{month:"view",months:"view",summary:"view",commits:"view",data:"view",savings:"view",owed:"none",docs:"view",notifs:"view",calc:"view",backup:"none",totals:"none",newmonth:"none",activity:"none",shareapp:"none"}},
+  hideItems:{editor:[],viewer:["فيزا البنك العربي","فاتوره موبايل","قسط فاليو","مصروف بابا","Samsung s25 ultra"]}};
+function hiddenRolesFor(name){ const h=(house&&house.hideItems)||{}, n=nName(name); return HROLES.filter(r=>(h[r]||[]).some(x=>nName(x)===n)); }
+function allowOf(priv){ if(!priv) return []; if(priv.roles) return (house&&house.emails||[]).filter(e=>roleOf(e)!=="admin"&&priv.roles.includes(roleOf(e))); return priv.allow||[]; }
+function applyRulesToMonth(m){ let ch=false;
+  m.items.forEach(it=>{ if(it.priv&&!it.priv.roles) return; // older per-person choices stay as they are
+    const hid=hiddenRolesFor(it.name);
+    if(hid.length){ const roles=HROLES.filter(r=>!hid.includes(r)); if(!it.priv||it.priv.roles.join()!==roles.join()){ it.priv={roles}; ch=true; } }
+    else if(it.priv){ delete it.priv; ch=true; } });
+  return ch; }
+let rulesTimer=null;
+function applyHideRules(){ if(!isAdmin()||!house||!fbUser||!pubMonths) return; clearTimeout(rulesTimer);
+  rulesTimer=setTimeout(()=>{ let any=false; Object.entries(state.months).forEach(([k,m])=>{ if(applyRulesToMonth(m)){ any=true; if(drafts[k]&&!drafts[k].dirty){ delete drafts[k]; saveDrafts(); } schedule("m:"+k,200); } });
+    refreshPrivAllow(); if(any){ saveLocal(); renderAll(true); } },800); }
+function refreshPrivAllow(){ const c=privColl(); if(!c||!isAdmin()) return;
+  Object.entries(privDocs).forEach(([id,d])=>{ if(!d.roles) return; const a=allowOf({roles:d.roles}); if(a.slice().sort().join()!==(d.allow||[]).slice().sort().join()){ d.allow=a; c.doc(id).set(d).catch(()=>{}); } }); }
+function applyPermPreset(){ if(!isAdmin()||!houseRef||!house||house.permsPreset===PERM_PRESET.id) return;
+  houseRef.update({perms:PERM_PRESET.perms,hideItems:PERM_PRESET.hideItems,permsPreset:PERM_PRESET.id}).then(()=>toast("اتطبقت الصلاحيات من الشيت ✓")).catch(e=>console.warn("preset",e)); }
+function visLabel(i){ if(i.priv&&i.priv.roles){ const hid=HROLES.filter(r=>!i.priv.roles.includes(r)); return hid.length?"مخفي عن "+hid.map(r=>HROLE_N[r]).join(" و"):"خاص"; }
+  const allow=(i.priv&&i.priv.allow)||[]; const others=(house&&house.emails||[]).filter(e=>roleOf(e)!=="admin");
   const hidden=others.filter(e=>!allow.includes(e)); const nm=e=>(members[e]&&members[e].name)||(house&&house.names&&house.names[e])||e.split("@")[0];
   return hidden.length?("مخفي عن "+hidden.map(nm).join("، ")):"خاص"; }
 function mergePrivate(months){
   Object.values(privDocs).sort((a,b)=>(a.pos||0)-(b.pos||0)).forEach(d=>{
     const m=months[d.month]; if(!m||!d.item) return; if(m.items.some(x=>x.id===d.item.id)) return;
-    const it={...d.item,priv:{allow:d.allow||[]}}; m.items.splice(Math.min(d.pos||0,m.items.length),0,it);
+    const it={...d.item,priv:d.roles?{roles:d.roles}:{allow:d.allow||[]}}; m.items.splice(Math.min(d.pos||0,m.items.length),0,it);
   });
   return months;
 }
@@ -2708,6 +2734,7 @@ function applyPrivateSnapshot(){
   const months=mergePrivate(JSON.parse(JSON.stringify(pubMonths)));
   Object.keys(timers).forEach(k=>{ if(k.startsWith("m:")){const mk=k.slice(2); if(state.months[mk]) months[mk]=state.months[mk];} });
   state.months=months; saveLocal(); renderAll(true);
+  applyHideRules();
 }
 function subscribePrivate(){
   if(privUnsub){ try{privUnsub()}catch(e){} privUnsub=null; } privDocs={};
@@ -2720,7 +2747,7 @@ async function syncPrivate(mk,m){
   const clean=o=>JSON.parse(JSON.stringify(o));
   const keep=new Set();
   if(m) m.items.forEach((it,pos)=>{ if(!it.priv) return; keep.add(it.id); const {priv,...item}=it;
-    const doc={month:mk,pos,item:clean(item),allow:[...new Set(priv.allow||[])],by:fbUser.uid};
+    const doc={month:mk,pos,item:clean(item),allow:[...new Set(allowOf(priv))],...(priv.roles?{roles:priv.roles}:{}),by:fbUser.uid};
     privDocs[it.id]=doc; c.doc(it.id).set(doc).catch(()=>{}); });
   Object.entries(privDocs).forEach(([id,d])=>{ if(d.month===mk&&!keep.has(id)){ delete privDocs[id]; c.doc(id).delete().catch(()=>{}); } });
 }
@@ -2729,9 +2756,11 @@ $("#items").addEventListener("click",e=>{
   const b=e.target.closest("[data-vis]"); if(!b) return;
   const row=b.closest(".row"), it=draft.items.find(i=>i.id===row.dataset.id); if(!it||!isAdmin()) return;
   visTarget=it;
-  const others=(house.emails||[]).filter(x=>roleOf(x)!=="admin"), allow=it.priv?it.priv.allow||[]:others;
+  const vis=it.priv?(it.priv.roles||HROLES.filter(r=>allowOf(it.priv).some(e=>roleOf(e)===r))):HROLES;
   $("#visItem").textContent=it.name||"بند";
-  $("#visList").innerHTML=others.length?others.map(em=>{ const nm=(members[em]&&members[em].name)||(house.names&&house.names[em])||em.split("@")[0];
+  $("#visList").innerHTML=HROLES.map(r=>`<label class="vis-it"><input type="checkbox" value="${r}" ${vis.includes(r)?"checked":""}><span>${ROLE_N[r]}<small>${(house.emails||[]).filter(e=>roleOf(e)===r).map(e=>esc(personName(e))).join("، ")||"مفيش حد بالدور ده لسه"}</small></span></label>`).join("")
+    +`<p class="hint" style="margin:6px 0 0">بيتطبق على البند ده في كل الشهور (بنفس الاسم).</p>`;
+  if(0) $("#visList").innerHTML=others.length?others.map(em=>{ const nm=(members[em]&&members[em].name)||(house.names&&house.names[em])||em.split("@")[0];
     return `<label class="vis-it"><input type="checkbox" value="${esc(em)}" ${allow.includes(em)?"checked":""}><span>${esc(nm)}<small>${esc(em.endsWith("@"+USER_DOMAIN)?em.split("@")[0]:em)} · ${ROLE_N[roleOf(em)]}</small></span></label>`; }).join("")
     :`<p class="hint">مفيش مستخدمين غيرك لسه. ضيفهم من «المستخدمين والصلاحيات».</p>`;
   $("#visSheet").hidden=false;
@@ -2740,13 +2769,15 @@ $("#visCancel").addEventListener("click",()=>{ $("#visSheet").hidden=true; visTa
 $("#visSheet").addEventListener("click",e=>{ if(e.target.id==="visSheet"){ $("#visSheet").hidden=true; visTarget=null; } });
 $("#visSave").addEventListener("click",()=>{
   const it=visTarget; if(!it) return; $("#visSheet").hidden=true; visTarget=null;
-  const others=(house.emails||[]).filter(x=>roleOf(x)!=="admin");
-  const allow=[...document.querySelectorAll("#visList input:checked")].map(x=>x.value);
-  if(allow.length===others.length) delete it.priv; else it.priv={allow};
-  touch();
-  const m=state.months[cur], si=m&&m.items.find(x=>x.id===it.id);
-  if(si){ if(it.priv) si.priv={allow:[...allow]}; else delete si.priv; saveLocal(); schedule("m:"+cur,0); }
-  renderForm(); toast(it.priv?"البند بقى خاص 🔒":"البند بقى ظاهر للكل");
+  const see=[...document.querySelectorAll("#visList input:checked")].map(x=>x.value), n=nName(it.name);
+  if(!n){ toast("اكتب اسم البند الأول"); return; }
+  const h=JSON.parse(JSON.stringify(house.hideItems||{}));
+  HROLES.forEach(r=>{ const l=(h[r]||[]).filter(x=>nName(x)!==n); if(!see.includes(r)) l.push(it.name.trim()); h[r]=l; });
+  house.hideItems=h; if(houseRef) houseRef.update({hideItems:h}).catch(()=>toast("ماتحفظش، جرّب تاني"));
+  if(it.priv&&!it.priv.roles) delete it.priv; applyRulesToMonth(draft); touch();
+  const m=state.months[cur]; if(m){ if(m.items.some(x=>x.priv&&!x.priv.roles&&nName(x.name)===n)) m.items.forEach(x=>{ if(nName(x.name)===n&&x.priv&&!x.priv.roles) delete x.priv; }); }
+  applyHideRules();
+  renderForm(); toast(see.length===2?"البند بقى ظاهر للكل":"البند اتخفى عن "+HROLES.filter(r=>!see.includes(r)).map(r=>HROLE_N[r]).join(" و")+" 🔒");
 });
 
 /* ---------- username + password accounts ---------- */
