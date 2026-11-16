@@ -2434,7 +2434,7 @@ async function shrinkImage(f){
     return null;
   } finally { URL.revokeObjectURL(url); }
 }
-async function pushFile(o){ const c=filesColl(); if(!c||!canEditP("docs")) return false;
+async function pushFile(o){ const c=filesColl(); if(!c||(!canEditP("docs")&&!canSee("capture"))) return false;
   try{ await c.doc(o.id).set({id:o.id,type:o.type,name:o.name,at:o.at,data:o.data}); o.up=true; await idbPut(o); return true; }catch(e){ return false; } }
 async function pushPendingFiles(){ try{ (await idbAll()).filter(o=>!o.up).forEach(pushFile); }catch(e){} }
 async function storeData(type,data,name){
@@ -2673,7 +2673,7 @@ function adminName(){ const em=ownerEmail(); return em?personName(em):OWNER_LABE
 const ownerEmail=()=>house?(house.ownerEmail||(house.emails||[])[0]||""):"";
 function roleOf(email){ if(!house) return "admin"; const e=(email||"").toLowerCase(); if(e&&e===ownerEmail()) return "admin"; const r=(house.roles||{})[e]; return ROLE_N[r]?r:"editor"; }
 function myRole(){ if(!house||!fbUser) return "admin"; if(house.owner===fbUser.uid) return "admin"; return roleOf(myEmail()); }
-const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["capture","رفع فواتير وتسجيلات للمدير",0],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1],["totals","الدخل والباقي منه",0],["newmonth","إضافة شهر جديد",0],["activity","نشاط البيت والتنبيهات في الجرس",0],["shareapp","إرسال البرنامج لحد",0]];
+const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["capture","رفع فواتير وتسجيلات للمدير",0],["capdel","يمسح اللي بعته للمدير (لو بالغلط)",0],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1],["totals","الدخل والباقي منه",0],["newmonth","إضافة شهر جديد",0],["activity","نشاط البيت والتنبيهات في الجرس",0],["shareapp","إرسال البرنامج لحد",0]];
 const DEF_OFF={viewer:new Set(["totals","newmonth","activity","shareapp","owed","backup","capture"]),editor:new Set(["totals","newmonth","activity","backup"])};
 const VIEWER_OFF=new Set(["totals","newmonth","activity","shareapp"]);
 const PERM_EDITABLE=Object.fromEntries(PERM_ROWS.map(r=>[r[0],!!r[2]]));
@@ -2841,7 +2841,7 @@ async function sendCapFiles(e){
   if(ok){ $("#capNote").value=""; toast("اتبعت لـ "+adminName()+" ✓"); if(tab==="capture") renderCapture(); } else toast("حصلت مشكلة في الملف");
 }
 function renderCapture(){ const uid=fbUser&&fbUser.uid, mine=events.filter(e=>e.t==="inbox"&&e.by===uid).sort((a,b)=>a.at<b.at?1:-1);
-  $("#capMine").innerHTML= mine.length? `<h2 style="margin-bottom:4px">اللي بعته</h2>`+mine.map(e=>`<div class="inb"><div class="inb-t"><b>${e.kind==="audio"?"🎙 تسجيل":e.kind==="pdf"?"📄 PDF":"📷 صورة"}</b><small>${nfStamp(e.at)}</small>${e.body?`<p>${esc(e.body)}</p>`:""}</div><span class="inb-wait">عند ${adminName()}</span></div>`).join("") : `<p class="empty" style="padding:8px">لسه مابعتش حاجة.</p>`;
+  $("#capMine").innerHTML= mine.length? `<h2 style="margin-bottom:4px">اللي بعته</h2>`+mine.map(e=>`<div class="inb" data-mev="${e.id}" data-mfile="${e.fileId||""}"><div class="inb-t"><b>${e.kind==="audio"?"🎙 تسجيل":e.kind==="pdf"?"📄 PDF":"📷 صورة"}</b><small>${nfStamp(e.at)}</small>${e.body?`<p>${esc(e.body)}</p>`:""}</div><div class="inb-a">${canSee("capdel")?'<button type="button" class="x" data-capdel aria-label="امسح">×</button>':""}<span class="inb-wait">عند ${adminName()}</span></div></div>`).join("") : `<p class="empty" style="padding:8px">لسه مابعتش حاجة.</p>`;
 }
 let fileEv=null;
 function renderInbox(){ const items=events.filter(e=>e.t==="inbox").sort((a,b)=>a.at<b.at?1:-1);
@@ -2857,13 +2857,14 @@ document.addEventListener("click",e=>{
   if(e.target.id==="fileSheet"||e.target.closest("#fileCancel")){ $("#fileSheet").hidden=true; fileEv=null; return; }
   if(e.target.id==="reqSheet"||e.target.closest("#reqCancel")){ $("#reqSheet").hidden=true; return; }
 });
+$("#capMine")&&$("#capMine").addEventListener("click",e=>{ const btn=e.target.closest("[data-capdel]"); if(!btn) return; const row=btn.closest("[data-mev]"); if(!row||!houseRef) return; const id=row.dataset.mev, fid=row.dataset.mfile; houseRef.collection("events").doc(id).delete().then(()=>{ if(fid) houseRef.collection("files").doc(fid).delete().catch(()=>{}); toast("اتمسحت ✓"); renderCapture(); }).catch(()=>toast("ماقدرش يمسح")); });
 $("#capPick")&&$("#capPick").addEventListener("change",sendCapFiles);
 $("#capCam")&&$("#capCam").addEventListener("change",sendCapFiles);
 $("#fileMonth")&&$("#fileMonth").addEventListener("change",fillFileItems);
 $("#inbList")&&$("#inbList").addEventListener("click",e=>{
   const row=e.target.closest("[data-ev]"); if(!row) return; const ev=events.find(x=>x.id===row.dataset.ev); if(!ev) return;
   if(e.target.closest("[data-inbopen]")){ openViewer({name:ev.name||"فاتورة",att:[ev.fileId]},false,null); return; }
-  if(e.target.closest("[data-inbdel]")){ if(houseRef) houseRef.collection("events").doc(ev.id).delete().catch(()=>{}); toast("اتمسحت"); return; }
+  if(e.target.closest("[data-inbdel]")){ if(houseRef){ houseRef.collection("events").doc(ev.id).delete().catch(()=>{}); if(ev.fileId) houseRef.collection("files").doc(ev.fileId).delete().catch(()=>{}); } toast("اتمسحت"); return; }
   if(e.target.closest("[data-inbfile]")){ fileEv=ev; const ks=Object.keys(state.months).filter(k=>state.months[k].items.length).sort().reverse(); if(!ks.length){ toast("سجّل شهر الأول"); return; } $("#fileMonth").innerHTML=ks.map(k=>`<option value="${k}">${monthName(k)}</option>`).join(""); fillFileItems(); $("#fileSheet").hidden=false; }
 });
 $("#fileGo")&&$("#fileGo").addEventListener("click",()=>{
