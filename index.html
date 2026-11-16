@@ -1163,6 +1163,14 @@ h2.cap{font-size:.8rem;letter-spacing:.06em;color:var(--muted);text-transform:up
     <button type="button" id="reqCancel" class="cn">إلغاء</button>
   </div>
 </div>
+<div class="asheet" id="confirmSheet" hidden>
+  <div class="as-box" role="dialog" aria-label="تأكيد المسح">
+    <b>متأكد؟</b>
+    <p class="hint" id="cfBody" style="margin:-2px 0 6px;text-align:center"></p>
+    <button type="button" class="danger" id="cfYes">امسح</button>
+    <button type="button" id="cfNo" class="cn">إلغاء</button>
+  </div>
+</div>
 <div class="asheet" id="attSheet" hidden>
   <div class="as-box" role="dialog" aria-label="رفع المستند">
     <b>رفع المستند</b>
@@ -2833,6 +2841,11 @@ $("#usrAddBtn").addEventListener("click",async()=>{
 
 /* ---------- capture inbox: users send, admin files ---------- */
 function pushEvent(o){ if(!houseRef||!fbUser) return Promise.resolve(); return houseRef.collection("events").add({by:fbUser.uid,email:myEmail(),name:fbUser.displayName||meName(),at:new Date().toISOString(),...o}); }
+let cfCb=null;
+function confirmDel(msg,cb){ $("#cfBody").textContent=msg||"هتمسح الحاجة دي."; cfCb=cb; $("#confirmSheet").hidden=false; }
+$("#cfNo")&&$("#cfNo").addEventListener("click",()=>{ $("#confirmSheet").hidden=true; cfCb=null; });
+$("#confirmSheet")&&$("#confirmSheet").addEventListener("click",e=>{ if(e.target.id==="confirmSheet"){ $("#confirmSheet").hidden=true; cfCb=null; } });
+$("#cfYes")&&$("#cfYes").addEventListener("click",()=>{ const cb=cfCb; cfCb=null; $("#confirmSheet").hidden=true; if(cb) cb(); });
 const capSeeFor=e=>permForRole(roleOf(e),"capture")!=="none";
 async function sendCapFiles(e){
   const fs=[...e.target.files]; e.target.value=""; if(!fs.length) return;
@@ -2857,14 +2870,14 @@ document.addEventListener("click",e=>{
   if(e.target.id==="fileSheet"||e.target.closest("#fileCancel")){ $("#fileSheet").hidden=true; fileEv=null; return; }
   if(e.target.id==="reqSheet"||e.target.closest("#reqCancel")){ $("#reqSheet").hidden=true; return; }
 });
-$("#capMine")&&$("#capMine").addEventListener("click",e=>{ const btn=e.target.closest("[data-capdel]"); if(!btn) return; const row=btn.closest("[data-mev]"); if(!row||!houseRef) return; const id=row.dataset.mev, fid=row.dataset.mfile; houseRef.collection("events").doc(id).delete().then(()=>{ if(fid) houseRef.collection("files").doc(fid).delete().catch(()=>{}); toast("اتمسحت ✓"); renderCapture(); }).catch(()=>toast("ماقدرش يمسح")); });
+$("#capMine")&&$("#capMine").addEventListener("click",e=>{ const btn=e.target.closest("[data-capdel]"); if(!btn) return; const row=btn.closest("[data-mev]"); if(!row||!houseRef) return; const id=row.dataset.mev, fid=row.dataset.mfile; confirmDel("هتمسح اللي بعته للحج صاحب البيت — متأكد؟",()=>{ houseRef.collection("events").doc(id).delete().then(()=>{ if(fid) houseRef.collection("files").doc(fid).delete().catch(()=>{}); toast("اتمسحت ✓"); renderCapture(); }).catch(()=>toast("ماقدرش يمسح")); }); });
 $("#capPick")&&$("#capPick").addEventListener("change",sendCapFiles);
 $("#capCam")&&$("#capCam").addEventListener("change",sendCapFiles);
 $("#fileMonth")&&$("#fileMonth").addEventListener("change",fillFileItems);
 $("#inbList")&&$("#inbList").addEventListener("click",e=>{
   const row=e.target.closest("[data-ev]"); if(!row) return; const ev=events.find(x=>x.id===row.dataset.ev); if(!ev) return;
   if(e.target.closest("[data-inbopen]")){ openViewer({name:ev.name||"فاتورة",att:[ev.fileId]},false,null); return; }
-  if(e.target.closest("[data-inbdel]")){ if(houseRef){ houseRef.collection("events").doc(ev.id).delete().catch(()=>{}); if(ev.fileId) houseRef.collection("files").doc(ev.fileId).delete().catch(()=>{}); } toast("اتمسحت"); return; }
+  if(e.target.closest("[data-inbdel]")){ confirmDel("هتمسح الحاجة دي من الوارد — متأكد؟",()=>{ if(houseRef){ houseRef.collection("events").doc(ev.id).delete().catch(()=>{}); if(ev.fileId) houseRef.collection("files").doc(ev.fileId).delete().catch(()=>{}); } toast("اتمسحت"); }); return; }
   if(e.target.closest("[data-inbfile]")){ fileEv=ev; const ks=Object.keys(state.months).filter(k=>state.months[k].items.length).sort().reverse(); if(!ks.length){ toast("سجّل شهر الأول"); return; } $("#fileMonth").innerHTML=ks.map(k=>`<option value="${k}">${monthName(k)}</option>`).join(""); fillFileItems(); $("#fileSheet").hidden=false; }
 });
 $("#fileGo")&&$("#fileGo").addEventListener("click",()=>{
