@@ -606,6 +606,21 @@ header.ne #saveNow{display:none!important}
 .cl-acts button{flex:1;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:inherit;font-weight:600}
 @media (max-width:380px){.cl-keys button{height:58px;font-size:1.3rem}.pk{width:30px;height:28px}.pg{font-size:.8rem}}
 
+
+.vw-tap{cursor:zoom-in}
+.vw-pdf{width:100%;padding:0;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden;display:flex;flex-direction:column;align-items:center;cursor:zoom-in}
+.vw-pdf canvas{display:block;max-width:100%;height:auto}
+.vw-pdf-l{width:100%;padding:8px 10px;background:var(--paper2);color:var(--ink);font-size:.85rem;text-align:right;overflow-wrap:anywhere}
+.docfull{position:fixed;inset:0;z-index:46;background:#000;display:flex;flex-direction:column}
+.docfull[hidden]{display:none}
+.df-top{display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 10px 10px;background:rgba(10,20,17,.96);border-bottom:1px solid var(--line)}
+.df-top b{flex:1;min-width:0;font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.df-top button{height:40px;min-width:40px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:inherit;font-size:1.05rem;font-weight:700}
+.df-top #dfShare{color:var(--accent);border-color:var(--accent)}
+.df-body{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y pinch-zoom;padding:10px 0 calc(16px + env(safe-area-inset-bottom,0px))}
+.df-body img,.df-body canvas{display:block;margin:0 auto 10px;background:#fff}
+.df-body img{max-width:none}
+.df-msg{color:#ccc;text-align:center;padding:40px 16px}
 </style>
 
 </head>
@@ -901,6 +916,16 @@ header.ne #saveNow{display:none!important}
 <div id="report" aria-hidden="true"></div>
 <input type="file" id="attInput" accept="image/*,application/pdf" multiple hidden>
 <input type="file" id="attCam" accept="image/*" capture="environment" hidden>
+<div class="docfull" id="docFull" hidden role="dialog" aria-modal="true" aria-label="عرض المستند">
+  <div class="df-top">
+    <button type="button" id="dfClose" aria-label="قفل">✕</button>
+    <b id="dfTitle"></b>
+    <button type="button" id="dfZoomOut" aria-label="تصغير">−</button>
+    <button type="button" id="dfZoomIn" aria-label="تكبير">+</button>
+    <button type="button" id="dfShare">شير</button>
+  </div>
+  <div class="df-body" id="dfBody"></div>
+</div>
 <div class="drawer-bg" id="drawerBg" hidden></div>
 <aside class="drawer" id="drawer" aria-label="القايمة" aria-hidden="true">
   <div class="dr-head">
@@ -2065,6 +2090,15 @@ document.addEventListener("visibilitychange",()=>{
   }
 });
 if(NATIVE){ const A=NP("App"); if(A&&A.addListener){
+  A.addListener("backButton",()=>{
+    if(df) return closeDocFull();
+    if(!$("#recSheet").hidden) return stopRec(true);
+    if(!$("#attSheet").hidden){ $("#attSheet").hidden=true; return; }
+    if(!$("#viewer").hidden) return closeViewer();
+    if($("#drawer").classList.contains("on")) return openDrawer(false);
+    if(location.hash&&location.hash!=="#") return history.back();
+    try{ A.exitApp(); }catch(e){}
+  });
   A.addListener("pause",()=>{ if(lockCred&&!verifying&&!awayOk) showLock(); });
   A.addListener("resume",()=>{ if(!lockCred) return; if(awayOk){ awayOk=false; return; } if(!verifying&&!$("#lockScreen").hidden) tryUnlock(); }); } }
 // file picker, share sheet, Google sign-in, PDF save: don't relock for these
@@ -2242,9 +2276,10 @@ async function paintViewer(){
     const del=vw.editable?`<button type="button" class="del" data-vdel="${id}">شيل</button>`:"";
     if(!o) return `<div class="vw-file"><span>المستند ده مش متاح على الموبايل ده${filesColl()?"":" (سجّل دخول علشان يتجاب من السيرفر)"}.</span>${del}</div>`;
     if(o.type==="audio") return `<div class="vw-audio"><span>🎙 تسجيل صوت${o.at?" · "+new Date(o.at).toLocaleDateString("ar-EG",{day:"numeric",month:"long"}):""}</span><audio controls preload="metadata" src="${o.data}"></audio><div class="vw-row" style="display:flex;gap:8px;justify-content:center"><button type="button" class="vw-open" data-vshare="${id}">شير واتساب</button>${del}</div></div>`;
-    if(o.type==="pdf") return `<div class="vw-file"><span>📄 ${esc(o.name||"ملف PDF")}</span><span class="vw-row" style="display:flex;gap:8px"><button type="button" class="vw-open" data-vopen="${id}">افتح</button><button type="button" class="vw-open" data-vshare="${id}">شير</button>${del}</span></div>`;
-    return `<div class="vw-item"><img src="${o.data}" alt="صورة المستند"><div class="vw-row"><button type="button" class="vw-open" data-vopen="${id}">افتح كاملة</button><button type="button" class="vw-open" data-vshare="${id}">شير واتساب</button>${del}</div></div>`;
+    if(o.type==="pdf") return `<div class="vw-item"><button type="button" class="vw-pdf" data-vopen="${id}" aria-label="افتح الملف"><canvas data-pdfprev="${id}"></canvas><span class="vw-pdf-l">📄 ${esc(o.name||"ملف PDF")}</span></button><div class="vw-row"><button type="button" class="vw-open" data-vopen="${id}">افتح</button><button type="button" class="vw-open" data-vshare="${id}">شير واتساب</button>${del}</div></div>`;
+    return `<div class="vw-item"><img src="${o.data}" alt="صورة المستند" data-vopen="${id}" class="vw-tap"><div class="vw-row"><button type="button" class="vw-open" data-vopen="${id}">افتح كاملة</button><button type="button" class="vw-open" data-vshare="${id}">شير واتساب</button>${del}</div></div>`;
   }).join("");
+  body.querySelectorAll("canvas[data-pdfprev]").forEach(async cv=>{ const o=files[ids.indexOf(cv.dataset.pdfprev)]; if(o) try{ await renderPdfPage(o.data,1,cv,Math.min(body.clientWidth-28,480)); }catch(e){ cv.remove(); } });
 }
 function closeViewer(){ $("#viewer").hidden=true; document.body.style.overflow=""; vw=null; }
 $("#vwClose").addEventListener("click",closeViewer);
@@ -2259,8 +2294,7 @@ $("#vwBody").addEventListener("click",async e=>{
   const sh=e.target.closest("[data-vshare]"); if(sh&&vw){ shareItem(vw.item,sh.dataset.vshare,vw.k); return; }
   const op=e.target.closest("[data-vopen]");
   if(op){ const o=await getFile(op.dataset.vopen); if(!o) return;
-    if(NATIVE&&vw){ shareItem(vw.item,op.dataset.vopen,vw.k); return; }
-    allowAway(); window.open(dataToBlobUrl(o.data),"_blank"); return; }
+    openDocFull(o,(vw&&vw.item&&vw.item.name)||o.name||"المستند",vw?{item:vw.item,id:op.dataset.vopen,k:vw.k}:null); return; }
   const dl=e.target.closest("[data-vdel]");
   if(dl&&vw&&vw.editable){ const it=vw.item, id=dl.dataset.vdel, before=[...(it.att||[])];
     it.att=before.filter(x=>x!==id); touch(); syncAttToSaved(it); paintViewer(); if(tab==="month") renderForm();
@@ -2654,6 +2688,43 @@ if(NP("LocalNotifications")){ const LN=NP("LocalNotifications");
   LN.checkPermissions().then(p=>{ if(p.display==="prompt"&&remindOn()){ allowAway(); return LN.requestPermissions(); } }).then(()=>scheduleReminders()).catch(()=>{});
   try{ LN.addListener&&LN.addListener("localNotificationActionPerformed",()=>{ setTimeout(()=>showTab("notifs"),300); }); }catch(e){}
 }
+
+
+/* ---------- full-screen document viewer (images + PDF, no leaving the app) ---------- */
+const PDFJS="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+let pdfLib=null;
+async function getPdfLib(){ if(pdfLib) return pdfLib; await loadScript(PDFJS+"pdf.min.js"); pdfLib=window.pdfjsLib; pdfLib.GlobalWorkerOptions.workerSrc=PDFJS+"pdf.worker.min.js"; return pdfLib; }
+const pdfCache={};
+async function pdfDoc(data){ if(pdfCache[data.length+data.slice(-40)]) return pdfCache[data.length+data.slice(-40)];
+  const L=await getPdfLib(); const bin=atob(data.split(",")[1]); const u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
+  const d=await L.getDocument({data:u}).promise; pdfCache[data.length+data.slice(-40)]=d; return d; }
+async function renderPdfPage(data,n,canvas,cssW){
+  const doc=await pdfDoc(data), page=await doc.getPage(n), v1=page.getViewport({scale:1});
+  const scale=cssW/v1.width, dpr=Math.min(window.devicePixelRatio||1,3), vp=page.getViewport({scale:scale*dpr});
+  canvas.width=Math.floor(vp.width); canvas.height=Math.floor(vp.height); canvas.style.width=Math.floor(cssW)+"px"; canvas.style.height=Math.floor(vp.height/dpr)+"px";
+  await page.render({canvasContext:canvas.getContext("2d"),viewport:vp}).promise; return doc.numPages;
+}
+let df=null; // {o, zoom, share}
+async function openDocFull(o,title,share){
+  df={o,zoom:1,share}; $("#dfTitle").textContent=title||"المستند"; $("#dfShare").hidden=!share||!canSee("docs");
+  $("#docFull").hidden=false; document.body.style.overflow="hidden"; await paintDocFull();
+}
+async function paintDocFull(){
+  if(!df) return; const B=$("#dfBody"), W=Math.min(B.clientWidth,900)-16, w=Math.round(W*df.zoom), o=df.o;
+  if(o.type==="img"){ B.innerHTML=`<img src="${o.data}" alt="صورة المستند" style="width:${w}px">`; return; }
+  if(o.type!=="pdf"){ B.innerHTML=`<p class="df-msg">مش قادر أعرض النوع ده هنا.</p>`; return; }
+  B.innerHTML=`<p class="df-msg">بيفتح الملف…</p>`;
+  try{ const doc=await pdfDoc(o.data); B.innerHTML="";
+    for(let n=1;n<=doc.numPages&&df&&df.o===o;n++){ const c=document.createElement("canvas"); B.append(c); await renderPdfPage(o.data,n,c,w); } }
+  catch(e){ B.innerHTML=`<p class="df-msg">ماقدرتش أفتح الملف${navigator.onLine?"":" — أول مرة محتاج نت علشان عارض الـ PDF يتحمّل"}.</p>`; }
+}
+function closeDocFull(){ $("#docFull").hidden=true; $("#dfBody").innerHTML=""; df=null; if($("#viewer").hidden) document.body.style.overflow=""; }
+$("#dfClose").addEventListener("click",closeDocFull);
+$("#dfZoomIn").addEventListener("click",()=>{ if(!df) return; df.zoom=Math.min(4,df.zoom*1.5); const B=$("#dfBody"), cx=B.scrollLeft/(B.scrollWidth||1), cy=B.scrollTop/(B.scrollHeight||1); paintDocFull().then(()=>{ B.scrollLeft=cx*B.scrollWidth; B.scrollTop=cy*B.scrollHeight; }); });
+$("#dfZoomOut").addEventListener("click",()=>{ if(!df) return; df.zoom=Math.max(1,df.zoom/1.5); paintDocFull(); });
+$("#dfBody").addEventListener("dblclick",()=>{ if(!df) return; df.zoom=df.zoom>1?1:2; paintDocFull(); });
+$("#dfShare").addEventListener("click",()=>{ if(df&&df.share) shareItem(df.share.item,df.share.id,df.share.k); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&df) closeDocFull(); });
 
 /* ---------- calculator ---------- */
 let clExpr="", clHist=[], clDone=false;
