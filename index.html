@@ -1631,7 +1631,7 @@ let editing=null;
 const openData=new Set();
 $("#dList").addEventListener("toggle",e=>{ const d=e.target; if(d.dataset&&d.dataset.id&&d.classList.contains("dl")){ d.open?openData.add(d.dataset.id):openData.delete(d.dataset.id); } },true);
 function renderData(){
-  const cs=state.commits;
+  const cs=state.commits.filter(c=>!cvHidden(c.id));
   $("#dList").innerHTML=cs.length? `<h2 style="margin-bottom:4px">الالتزامات المسجلة</h2>`+cs.map(c=>`
     <details class="dl" data-id="${c.id}" ${openData.has(c.id)?"open":""}>
       <summary>${CHEV}<span class="dl-name">${esc(c.name)}<span class="tag${isDebt(c)?" debt":""}">${esc(c.type)}</span></span><span class="sumq">${isDebt(c)?money(c.value):money(c.monthly)}</span></summary>
@@ -2293,14 +2293,14 @@ function renderHome(){
   const m=state.months[homeMonth]||{income:"",items:[]}, total=sumItems(m), inc=+m.income||0;
   const pct=inc?Math.round(total/inc*100):0;
 
-  const leftAll=state.commits.reduce((a,c)=>a+commitStats(c).leftAmt,0);
+  const leftAll=state.commits.filter(c=>!cvHidden(c.id)).reduce((a,c)=>a+commitStats(c).leftAmt,0);
   const sl=savingsLedger(), sav=sl.length?sl[sl.length-1].run:0;
 
   // tiles
   $("#g6Commit").innerHTML=money(leftAll);
   $("#g6Month").innerHTML=money(total);
   $("#g6Months").innerHTML=`<span class="num">${keys.length}</span> ${keys.length===1?"شهر":"شهور"} مسجلة`;
-  $("#g6Data").innerHTML=`<span class="num">${state.commits.length}</span> التزامات`;
+  $("#g6Data").innerHTML=`<span class="num">${state.commits.filter(c=>!cvHidden(c.id)).length}</span> التزامات`;
   $("#g6Save").innerHTML=money(sav);
   $("#g6Owed").innerHTML=money(owTotalLeft());
   const sk=lastEntered(), nAtt=state.months[sk]?state.months[sk].items.reduce((a,i)=>a+((i.att||[]).length),0):0;
@@ -2615,11 +2615,14 @@ const isAdmin=()=>myRole()==="admin";
 /* what non-admins see inside «ملخص الالتزامات» (house.cview[role] = {parts:[hidden], ids:[hidden]}) */
 const CV_PARTS=[["tiles","المربعات اللي فوق (اتدفع / الباقي / مطلوب الشهر)"],["amt","المبالغ (القسط، المدفوع، الباقي، الإجمالي)"],["po","مواعيد ومبالغ القبض في الجمعيات"],["sch","بيانات الدفع شهر بشهر"]];
 const cvOf=r=>(house&&house.cview&&house.cview[r])||{};
-const cvHidden=id=>{ const r=myRole(); return r!=="admin"&&(cvOf(r).ids||[]).includes(id); };
+// a commitment is hidden from a role if the admin unticked it, or if its expense item is hidden from that role
+const cvAuto=(r,c)=>!!c&&(hiddenRolesFor(c.name).includes(r)||Object.values(state.months).some(m=>m.items.some(i=>i.cid===c.id&&i.priv&&i.priv.roles&&!i.priv.roles.includes(r))));
+const cvHidden=id=>{ const r=myRole(); if(r==="admin") return false; return (cvOf(r).ids||[]).includes(id)||cvAuto(r,commitById(id)); };
 function applyCview(){ const r=myRole(), H=document.documentElement, hp=r==="admin"?[]:(cvOf(r).parts||[]); CV_PARTS.forEach(([k])=>H.classList.toggle("cvh-"+k,hp.includes(k))); }
 function renderCvGrid(){ const admin=isAdmin();
   const cell=(r,kind,id)=>{ const on=!(cvOf(r)[kind]||[]).includes(id); return `<td class="gsep"><button type="button" class="pk ${on?"on":"off"}" ${admin?"":"disabled"} data-cvr="${r}" data-cvk="${kind}" data-cvi="${esc(id)}" aria-pressed="${on}">${on?"✓":"✗"}</button></td>`; };
-  const row=(lbl,kind,id)=>`<tr><td>${lbl}</td>${cell("editor",kind,id)}${cell("viewer",kind,id)}</tr>`;
+  const autoCell=`<td class="gsep"><button type="button" class="pk off" disabled title="مخفي علشان البند بتاعه مخفي">✗</button></td>`;
+  const row=(lbl,kind,id)=>{ const c=kind==="ids"&&commitById(id); return `<tr><td>${lbl}${c&&(cvAuto("editor",c)||cvAuto("viewer",c))?'<small>🔒 مخفي مع البند بتاعه</small>':""}</td>${c&&cvAuto("editor",c)?autoCell:cell("editor",kind,id)}${c&&cvAuto("viewer",c)?autoCell:cell("viewer",kind,id)}</tr>`; };
   $("#cvGrid").innerHTML=`<thead><tr><th>جوه الصفحة</th><th class="gsep">محرر يشوف</th><th class="gsep">مشاهد يشوف</th></tr></thead><tbody>`+
     CV_PARTS.map(([k,l])=>row(l,"parts",k)).join("")+
     (state.commits.length?`<tr><td colspan="3" class="pg-sub"><b>الالتزامات</b></td></tr>`+state.commits.map(c=>row(`${esc(c.name)}<small>${esc(c.type||"")}</small>`,"ids",c.id)).join(""):"")+`</tbody>`; }
