@@ -2677,9 +2677,12 @@ const isAdmin=()=>myRole()==="admin";
 /* what non-admins see inside «ملخص الالتزامات» (house.cview[role] = {parts:[hidden], ids:[hidden]}) */
 const CV_PARTS=[["tiles","المربعات اللي فوق (اتدفع / الباقي / مطلوب الشهر)"],["amt","المبالغ (القسط، المدفوع، الباقي، الإجمالي)"],["po","مواعيد ومبالغ القبض في الجمعيات"],["sch","بيانات الدفع شهر بشهر"]];
 const cvOf=r=>(house&&house.cview&&house.cview[r])||{};
-// a commitment is hidden from a role if the admin unticked it, or if its expense item is hidden from that role
-const cvAuto=(r,c)=>!!c&&(hiddenRolesFor(c.name).includes(r)||Object.values(state.months).some(m=>m.items.some(i=>i.cid===c.id&&i.priv&&i.priv.roles&&!i.priv.roles.includes(r))));
-const cvHidden=id=>{ const r=myRole(); if(r==="admin") return false; return (cvOf(r).ids||[]).includes(id)||cvAuto(r,commitById(id)); };
+// a commitment is "name-hidden" when its linked expense item name is in the hidden list (locks the grid toggle)
+const cmtNameHidden=(r,c)=>!!c&&hiddenRolesFor(c.name).includes(r);
+const cvAuto=(r,c)=>cmtNameHidden(r,c);
+// a commitment is hidden from a role by its item name, or by the admin's toggle in the grid
+const cmtHidden=(r,c)=>!!c&&(cmtNameHidden(r,c)||(cvOf(r).ids||[]).includes(c.id));
+const cvHidden=id=>{ const r=myRole(); if(r==="admin") return false; return cmtHidden(r,commitById(id)); };
 const MV_PARTS=[["amt","إجمالي كل شهر وإجمالي كل قسم"],["paid","اتدفع كام ولسه كام"],["items","البنود جوه كل شهر"]];
 const mvOf=r=>(house&&house.mview&&house.mview[r])||{};
 const mvHidden=k=>{ const r=myRole(); return r!=="admin"&&!!house&&!!fbUser&&(mvOf(r).ids||[]).includes(k); };
@@ -2707,6 +2710,7 @@ function renderCvGrid(){ const admin=isAdmin();
 document.addEventListener("click",async e=>{ const b=e.target.closest("[data-cvr]"); if(!b||b.disabled||!houseRef||!isAdmin()) return;
   const r=b.dataset.cvr, kind=b.dataset.cvk, id=b.dataset.cvi, cv=JSON.parse(JSON.stringify(house.cview||{})); cv[r]=cv[r]||{}; const l=cv[r][kind]||[];
   cv[r][kind]=l.includes(id)?l.filter(x=>x!==id):[...l,id]; house.cview=cv; renderCvGrid();
+  if(kind==="ids") applyHideRules(); // hide/show the linked monthly items too
   try{ await houseRef.update({cview:cv}); }catch(x){ toast("ماتحفظش، جرّب تاني"); } });
 function applyRole(){
   const r=myRole(), H=document.documentElement; H.classList.toggle("is-admin",r==="admin"); H.classList.toggle("is-user",!!(house&&fbUser)&&r!=="admin");
@@ -2878,8 +2882,9 @@ function hiddenRolesFor(name){ const h=(house&&house.hideItems)||{}, n=nName(nam
 function allowOf(priv){ if(!priv) return []; if(priv.roles) return (house&&house.emails||[]).filter(e=>roleOf(e)!=="admin"&&priv.roles.includes(roleOf(e))); return priv.allow||[]; }
 function applyRulesToMonth(m){ let ch=false;
   m.items.forEach(it=>{ if(it.priv&&!it.priv.roles) return; // older per-person choices stay as they are
-    const hid=hiddenRolesFor(it.name);
-    if(hid.length){ const roles=HROLES.filter(r=>!hid.includes(r)); if(!it.priv||it.priv.roles.join()!==roles.join()){ it.priv={roles}; ch=true; } }
+    const hid=new Set(hiddenRolesFor(it.name));
+    if(it.cid){ const c=commitById(it.cid); if(c) HROLES.forEach(r=>{ if(cmtHidden(r,c)) hid.add(r); }); } // follow the commitment's hiding
+    if(hid.size){ const roles=HROLES.filter(r=>!hid.has(r)); if(!it.priv||it.priv.roles.join()!==roles.join()){ it.priv={roles}; ch=true; } }
     else if(it.priv){ delete it.priv; ch=true; } });
   return ch; }
 let rulesTimer=null;
