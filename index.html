@@ -954,6 +954,7 @@ h2.cap{font-size:.8rem;letter-spacing:.06em;color:var(--muted);text-transform:up
   </section>
 
   <section id="tab-capture" hidden>
+    <div id="capReq"></div>
     <div class="card dc">
       <h2 id="capH2">ابعت فاتورة أو تسجيل للمدير</h2>
       <p class="hint" id="capHint" style="margin-top:0">صوّر الفاتورة بنفسك أو سجّل بيانات الدفع، وهتتبعت للمدير يرتّبها في مكانها.</p>
@@ -2679,9 +2680,13 @@ document.addEventListener("click",async e=>{
 /* ---------- roles ---------- */
 const ROLE_N={admin:"مدير",editor:"محرر",viewer:"مشاهد"};
 let houseRef=null, members={}, events=[], locs=[], chat=[], extrasUnsub=[], feSeen=null;
-function renderChat(){ const me=fbUser&&fbUser.uid;
+function renderChat(){ const me=fbUser&&fbUser.uid; const cf=$("#chatForm"); if(cf) cf.style.display=canEditP("chat")?"":"none";
   $("#chatList").innerHTML=chat.length?chat.map(m=>`<div class="chat-msg ${m.by===me?"me":""}">${m.by!==me?`<span class="cm-who">${esc(personName(m.email)||m.name||"")}</span>`:""}<span class="cm-tx">${esc(m.text)}</span><time>${nfStamp(m.at)}</time></div>`).join(""):`<p class="empty" style="margin:auto">لسه مفيش رسايل. ابدأ الكلام 👋</p>`;
   const l=$("#chatList"); if(l) l.scrollTop=l.scrollHeight; }
+let nIncId=2000;
+function notifyIncoming(title,body){ const LN=NP("LocalNotifications"); if(!LN) return;
+  try{ LN.schedule({notifications:[{id:2000+((nIncId++)%800),title:title||"مصاريف البيت",body:String(body||"").slice(0,140),schedule:{at:new Date(Date.now()+200)},smallIcon:"ic_stat_notify",iconColor:"#3DD9B3"}]}); }catch(e){}
+}
 function forceExitNow(){ try{ flushAll(); }catch(e){} const A=NP("App");
   const o=document.createElement("div"); o.style.cssText="position:fixed;inset:0;z-index:99999;background:rgba(8,19,15,.97);display:grid;place-items:center;padding:24px;text-align:center;color:#EAF4EF;font-family:inherit";
   o.innerHTML='<div style="max-width:320px"><div style="font-size:44px;margin-bottom:10px">🔄</div><b style="font-size:1.2rem;display:block;margin-bottom:8px">المدير قفل البرنامج للتحديث</b><p style="margin:0;line-height:1.7;opacity:.85">هيتقفل دلوقتي، افتحه تاني.</p></div>';
@@ -2714,13 +2719,14 @@ function adminName(){ const em=ownerEmail(); return em?personName(em):OWNER_LABE
 const ownerEmail=()=>house?(house.ownerEmail||(house.emails||[])[0]||""):"";
 function roleOf(email){ if(!house) return "admin"; const e=(email||"").toLowerCase(); if(e&&e===ownerEmail()) return "admin"; const r=(house.roles||{})[e]; return ROLE_N[r]?r:"editor"; }
 function myRole(){ if(!house||!fbUser) return "admin"; if(house.owner===fbUser.uid) return "admin"; return roleOf(myEmail()); }
-const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["capture","رفع فواتير وتسجيلات للمدير",0],["capdel","يمسح اللي بعته للمدير (لو بالغلط)",0],["chat","محادثة البيت",0],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1],["totals","الدخل والباقي منه",0],["newmonth","إضافة شهر جديد",0],["activity","نشاط البيت والتنبيهات في الجرس",0],["shareapp","إرسال البرنامج لحد",0]];
+const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["capture","رفع فواتير وتسجيلات للمدير",0],["capdel","يمسح اللي بعته للمدير (لو بالغلط)",0],["chat","محادثة البيت",1],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1],["totals","الدخل والباقي منه",0],["newmonth","إضافة شهر جديد",0],["activity","نشاط البيت والتنبيهات في الجرس",0],["shareapp","إرسال البرنامج لحد",0]];
 const DEF_OFF={viewer:new Set(["totals","newmonth","activity","shareapp","owed","backup","capture"]),editor:new Set(["totals","newmonth","activity","backup"])};
+const DEF_EDIT=new Set(["chat"]); // these default to "can send/edit" even for viewers
 const VIEWER_OFF=new Set(["totals","newmonth","activity","shareapp"]);
 const PERM_EDITABLE=Object.fromEntries(PERM_ROWS.map(r=>[r[0],!!r[2]]));
 function permForRole(r,p){ if(r==="admin") return PERM_EDITABLE[p]?"edit":"view";
   const v=house&&house.perms&&house.perms[r]&&house.perms[r][p];
-  const d=v||((DEF_OFF[r]&&DEF_OFF[r].has(p))?"none":r==="viewer"?"view":(PERM_EDITABLE[p]?"edit":"view"));
+  const d=v||((DEF_OFF[r]&&DEF_OFF[r].has(p))?"none":DEF_EDIT.has(p)?"edit":r==="viewer"?"view":(PERM_EDITABLE[p]?"edit":"view"));
   return d==="edit"&&!PERM_EDITABLE[p]?"view":d; }
 function permOf(p){ return permForRole(myRole(),p); }
 const canSee=p=>!(p in PERM_EDITABLE)||permOf(p)!=="none";
@@ -2779,8 +2785,20 @@ function applyRole(){
 document.addEventListener("submit",e=>{ const fp={dForm:"data",svForm:"savings",owForm:"owed"}[e.target&&e.target.id]||"month"; if(!canEditP(fp)){ e.preventDefault(); e.stopImmediatePropagation(); toast("مش متاح لك التعديل هنا"); } },true);
 function subscribeHouseExtras(ref,u){
   unsubscribeHouseExtras();
-  extrasUnsub.push(ref.collection("events").orderBy("at","desc").limit(60).onSnapshot(s=>{ events=s.docs.map(d=>({id:d.id,...d.data()})); nfRefresh(); },()=>{}));
-  extrasUnsub.push(ref.collection("chat").orderBy("at","desc").limit(100).onSnapshot(s=>{ chat=s.docs.map(d=>({id:d.id,...d.data()})).reverse(); if(tab==="chat") renderChat(); },()=>{}));
+  let evFirst=true, chatFirst=true;
+  extrasUnsub.push(ref.collection("events").orderBy("at","desc").limit(60).onSnapshot(s=>{
+    events=s.docs.map(d=>({id:d.id,...d.data()})); nfRefresh();
+    if(!evFirst){ const me=fbUser&&fbUser.uid; s.docChanges().forEach(ch=>{ if(ch.type!=="added") return; const e=ch.doc.data(); if(e.by===me) return;
+      if(e.t==="request"&&e.target===myEmail()&&(document.hidden||tab!=="capture")) notifyIncoming("📸 "+adminName()+" طلب منك",e.body||"صوّر فاتورة أو سجّل");
+      else if(e.t==="inbox"&&isAdmin()&&(document.hidden||tab!=="inbox")) notifyIncoming("📥 "+(personName(e.email)||e.name||"حد")+" بعتلك",e.body||(e.kind==="audio"?"تسجيل صوت":"فاتورة")); }); }
+    evFirst=false;
+  },()=>{}));
+  extrasUnsub.push(ref.collection("chat").orderBy("at","desc").limit(100).onSnapshot(s=>{
+    chat=s.docs.map(d=>({id:d.id,...d.data()})).reverse(); if(tab==="chat") renderChat();
+    if(!chatFirst){ const me=fbUser&&fbUser.uid; s.docChanges().forEach(ch=>{ if(ch.type!=="added") return; const m=ch.doc.data(); if(m.by===me) return;
+      if(document.hidden||tab!=="chat") notifyIncoming("💬 "+(personName(m.email)||m.name||"رسالة جديدة"),m.text); }); }
+    chatFirst=false;
+  },()=>{}));
   extrasUnsub.push(ref.collection("members").onSnapshot(s=>{ members={}; s.docs.forEach(d=>members[d.id]=d.data()); if(tab==="users") renderUsers(); renderDrawerFoot(); },()=>{}));
   const em=(u.email||"").toLowerCase();
   ref.collection("members").doc(em).set({name:u.displayName||"",photo:u.photoURL||"",lastSeen:new Date().toISOString(),app:NATIVE?"app":"web"},{merge:true}).catch(()=>{});
@@ -2888,6 +2906,8 @@ async function sendCapFiles(e){
   if(ok){ $("#capNote").value=""; toast("اتبعت لـ "+adminName()+" ✓"); if(tab==="capture") renderCapture(); } else toast("حصلت مشكلة في الملف");
 }
 function renderCapture(){ const uid=fbUser&&fbUser.uid, mine=events.filter(e=>e.t==="inbox"&&e.by===uid).sort((a,b)=>a.at<b.at?1:-1);
+  const reqs=events.filter(e=>e.t==="request"&&e.target===myEmail()).sort((a,b)=>a.at<b.at?1:-1);
+  const cr=$("#capReq"); if(cr) cr.innerHTML= reqs.length? `<div class="card dc" style="border:1px solid rgba(232,184,75,.45);margin-bottom:12px"><h2 style="margin:0 0 8px">📸 مطلوب منك</h2>`+reqs.map(e=>`<div class="inb"><div class="inb-t"><b>${esc(adminName())}</b>${e.body?`<p>${esc(e.body)}</p>`:""}<small>${nfStamp(e.at)}</small></div></div>`).join("")+`</div>` : "";
   $("#capMine").innerHTML= mine.length? `<h2 style="margin-bottom:4px">اللي بعته</h2>`+mine.map(e=>`<div class="inb" data-mev="${e.id}" data-mfile="${e.fileId||""}"><div class="inb-t"><b>${e.kind==="audio"?"🎙 تسجيل":e.kind==="pdf"?"📄 PDF":"📷 صورة"}</b><small>${nfStamp(e.at)}</small>${e.body?`<p>${esc(e.body)}</p>`:""}</div><div class="inb-a">${canSee("capdel")?'<button type="button" class="x" data-capdel aria-label="امسح">×</button>':""}<span class="inb-wait">عند ${adminName()}</span></div></div>`).join("") : `<p class="empty" style="padding:8px">لسه مابعتش حاجة.</p>`;
 }
 let fileEv=null;
@@ -2908,7 +2928,7 @@ document.addEventListener("click",e=>{
   if(e.target.id==="reqSheet"||e.target.closest("#reqCancel")){ $("#reqSheet").hidden=true; return; }
 });
 $("#capMine")&&$("#capMine").addEventListener("click",e=>{ const btn=e.target.closest("[data-capdel]"); if(!btn) return; const row=btn.closest("[data-mev]"); if(!row||!houseRef) return; const id=row.dataset.mev, fid=row.dataset.mfile; confirmDel("هتمسح اللي بعته للحج صاحب البيت — متأكد؟",()=>{ houseRef.collection("events").doc(id).delete().then(()=>{ if(fid) houseRef.collection("files").doc(fid).delete().catch(()=>{}); toast("اتمسحت ✓"); renderCapture(); }).catch(()=>toast("ماقدرش يمسح")); }); });
-$("#chatForm")&&$("#chatForm").addEventListener("submit",e=>{ e.preventDefault(); const t=($("#chatText").value||"").trim(); if(!t||!houseRef||!fbUser) return; $("#chatText").value=""; houseRef.collection("chat").add({by:fbUser.uid,email:myEmail(),name:meName(),text:t.slice(0,1000),at:new Date().toISOString()}).catch(()=>toast("ماتبعتش، جرّب تاني")); });
+$("#chatForm")&&$("#chatForm").addEventListener("submit",e=>{ e.preventDefault(); if(!canEditP("chat")){ toast("صلاحيتك هنا عرض بس"); return; } const t=($("#chatText").value||"").trim(); if(!t||!houseRef||!fbUser) return; $("#chatText").value=""; houseRef.collection("chat").add({by:fbUser.uid,email:myEmail(),name:meName(),text:t.slice(0,1000),at:new Date().toISOString()}).catch(()=>toast("ماتبعتش، جرّب تاني")); });
 $("#inbChat")&&$("#inbChat").addEventListener("click",()=>showTab("chat"));
 $("#forceExitBtn")&&$("#forceExitBtn").addEventListener("click",()=>{ if(!houseRef||!isAdmin()) return; confirmDel("هيخرّج كل المستخدمين من البرنامج ويخليهم يفتحوه تاني — متأكد؟",()=>{ houseRef.update({forceExit:Date.now()}).then(()=>toast("اتبعت الخروج لكل الأجهزة ✓")).catch(()=>toast("ماقدرش، جرّب تاني")); }); });
 $("#capPick")&&$("#capPick").addEventListener("change",sendCapFiles);
