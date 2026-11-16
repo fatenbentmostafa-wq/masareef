@@ -549,9 +549,63 @@ nav button[aria-selected=true]{color:var(--accent);font-weight:600}
 #houseCard{display:none!important}
 header.ne #saveNow{display:none!important}
 .ro-banner{display:none}
-.ro .ro-banner{display:block;margin-bottom:12px;padding:12px 14px;border-radius:14px;border:1px solid rgba(232,184,75,.4);background:rgba(232,184,75,.08);color:var(--ink);font-size:.9rem;line-height:1.6}
-.ro #saveNow,.ro #homeNewMonth,.ro #newMonth,.ro #nmPanel,.ro #saveMonth,.ro #dForm,.ro #svForm,.ro #owForm,.ro #bkLoad,.ro #dList button,.ro #svList button,.ro #owList button,.ro #monthsList [data-del],.ro #vwAdd,.ro [data-vdel]{display:none!important}
-.ro #tab-month>*:not(.ro-banner){pointer-events:none}
+.ro-month .ro-banner{display:block;margin-bottom:12px;padding:12px 14px;border-radius:14px;border:1px solid rgba(232,184,75,.4);background:rgba(232,184,75,.08);color:var(--ink);font-size:.9rem;line-height:1.6}
+.ro-month #saveNow,.ro-month #homeNewMonth,.ro-month #saveMonth{display:none!important}
+.ro-month #tab-month>*:not(.ro-banner){pointer-events:none}
+.ro-months #newMonth,.ro-months #nmPanel,.ro-months #monthsList [data-del]{display:none!important}
+.ro-data #dForm,.ro-data #dList button{display:none!important}
+.ro-savings #svForm,.ro-savings #svList button{display:none!important}
+.ro-owed #owForm,.ro-owed #owList button{display:none!important}
+.ro-docs [data-att]:not(.has),.ro-docs #vwAdd,.ro-docs [data-vdel]{display:none!important}
+.ro-backup #bkLoad{display:none!important}
+.hide-month [data-go="month"],.hide-month [data-dgo="month"],.hide-month #homeNewMonth,
+.hide-months [data-go="months"],.hide-months [data-dgo="months"],.hide-months .tabbar [data-nav="months"],
+.hide-summary [data-go="summary"],.hide-summary [data-dgo="summary"],.hide-summary .tabbar [data-nav="summary"],
+.hide-commits [data-go="commits"],.hide-commits [data-dgo="commits"],.hide-commits .tabbar [data-nav="commits"],
+.hide-data [data-go="data"],.hide-data [data-dgo="data"],.hide-data .tabbar [data-nav="data"],
+.hide-savings [data-go="savings"],.hide-savings [data-dgo="savings"],
+.hide-owed [data-go="owed"],.hide-owed [data-dgo="owed"],
+.hide-notifs #bellBtn,.hide-notifs [data-dgo="notifs"],
+.hide-calc [data-dgo="calc"],
+.hide-docs [data-att],.hide-docs [data-share],.hide-docs .sum-it .cl,
+.hide-backup #backupCard,.hide-backup #pdfBox,.hide-backup #shareBtn{display:none!important}
+/* permissions grid */
+.pg-wrap{overflow-x:auto;margin:0 -4px}
+.pg{width:100%;border-collapse:separate;border-spacing:0;font-size:.86rem;min-width:300px}
+.pg th,.pg td{padding:7px 3px;text-align:center;border-bottom:1px solid var(--line)}
+.pg thead th{font-size:.78rem;color:var(--muted);font-weight:600;position:sticky;top:0;background:var(--paper)}
+.pg thead tr:first-child th{color:var(--ink);font-size:.88rem;font-weight:700}
+.pg th.grp{border-bottom:2px solid var(--line)}
+.pg .gsep{border-inline-start:1px solid var(--line)}
+.pg td:first-child,.pg th:first-child{text-align:right;padding-inline-start:4px;font-weight:600}
+.pg td small{display:block;color:var(--muted);font-weight:400;font-size:.72rem}
+.pk{width:34px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--paper2);font:inherit;font-weight:800;font-size:1rem;line-height:1;display:inline-grid;place-items:center;padding:0}
+.pk.on{color:#3DD9B3;border-color:rgba(61,217,179,.55);background:rgba(61,217,179,.12)}
+.pk.off{color:#FF6B6B;border-color:rgba(255,107,107,.45);background:rgba(255,107,107,.10)}
+.pk.na{color:var(--muted);opacity:.35;border-style:dashed}
+.pk:disabled{cursor:default}
+.pg-note{margin:10px 0 0;color:var(--muted);font-size:.82rem;line-height:1.6}
+/* calculator */
+.calc{direction:ltr;max-width:420px;margin:0 auto}
+.cl-disp{padding:16px 18px;border-radius:20px;background:var(--paper);border:1px solid var(--line);text-align:right;margin-bottom:12px;min-height:118px;display:flex;flex-direction:column;justify-content:flex-end;gap:6px}
+.cl-expr{color:var(--muted);font-size:1.1rem;min-height:1.6em;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.cl-res{font-size:clamp(2rem,10vw,2.8rem);font-weight:700;overflow-wrap:anywhere;font-variant-numeric:tabular-nums;line-height:1.15}
+.cl-res.err{color:var(--neg);font-size:1.3rem}
+.cl-keys{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.cl-keys button{height:64px;border-radius:18px;border:1px solid var(--line);background:var(--paper2);color:var(--ink);font:inherit;font-size:1.45rem;font-weight:600;font-variant-numeric:tabular-nums}
+.cl-keys button:active{transform:scale(.96)}
+.cl-keys .op{color:var(--t3);background:#2A2410;border-color:#5A4A1C}
+.cl-keys .fn{color:var(--accent);background:var(--accent-soft)}
+.cl-keys .eq{background:linear-gradient(180deg,#5FE6C6,#2FC7A1);color:#06231C;border:0;font-weight:800}
+.cl-keys .zero{grid-column:span 2}
+.cl-hist{margin-top:14px;direction:rtl}
+.cl-hist button{width:100%;display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:0;border-bottom:1px dashed var(--line);background:none;color:var(--ink);font:inherit;font-variant-numeric:tabular-nums}
+.cl-hist button span:first-child{color:var(--muted);direction:ltr}
+.cl-hist button b{direction:ltr}
+.cl-acts{display:flex;gap:8px;margin-top:10px;direction:rtl}
+.cl-acts button{flex:1;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:inherit;font-weight:600}
+@media (max-width:380px){.cl-keys button{height:58px;font-size:1.3rem}.pk{width:30px;height:28px}.pg{font-size:.8rem}}
+
 </style>
 
 </head>
@@ -617,7 +671,7 @@ header.ne #saveNow{display:none!important}
       <button type="button" class="btn-main" id="sbLogin"><svg viewBox="0 0 24 24"><path d="M7 17.5a4.5 4.5 0 0 1-.5-9 6 6 0 0 1 11.5 1.5 4 4 0 0 1-1 7.5z"/><path d="M12 11v6M9.5 13.5 12 11l2.5 2.5"/></svg>دخول بجوجل</button>
       <button type="button" id="sbMembers" hidden>المستخدمين والصلاحيات</button>
     </div>
-    <div class="card dc">
+    <div class="card dc" id="backupCard">
       <h2>نسخة احتياطية</h2>
       <p class="hint" id="updated"></p>
       <div class="filebar">
@@ -645,7 +699,7 @@ header.ne #saveNow{display:none!important}
 
   <!-- 1. monthly expenses (entry form) -->
   <section id="tab-month" hidden>
-    <div class="ro-banner">صلاحيتك «مشاهد»: تقدر تشوف المصاريف بس من غير تعديل. المستندات تفتحها من «ملخص الشهور».</div>
+    <div class="ro-banner">صلاحيتك هنا «عرض بس»: تقدر تشوف المصاريف من غير تعديل. المستندات تفتحها من «ملخص الشهور».</div>
     <div class="card grid2">
       <label class="f">الشهر<input type="month" id="monthPick"></label>
       <label class="f">إجمالي الدخل الشهر ده<input type="number" inputmode="decimal" id="income" placeholder="0"></label>
@@ -740,13 +794,24 @@ header.ne #saveNow{display:none!important}
     </div>
     <div class="card dc">
       <h2>الصلاحيات</h2>
-      <table class="perm"><thead><tr><th></th><th>مدير</th><th>محرر</th><th>مشاهد</th></tr></thead><tbody>
-        <tr><td>يشوف كل الداتا والمستندات</td><td>✓</td><td>✓</td><td>✓</td></tr>
-        <tr><td>يسجّل ويعدّل المصاريف</td><td>✓</td><td>✓</td><td>—</td></tr>
-        <tr><td>يضيف ويعدّل الالتزامات والمدخرات</td><td>✓</td><td>✓</td><td>—</td></tr>
-        <tr><td>يرفع مستندات ويسجّل صوت</td><td>✓</td><td>✓</td><td>—</td></tr>
-        <tr><td>يضيف ويشيل مستخدمين ويغيّر صلاحياتهم</td><td>✓</td><td>—</td><td>—</td></tr>
-      </tbody></table>
+      <p class="hint" style="margin-top:0">علّم ✓ أو ✗ قصاد كل صفحة: «يشوف» يعني الصفحة تظهر له، و«يعدّل» يعني يقدر يضيف ويغيّر فيها. التغيير بيتطبق على طول على كل الموبايلات.</p>
+      <div class="pg-wrap"><table class="pg" id="permGrid"></table></div>
+      <p class="pg-note">المدير بيشوف ويعدّل كل حاجة دايمًا. الصفحات اللي جنبها «عرض بس» مافيهاش تعديل أصلًا.</p>
+    </div>
+  </section>
+
+  <section id="tab-calc" hidden>
+    <div class="calc">
+      <div class="cl-disp" aria-live="polite"><div class="cl-expr" id="clExpr"></div><div class="cl-res" id="clRes">0</div></div>
+      <div class="cl-keys" id="clKeys">
+        <button type="button" class="fn" data-k="C">C</button><button type="button" class="fn" data-k="back" aria-label="مسح رقم">⌫</button><button type="button" class="fn" data-k="%">%</button><button type="button" class="op" data-k="/" aria-label="قسمة">÷</button>
+        <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button><button type="button" class="op" data-k="*" aria-label="ضرب">×</button>
+        <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button><button type="button" class="op" data-k="-" aria-label="طرح">−</button>
+        <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button><button type="button" class="op" data-k="+" aria-label="جمع">+</button>
+        <button type="button" class="zero" data-k="0">0</button><button type="button" data-k=".">.</button><button type="button" class="eq" data-k="=" aria-label="يساوي">=</button>
+      </div>
+      <div class="cl-acts"><button type="button" id="clCopy">نسخ الناتج</button><button type="button" id="clClearHist">مسح السجل</button></div>
+      <div class="cl-hist" id="clHist"></div>
     </div>
   </section>
 
@@ -855,6 +920,7 @@ header.ne #saveNow{display:none!important}
     <button type="button" class="dr-it c-pink" data-dgo="savings"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11a7 6 0 0 1 13-2l2-1v4l-1.5.5A7 6 0 0 1 15 17v2h-2.5v-1.2a8 8 0 0 1-2 0V19H8v-2.3A6 6 0 0 1 5 11z"/><circle cx="15" cy="10.5" r=".8"/></svg></span><span>المدخرات</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button type="button" class="dr-it c-green" data-dgo="owed"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12l4-4 4 3 6-6"/><path d="M14 5h3v3"/><path d="M4 20h16"/></svg></span><span>فلوس ليا برا</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button type="button" class="dr-it c-gold" data-dgo="notifs"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 19.5a2 2 0 0 0 4 0"/></svg></span><span>الإشعارات</span><span class="cnt" id="drBell" hidden>0</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button type="button" class="dr-it c-blue" data-dgo="calc"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8 7h8M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18h.01M12 18h3.5"/></svg></span><span>الآلة الحاسبة</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button type="button" class="dr-it c-blue" data-dgo="settings"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span><span>الإعدادات</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button type="button" class="dr-it c-teal" data-dgo="about"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></span><span>عن البرنامج</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button type="button" class="dr-it out" id="drOut" hidden><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/></svg></span><span>تسجيل خروج</span></button>
@@ -923,7 +989,7 @@ function schedule(key,ms=600){ markChanged(); dirtyUI();clearTimeout(timers[key]
 const chains={};
 function flush(key){
   saveLocal(); savedUI();
-  if(!backend||!canEdit()) return;
+  if(!backend||!canEditKey(key)) return;
   chains[key]=(chains[key]||Promise.resolve()).then(()=>{
     const clean=o=>JSON.parse(JSON.stringify(o));
     if(key==="commits") return backend.doc("commits").set(clean({list:state.commits}));
@@ -2006,17 +2072,18 @@ document.addEventListener("click",e=>{ if(e.target.closest("#bkLoad,#shareBtn,#b
 (async()=>{ const ok=await lockSupported(); $("#lockCard").hidden=!ok; if(ok){ renderLockCard(); if(lockCred&&!NOLOCK_RELOAD){ showLock(); tryUnlock(); return; } } hideLock(); })();
 
 /* ---------- pages ---------- */
-const PAGES={home:"مصاريف البيت",notifs:"الإشعارات",users:"المستخدمين",summary:"ملخص الشهور",month:"المصاريف",months:"الشهور",commits:"ملخص الالتزامات",data:"الداتا",savings:"المدخرات",owed:"فلوس ليا برا",settings:"الإعدادات"};
+const PAGES={home:"مصاريف البيت",notifs:"الإشعارات",users:"المستخدمين",calc:"الآلة الحاسبة",summary:"ملخص الشهور",month:"المصاريف",months:"الشهور",commits:"ملخص الالتزامات",data:"الداتا",savings:"المدخرات",owed:"فلوس ليا برا",settings:"الإعدادات"};
 let tab="home", cameFromHome=false;
 function applyRoute(){
-  const h=location.hash.slice(1); const t=PAGES[h]&&h!=="home"?h:"home";
+  const h=location.hash.slice(1); let t=PAGES[h]&&h!=="home"?h:"home";
+  if(t!=="home"&&typeof canSee==="function"&&!canSee(t)){ t="home"; history.replaceState(null,"",location.pathname+location.search); setTimeout(()=>toast("الصفحة دي مش متاحة لك"),50); }
   if(t==="month"&&tab!=="month") closeSecs();
   tab=t;
   Object.keys(PAGES).forEach(x=>$("#tab-"+x).hidden=x!==t);
   $("#pageTitle").textContent=t==="home"?"":PAGES[t];
   $("#backBtn").hidden=t==="home";
   document.querySelector("header").hidden=t==="home";
-  document.querySelector("header").classList.toggle("ne",["notifs","users","summary","commits"].includes(t));
+  document.querySelector("header").classList.toggle("ne",["notifs","users","summary","commits","calc"].includes(t));
   const navKey={home:"home",months:"months",summary:"summary",commits:"commits",data:"data",settings:"settings"}[t];
   document.querySelectorAll(".tabbar [data-nav]").forEach(b=>{ if(b.dataset.nav===navKey) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
   showUpdated();
@@ -2113,7 +2180,7 @@ async function shrinkImage(f){
     return null;
   } finally { URL.revokeObjectURL(url); }
 }
-async function pushFile(o){ const c=filesColl(); if(!c||!canEdit()) return false;
+async function pushFile(o){ const c=filesColl(); if(!c||!canEditP("docs")) return false;
   try{ await c.doc(o.id).set({id:o.id,type:o.type,name:o.name,at:o.at,data:o.data}); o.up=true; await idbPut(o); return true; }catch(e){ return false; } }
 async function pushPendingFiles(){ try{ (await idbAll()).filter(o=>!o.up).forEach(pushFile); }catch(e){} }
 async function storeData(type,data,name){
@@ -2329,16 +2396,29 @@ const meName=()=>String((fbUser&&fbUser.displayName)||myEmail()||"حد").split(/
 const ownerEmail=()=>house?(house.ownerEmail||(house.emails||[])[0]||""):"";
 function roleOf(email){ if(!house) return "admin"; const e=(email||"").toLowerCase(); if(e&&e===ownerEmail()) return "admin"; const r=(house.roles||{})[e]; return ROLE_N[r]?r:"editor"; }
 function myRole(){ if(!house||!fbUser) return "admin"; if(house.owner===fbUser.uid) return "admin"; return roleOf(myEmail()); }
-const canEdit=()=>myRole()!=="viewer";
+const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1]];
+const PERM_EDITABLE=Object.fromEntries(PERM_ROWS.map(r=>[r[0],!!r[2]]));
+function permOf(p){
+  const r=myRole(); if(r==="admin") return PERM_EDITABLE[p]?"edit":"view";
+  const v=house&&house.perms&&house.perms[r]&&house.perms[r][p];
+  const d=v||(r==="viewer"?"view":(PERM_EDITABLE[p]?"edit":"view"));
+  return d==="edit"&&!PERM_EDITABLE[p]?"view":d;
+}
+const canSee=p=>!(p in PERM_EDITABLE)||permOf(p)!=="none";
+const canEditP=p=>permOf(p)==="edit";
+const canEditKey=k=>k==="commits"?canEditP("data"):k==="savings"?canEditP("savings"):k==="owed"?canEditP("owed"):(canEditP("month")||canEditP("months"));
+const canEdit=()=>canEditP("month");
 const isAdmin=()=>myRole()==="admin";
 function applyRole(){
-  const r=myRole(); document.documentElement.classList.toggle("ro",r==="viewer"); document.documentElement.classList.toggle("is-admin",r==="admin");
+  const r=myRole(), H=document.documentElement; H.classList.toggle("is-admin",r==="admin");
+  PERM_ROWS.forEach(([k])=>{ H.classList.toggle("hide-"+k,!canSee(k)); H.classList.toggle("ro-"+k,canSee(k)&&!canEditP(k)); });
+  if(tab!=="home"&&!canSee(tab)){ toast("الصفحة دي مش متاحة لك"); showTab("home"); }
   $("#drAdmin").hidden=!(house&&fbUser&&r==="admin");
   // owner: remember owner email once (makes the owner explicit for everyone)
   if(house&&fbUser&&house.owner===fbUser.uid&&!house.ownerEmail&&houseRef){ houseRef.update({ownerEmail:myEmail()}).catch(()=>{}); }
   renderDrawerFoot(); if(tab==="users") renderUsers(); if(tab==="month") renderForm();
 }
-document.addEventListener("submit",e=>{ if(!canEdit()){ e.preventDefault(); e.stopImmediatePropagation(); toast("صلاحيتك «مشاهد»: مش متاح التعديل"); } },true);
+document.addEventListener("submit",e=>{ const fp={dForm:"data",svForm:"savings",owForm:"owed"}[e.target&&e.target.id]||"month"; if(!canEditP(fp)){ e.preventDefault(); e.stopImmediatePropagation(); toast("مش متاح لك التعديل هنا"); } },true);
 function subscribeHouseExtras(ref,u){
   unsubscribeHouseExtras();
   extrasUnsub.push(ref.collection("events").orderBy("at","desc").limit(60).onSnapshot(s=>{ events=s.docs.map(d=>({id:d.id,...d.data()})); nfRefresh(); },()=>{}));
@@ -2357,7 +2437,7 @@ function logEvent(t,title,body,go){
 }
 function renderUsers(){
   const L=$("#usrList");
-  if(!house||!fbUser){ $("#usrHint").textContent="سجّل دخول بجوجل الأول من الإعدادات، وبعدها تقدر تضيف أهل البيت وتحدد صلاحياتهم."; L.innerHTML=`<button type="button" class="btn-main" onclick="showTab('settings')">روح للإعدادات</button>`; $("#usrAdd").hidden=true; return; }
+  if(!house||!fbUser){ $("#usrHint").textContent="سجّل دخول بجوجل الأول من الإعدادات، وبعدها تقدر تضيف أهل البيت وتحدد صلاحياتهم."; L.innerHTML=`<button type="button" class="btn-main" onclick="showTab('settings')">روح للإعدادات</button>`; $("#usrAdd").hidden=true; renderPermGrid(); return; }
   const admin=isAdmin(), me=myEmail(), own=ownerEmail();
   $("#usrHint").textContent=admin?"كل حد هنا بيدخل بحساب جوجل بتاعه على موبايله ويشوف نفس الداتا حسب صلاحيته.":"إدارة المستخدمين والصلاحيات للمدير بس.";
   L.innerHTML=(house.emails||[]).map(e=>{
@@ -2369,7 +2449,33 @@ function renderUsers(){
     return `<div class="usr"><span class="av">${esc(ini)}</span><div><b>${esc(nm)}${e===me?" (إنت)":""}</b><small>${esc(e)} · ${seen}</small></div>${ctl}</div>`;
   }).join("");
   $("#usrAdd").hidden=!admin;
+  renderPermGrid();
 }
+function renderPermGrid(){
+  const admin=isAdmin(), P=(house&&house.perms)||{};
+  const val=(r,k)=>{ const v=P[r]&&P[r][k]; const d=v||(r==="viewer"?"view":(PERM_EDITABLE[k]?"edit":"view")); return d==="edit"&&!PERM_EDITABLE[k]?"view":d; };
+  const cell=(r,k,what)=>{ const v=val(r,k);
+    if(what==="edit"&&!PERM_EDITABLE[k]) return `<td${what==="see"?' class="gsep"':""}><button type="button" class="pk na" disabled aria-label="عرض بس">–</button></td>`;
+    const on=what==="see"?v!=="none":v==="edit";
+    return `<td${what==="see"?' class="gsep"':""}><button type="button" class="pk ${on?"on":"off"}" ${admin?"":"disabled"} data-pr="${r}" data-pk="${k}" data-pw="${what}" aria-pressed="${on}" aria-label="${ROLE_N[r]} ${what==="see"?"يشوف":"يعدّل"}">${on?"✓":"✗"}</button></td>`; };
+  $("#permGrid").innerHTML=`<thead><tr><th rowspan="2">الصفحة</th><th colspan="2" class="grp gsep">محرر</th><th colspan="2" class="grp gsep">مشاهد</th></tr><tr><th class="gsep">يشوف</th><th>يعدّل</th><th class="gsep">يشوف</th><th>يعدّل</th></tr></thead><tbody>`+
+    PERM_ROWS.map(([k,l,ed])=>`<tr><td>${l}${ed?"":"<small>عرض بس</small>"}</td>${cell("editor",k,"see")}${cell("editor",k,"edit")}${cell("viewer",k,"see")}${cell("viewer",k,"edit")}</tr>`).join("")+`</tbody>`;
+}
+$("#permGrid").addEventListener("click",async e=>{
+  const b=e.target.closest("[data-pr]"); if(!b||b.disabled||!houseRef||!isAdmin()) return;
+  const r=b.dataset.pr, k=b.dataset.pk, w=b.dataset.pw, P=(house.perms&&house.perms[r])||{};
+  const cur0=P[k]||(r==="viewer"?"view":(PERM_EDITABLE[k]?"edit":"view"));
+  let nv;
+  if(w==="see") nv=cur0==="none"?"view":"none";
+  else nv=cur0==="edit"?"view":"edit";
+  b.classList.add("busy");
+  try{ await houseRef.update(new firebase.firestore.FieldPath("perms",r,k),nv);
+    const lbl=(PERM_ROWS.find(x=>x[0]===k)||[])[1];
+    toast(`${ROLE_N[r]} · ${lbl}: ${nv==="none"?"مخفية":nv==="view"?"يشوف بس":"يشوف ويعدّل"}`);
+    logEvent("role",`${meName()} غيّر صلاحية «${ROLE_N[r]}» في ${lbl}`,nv==="none"?"مخفية":nv==="view"?"يشوف بس":"يشوف ويعدّل","users");
+  }catch(x){ toast("ماقدرتش أغيّر الصلاحية"); }
+  finally{ b.classList.remove("busy"); }
+});
 $("#usrList").addEventListener("change",async e=>{
   const sel=e.target.closest("[data-role]"); if(!sel||!houseRef||!isAdmin()) return;
   const em=sel.dataset.role, r=sel.value;
@@ -2449,12 +2555,12 @@ function nfAlerts(){
 const EV_IC={save:"🧾",edit:"✏️",commit:"📋",savings:"🐷",owed:"🤝",delete:"🗑️",att:"📎",login:"👤",role:"🛡️"};
 function nfItems(){
   const uidMe=fbUser&&fbUser.uid, seen=nf.seen||"";
-  const alerts=nfAlerts().map(a=>({...a,unread:!nf.read.includes(a.id)}));
-  const feed=[...events.map(e=>({id:"ev:"+e.id,t:e.t,ic:EV_IC[e.t]||"🔔",title:e.title,body:e.body,at:e.at,go:e.go,unread:e.by!==uidMe&&e.at>seen})),
+  const alerts=nfAlerts().filter(a=>!a.go||canSee(a.go)).map(a=>({...a,unread:!nf.read.includes(a.id)}));
+  const feed=[...events.filter(e=>!e.go||canSee(e.go)).map(e=>({id:"ev:"+e.id,t:e.t,ic:EV_IC[e.t]||"🔔",title:e.title,body:e.body,at:e.at,go:e.go,unread:e.by!==uidMe&&e.at>seen})),
               ...nf.local.map(l=>({...l,unread:!nf.read.includes(l.id)}))].sort((a,b)=>a.at<b.at?1:-1);
   return {alerts,feed};
 }
-function nfUnread(){ const {alerts,feed}=nfItems(); return alerts.filter(x=>x.unread).length+feed.filter(x=>x.unread).length; }
+function nfUnread(){ if(!canSee("notifs")) return 0; const {alerts,feed}=nfItems(); return alerts.filter(x=>x.unread).length+feed.filter(x=>x.unread).length; }
 function nfRefresh(){
   const n=nfUnread(), bd=$("#bellBadge"), dr=$("#drBell");
   bd.hidden=!n; bd.textContent=n>99?"99+":n; dr.hidden=!n; dr.textContent=n>99?"99+":n;
@@ -2506,14 +2612,14 @@ const remindOn=()=>{ try{ return localStorage.getItem(RM_KEY)!=="0"; }catch(e){ 
 function reminderPlan(){
   const list=[], now=new Date(), nowK=nowKey(), nextK=addMonths(nowK,1), at=(y,m,d)=>new Date(y,m,d,10,0,0);
   const kd=k=>[+k.slice(0,4),+k.slice(5,7)-1];
-  for(const c of state.commits){
+  for(const c of (canSee("commits")||canSee("data")?state.commits:[])){
     if(c.type==="مديونية"||!c.start||!c.end) continue;
     const sch=paySchedule(c);
     const cn=sch.find(x=>x.k===nowK); if(cn&&!cn.paid){ const [y,m]=kd(nowK); const d=at(y,m,25); if(d>now) list.push({at:d,title:`قسط «${c.name}» لسه ما اتدفعش`,body:`${monthName(nowK)} · ${fmtReal(+c.monthly||0)} ج.م`}); }
     const nx=sch.find(x=>x.k===nextK); if(nx&&!nx.paid){ const [y,m]=kd(nextK); list.push({at:at(y,m,1),title:`قسط «${c.name}» مستحق الشهر ده`,body:`${monthName(nextK)} · ${fmtReal(+c.monthly||0)} ج.م`}); }
     for(const p of payoutsOf(c)){ const [y,m]=kd(p.k); const d=at(y,m,1); if(d>now&&p.k<=addMonths(nowK,3)) list.push({at:d,title:`قبض جمعية «${c.name}» الشهر ده`,body:`${fmtReal(payoutAmt(c,p))} ج.م`}); }
   }
-  for(const o of state.owed||[]){ if(!o.due||owLeft(o)<=0) continue; const [y,m,dd]=o.due.split("-").map(Number);
+  for(const o of canSee("owed")?state.owed||[]:[]){ if(!o.due||owLeft(o)<=0) continue; const [y,m,dd]=o.due.split("-").map(Number);
     const d0=at(y,m-1,dd), d1=at(y,m-1,dd-1);
     if(d1>now) list.push({at:d1,title:`بكرة معاد فلوسك عند ${o.who}`,body:`${fmtReal(owLeft(o))} ج.م`});
     if(d0>now) list.push({at:d0,title:`النهارده معاد فلوسك عند ${o.who}`,body:`${fmtReal(owLeft(o))} ج.م`}); }
@@ -2548,6 +2654,54 @@ if(NP("LocalNotifications")){ const LN=NP("LocalNotifications");
   LN.checkPermissions().then(p=>{ if(p.display==="prompt"&&remindOn()){ allowAway(); return LN.requestPermissions(); } }).then(()=>scheduleReminders()).catch(()=>{});
   try{ LN.addListener&&LN.addListener("localNotificationActionPerformed",()=>{ setTimeout(()=>showTab("notifs"),300); }); }catch(e){}
 }
+
+/* ---------- calculator ---------- */
+let clExpr="", clHist=[], clDone=false;
+try{ clHist=JSON.parse(localStorage.getItem("house-budget-calc")||"[]"); }catch(e){}
+const clOps="+-*/";
+function clEval(ex){
+  const toks=[]; let i=0;
+  while(i<ex.length){ const c=ex[i];
+    if(/[\d.]/.test(c)){ let j=i; while(j<ex.length&&/[\d.]/.test(ex[j])) j++; const n=ex.slice(i,j); if((n.match(/\./g)||[]).length>1) throw 0; let v=parseFloat(n); i=j; if(ex[i]==="%"){ i++; toks.push({p:v}); continue; } toks.push(v); continue; }
+    if(clOps.includes(c)){ if(c==="-"&&(toks.length===0||typeof toks[toks.length-1]==="string")){ toks.push(0); } toks.push(c); i++; continue; }
+    throw 0; }
+  const out=[], st=[], pr={"+":1,"-":1,"*":2,"/":2};
+  for(const t of toks){ if(typeof t!=="string") out.push(t); else { while(st.length&&pr[st[st.length-1]]>=pr[t]) out.push(st.pop()); st.push(t); } }
+  while(st.length) out.push(st.pop());
+  const S=[]; for(const t of out){ if(typeof t!=="string") S.push(t); else { let b=S.pop(), a=S.pop(); if(a==null||b==null) throw 0;
+      if(typeof a==="object") a=a.p/100;
+      if(typeof b==="object") b=(t==="+"||t==="-")?a*b.p/100:b.p/100;
+      S.push(t==="+"?a+b:t==="-"?a-b:t==="*"?a*b:(b===0?NaN:a/b)); } }
+  if(S.length===1&&typeof S[0]==="object") S[0]=S[0].p/100;
+  if(S.length!==1||!isFinite(S[0])) throw 0; return Math.round(S[0]*1e10)/1e10;
+}
+const clFmt=n=>n.toLocaleString("en-US",{maximumFractionDigits:10});
+const clShow=ex=>ex.replace(/\*/g,"×").replace(/\//g,"÷").replace(/-/g,"−").replace(/\d+(\.\d*)?/g,m=>{ const [a,b]=m.split("."); return (+a).toLocaleString("en-US")+(b!=null?"."+b:""); });
+function renderCalc(){
+  $("#clExpr").textContent=clShow(clExpr);
+  let r=""; try{ r=clExpr?clFmt(clEval(clExpr.replace(/[+\-*/.]$/,""))):"0"; }catch(e){ r=clExpr?"…":"0"; }
+  const R=$("#clRes"); R.classList.remove("err"); R.textContent=r;
+  $("#clHist").innerHTML=clHist.map((h,i)=>`<button type="button" data-h="${i}"><span>${esc(clShow(h.e))} =</span><b>${clFmt(h.r)}</b></button>`).join("");
+}
+function clKey(k){
+  if(clDone&&(/^\d$/.test(k)||k===".")) clExpr="";
+  clDone=false;
+  const last=clExpr.slice(-1);
+  if(k==="C"){ clExpr=""; }
+  else if(k==="back"){ clExpr=clExpr.slice(0,-1); }
+  else if(k==="="){ if(!clExpr) return; try{ const r=clEval(clExpr); clHist.unshift({e:clExpr,r}); clHist=clHist.slice(0,20); try{ localStorage.setItem("house-budget-calc",JSON.stringify(clHist)); }catch(e){} clExpr=String(r); clDone=true; renderCalc(); return; }catch(e){ $("#clRes").textContent="مش هتظبط"; $("#clRes").classList.add("err"); return; } }
+  else if(clOps.includes(k)){ if(!clExpr&&k!=="-") return; if(clOps.includes(last)) clExpr=clExpr.slice(0,-1); if(last===".") clExpr=clExpr.slice(0,-1); clExpr+=k; }
+  else if(k==="%"){ if(/[\d]$/.test(clExpr)) clExpr+="%"; }
+  else if(k==="."){ const seg=clExpr.split(/[+\-*/]/).pop(); if(seg.includes(".")||seg.includes("%")) return; clExpr+=(seg===""?"0.":"."); }
+  else { if(last==="%") clExpr+="*"; const seg=clExpr.split(/[+\-*/]/).pop(); if(seg==="0") clExpr=clExpr.slice(0,-1); if(clExpr.length<60) clExpr+=k; }
+  renderCalc();
+}
+$("#clKeys").addEventListener("click",e=>{ const b=e.target.closest("[data-k]"); if(b) clKey(b.dataset.k); });
+document.addEventListener("keydown",e=>{ if(tab!=="calc"||e.target.matches("input,select,textarea")) return;
+  const m={Enter:"=","=":"=",Backspace:"back",Escape:"C",Delete:"C",x:"*",X:"*"}; const k=m[e.key]||(/^[\d.+\-*/%]$/.test(e.key)?e.key:null); if(k){ e.preventDefault(); clKey(k); } });
+$("#clHist").addEventListener("click",e=>{ const b=e.target.closest("[data-h]"); if(!b) return; clExpr=String(clHist[+b.dataset.h].r); renderCalc(); });
+$("#clClearHist").addEventListener("click",()=>{ clHist=[]; try{ localStorage.removeItem("house-budget-calc"); }catch(e){} renderCalc(); });
+$("#clCopy").addEventListener("click",async()=>{ const t=$("#clRes").textContent.replace(/,/g,""); try{ await navigator.clipboard.writeText(t); toast("اتنسخ "+t); }catch(e){ toast("ماقدرتش أنسخ"); } });
 function renderAll(fromSnap){ try{ renderAllInner(fromSnap); } finally { maskInputs(); try{ nfRefresh(); scheduleReminders(); if(tab==="settings") renderRemindCard(); }catch(e){} } }
 function renderAllInner(fromSnap){
   const a=document.activeElement, typing=fromSnap&&a&&(a.tagName==="INPUT"||a.tagName==="SELECT");
@@ -2565,6 +2719,7 @@ function renderAllInner(fromSnap){
   if(tab==="summary") renderSummary();
   if(tab==="notifs") renderNotifs();
   if(tab==="users") renderUsers();
+  if(tab==="calc") renderCalc();
 }
 
 loadLocal(); cur=lastEntered();
