@@ -312,6 +312,9 @@ details.cmd .sumq{margin-inline-start:auto;font-size:.8rem;color:var(--muted);wh
 .sv-row .sv-t{min-width:0}
 .sv-row .sv-t b{display:block;font-weight:700}
 .sv-row .sv-t small{color:var(--muted);font-size:.78rem}
+.sv-by{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:999px;font-size:.74rem;background:var(--accent-soft);color:var(--accent)}
+.sv-by .sv-d{opacity:.75}
+.sv-by.o{background:rgba(232,120,100,.12);color:#F08A78}
 .sv-row .sv-v{display:flex;align-items:center;gap:6px;white-space:nowrap;font-weight:700}
 .sv-run{font-size:.72rem;color:var(--muted);font-weight:500;display:block;text-align:left}
 .copybox,.nm{display:flex;flex-direction:column;gap:10px}
@@ -1859,7 +1862,7 @@ function savingsLedger(){
   const rows=[];
   for(const [k,m] of Object.entries(state.months)) for(const i of m.items)
     if(isSavingItem(i)&&i.paid&&AMT(i)) rows.push({k,amt:AMT(i),kind:"in",title:i.name,src:"month"});
-  for(const e of state.savings) rows.push({k:e.month,amt:+e.amount||0,kind:e.kind,title:e.note||(e.kind==="in"?"إيداع":"سحب"),src:"manual",id:e.id,at:e.at||""});
+  for(const e of state.savings) rows.push({k:e.month,amt:+e.amount||0,kind:e.kind,title:e.note||(e.kind==="in"?"إيداع":"سحب"),src:"manual",id:e.id,at:e.at||"",by:e.byEmail?personName(e.byEmail,e.by):(e.by||"")});
   rows.sort((a,b)=>a.k===b.k?(a.src===b.src?(a.at||"").localeCompare(b.at||""):a.src==="month"?-1:1):a.k.localeCompare(b.k));
   let run=0; rows.forEach(r=>{ run+= r.kind==="out"?-r.amt:r.amt; r.run=run; });
   return rows;
@@ -1874,7 +1877,7 @@ function renderSavings(){
   if(!$("#svMonth").value) $("#svMonth").value=nowKey();
   $("#svList").innerHTML=`<h2 style="margin-bottom:4px">الحركات</h2>`+(rows.length? rows.slice().reverse().map(r=>`
     <div class="sv-row" ${r.id?`data-id="${r.id}"`:""}>
-      <div class="sv-t"><b>${esc(r.title)}</b><small>${monthName(r.k)} · ${r.src==="month"?"من بند الشهر":"إدخال يدوي"}</small></div>
+      <div class="sv-t"><b>${esc(r.title)}</b><small>${monthName(r.k)} · ${r.src==="month"?"من بند الشهر":"إدخال يدوي"}</small>${r.by?`<span class="sv-by ${r.kind==="out"?"o":""}">${r.kind==="out"?"سحبها":"سجّلها"}: <bdi>${esc(r.by)}</bdi>${r.at?` <span class="sv-d">— ${svDay(r.at)}</span>`:""}</span>`:""}</div>
       <div class="sv-v"><span><span class="${r.kind==="out"?"neg":"pos"}">${r.kind==="out"?"−":"+"}${money(r.amt)}</span><span class="sv-run">الرصيد ${fmt(r.run)}</span></span>
         ${r.src==="manual"?'<button type="button" class="x" aria-label="مسح الحركة">×</button>':""}</div>
     </div>`).join("") : `<p class="empty" style="padding:8px">لسه مفيش مدخرات. علّم صح على بند "مدخرات" في شهر ودوس إدخال، أو ضيف مبلغ من فوق.</p>`);
@@ -1883,9 +1886,10 @@ $("#svForm").addEventListener("submit",e=>{
   e.preventDefault();
   const amt=+$("#svAmt").value; if(!(amt>0)) return;
   const kind=document.querySelector('input[name="svKind"]:checked').value;
-  state.savings.push({id:uid(),kind,amount:amt,month:$("#svMonth").value||nowKey(),note:$("#svNote").value.trim(),at:new Date().toISOString()});
+  const note=$("#svNote").value.trim(), em=(fbUser&&myEmail())||"";
+  state.savings.push({id:uid(),kind,amount:amt,month:$("#svMonth").value||nowKey(),note,at:new Date().toISOString(),...(em?{byEmail:em,by:personName(em)}:{})});
   schedule("savings",50); $("#svAmt").value=""; $("#svNote").value="";
-  logEvent("savings",`${meName()} ${kind==="in"?"ضاف للمدخرات":"سحب من المدخرات"}`,$("#svNote").value||"","savings");
+  logEvent("savings",`${meName()} ${kind==="in"?"ضاف للمدخرات":"سحب من المدخرات"} ${fmt(amt)}`,note,"savings");
   renderSavings(); toast(kind==="in"?"اتضاف للمدخرات":"اتسحب من المدخرات");
 });
 $("#svList").addEventListener("click",e=>{
@@ -2557,6 +2561,9 @@ document.addEventListener("click",async e=>{
 const ROLE_N={admin:"مدير",editor:"محرر",viewer:"مشاهد"};
 let houseRef=null, members={}, events=[], extrasUnsub=[];
 const myEmail=()=>(fbUser&&fbUser.email||"").toLowerCase();
+function personName(em,fb){ em=(em||"").toLowerCase(); const nm=(house&&house.names&&house.names[em])||(()=>{ try{ return members[em]&&members[em].name; }catch(e){ return ""; } })()||(fbUser&&myEmail()===em&&fbUser.displayName)||"";
+  if(nm) return nm; if(fb) return fb; const u=house&&house.unames&&house.unames[em]; return u||em.split("@")[0].split(".")[0]; }
+const svDay=iso=>{ try{ return new Date(iso).toLocaleDateString("ar-EG",{day:"numeric",month:"short"}); }catch(e){ return ""; } };
 const meName=()=>String((fbUser&&fbUser.displayName)||myEmail()||"حد").split(/[\s@]/)[0];
 const ownerEmail=()=>house?(house.ownerEmail||(house.emails||[])[0]||""):"";
 function roleOf(email){ if(!house) return "admin"; const e=(email||"").toLowerCase(); if(e&&e===ownerEmail()) return "admin"; const r=(house.roles||{})[e]; return ROLE_N[r]?r:"editor"; }
