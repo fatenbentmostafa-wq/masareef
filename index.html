@@ -433,6 +433,8 @@ svg.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .sqbtn{height:56px;border-radius:16px;display:grid;place-items:center;padding:0;background:var(--paper);border:1px solid var(--line);color:var(--ink)}
 .bigadd{height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:1.05rem;color:#06231C;border:0;background:linear-gradient(180deg,#5FE6C6,#2FBF9B);box-shadow:0 10px 24px -12px rgba(63,216,180,.7)}
 .bigadd svg.i{stroke-width:2.4}
+.forcebtn{width:100%;margin-top:10px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;border:1px solid rgba(240,138,120,.5);background:rgba(240,138,120,.1);color:#F08A78}
+.forcebtn svg.i{width:20px;height:20px}
 .tabbar{position:fixed;inset:auto 0 0 0;z-index:8;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px;padding:8px max(8px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));background:rgba(10,22,19,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);border-radius:22px 22px 0 0}
 .tabbar button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0;border:1px solid transparent;border-radius:14px;background:none;color:var(--muted);font-size:.7rem;white-space:nowrap;min-width:0}
 .tabbar button[aria-current="page"]{color:var(--t3);background:linear-gradient(180deg,#1A3A31,#11261F);border-color:#2B5A4C;font-weight:700}
@@ -571,6 +573,16 @@ header.ne #saveNow{display:none!important}
 .inb-a button{padding:7px 11px;border-radius:9px}
 .inb-wait{color:var(--accent);font-size:.78rem;align-self:center;white-space:nowrap}
 .inb-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 160px);min-height:320px}
+.chat-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 2px}
+.chat-msg{max-width:80%;padding:8px 12px;border-radius:14px;background:var(--paper2);align-self:flex-start}
+.chat-msg.me{align-self:flex-end;background:var(--accent-soft)}
+.chat-msg .cm-who{font-size:.72rem;color:var(--accent);font-weight:700;margin-bottom:2px}
+.chat-msg .cm-tx{white-space:pre-wrap;word-break:break-word;line-height:1.5}
+.chat-msg time{display:block;font-size:.64rem;color:var(--muted);margin-top:3px;text-align:left}
+.chat-bar{display:flex;gap:8px;padding:8px 0 2px;align-items:center}
+.chat-bar input{flex:1}
+.chat-bar button{width:48px;height:42px;flex-shrink:0;border-radius:12px;font-size:1.15rem;transform:scaleX(-1)}
 #inbList{display:flex;flex-direction:column;gap:10px}
 #tab-access:not([hidden]){display:flex;flex-direction:column;gap:12px}
 .pg .pg-sub{text-align:right;padding-top:12px;color:var(--accent)}
@@ -736,6 +748,7 @@ h2.cap{font-size:.8rem;letter-spacing:.06em;color:var(--muted);text-transform:up
 
     <div class="actrow">
       <button type="button" class="bigadd" id="homeNewMonth"><svg class="i " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>إضافة شهر جديد</button>
+      <button type="button" class="forcebtn" id="forceExitBtn" hidden><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 12H3M6 9l-3 3 3 3"/></svg>خروج إجباري لكل الأجهزة</button>
     </div>
   </section>
 
@@ -956,11 +969,21 @@ h2.cap{font-size:.8rem;letter-spacing:.06em;color:var(--muted);text-transform:up
 
   <section id="tab-inbox" hidden>
     <div class="card dc">
-      <div class="inb-head"><h2 id="inbCount">الوارد</h2><button type="button" class="btn-main" id="inbReq">＋ اطلب</button></div>
+      <div class="inb-head"><h2 id="inbCount">الوارد</h2><div style="display:flex;gap:8px"><button type="button" id="inbChat">💬 محادثة</button><button type="button" class="btn-main" id="inbReq">＋ اطلب</button></div></div>
       <p class="hint" style="margin:6px 0 0">الفواتير والتسجيلات اللي بعتهالك أهل البيت. افتحها ورتّبها في الشهر والبند المناسب.</p>
     </div>
     <div id="inbList"></div>
     <div id="reqSent"></div>
+  </section>
+
+  <section id="tab-chat" hidden>
+    <div class="chat-wrap">
+      <div class="chat-list" id="chatList"></div>
+      <form class="chat-bar" id="chatForm" autocomplete="off">
+        <input id="chatText" placeholder="اكتب رسالة…" maxlength="1000" autocomplete="off">
+        <button type="submit" class="btn-main" id="chatSend" aria-label="ابعت">➤</button>
+      </form>
+    </div>
   </section>
 
   <section id="tab-calc" hidden>
@@ -1125,6 +1148,7 @@ h2.cap{font-size:.8rem;letter-spacing:.06em;color:var(--muted);text-transform:up
     <button type="button" class="dr-it c-green" data-dgo="owed"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12l4-4 4 3 6-6"/><path d="M14 5h3v3"/><path d="M4 20h16"/></svg></span><span>فلوس ليا برا</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button type="button" class="dr-it c-gold adm" data-dgo="users"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.5-3.5 3-5.5 6-5.5s5.5 2 6 5.5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.6c2.6.2 4.2 2 4.5 4.9"/></svg></span><span>المستخدمين</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button type="button" class="dr-it c-gold adm" data-dgo="access"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12l2.2 2.2 4.2-4.4"/></svg></span><span>تحديد صلاحيات الوصول</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button type="button" class="dr-it c-teal" data-dgo="chat" id="drChat" hidden><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H8l-4 3z"/></svg></span><span>محادثة البيت</span></button>
     <button type="button" class="dr-it c-mint" data-dgo="capture" id="drCap" hidden><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 11l4 4 4-4M5 19h14"/></svg></span><span id="drCapTxt">ابعت للمدير</span></button>
     <button type="button" class="dr-it c-gold adm" data-dgo="inbox"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h5l2 3h4l2-3h5M5 6h14l2 7v5H3v-5z"/></svg></span><span>الوارد</span></button>
     <button type="button" class="dr-it c-gold" data-dgo="notifs"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 19.5a2 2 0 0 0 4 0"/></svg></span><span>الإشعارات</span><span class="cnt" id="drBell" hidden>0</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
@@ -2195,7 +2219,7 @@ async function connectHouse(u){
   attachBackend(dataColl,"متزامن ✓"); setTimeout(pushPendingFiles,1500);
   if(houseUnsub) houseUnsub();
   let privFor=null;
-  houseUnsub=ref.onSnapshot(d=>{ house={id:ref.id,...d.data()}; renderHouse(); applyRole(); applyPermPreset(); applyNamePreset(); applyHideRules(); const k=myRole()+"|"+myEmail(); if(privFor!==k){ privFor=k; subscribePrivate(); } },()=>{});
+  houseUnsub=ref.onSnapshot(d=>{ house={id:ref.id,...d.data()}; const fe=+house.forceExit||0; if(feSeen===null) feSeen=fe; else if(fe>feSeen){ feSeen=fe; if(!isAdmin()) return forceExitNow(); } renderHouse(); applyRole(); applyPermPreset(); applyNamePreset(); applyHideRules(); const k=myRole()+"|"+myEmail(); if(privFor!==k){ privFor=k; subscribePrivate(); } },()=>{});
   renderAuthUI(); setTimeout(maybeAskBio,1500);
   houseRef=ref; subscribeHouseExtras(ref,u);
   $("#syncBar").classList.add("on"); $("#sbTitle").textContent="متزامن مع السيرفر"; 
@@ -2333,7 +2357,7 @@ document.addEventListener("click",e=>{ if(e.target.closest("#bkLoad,#shareBtn,#b
 (async()=>{ const ok=await lockSupported(); $("#lockCard").hidden=!ok; if(ok){ renderLockCard(); if(lockCred&&!NOLOCK_RELOAD){ showLock(); tryUnlock(); return; } } hideLock(); })();
 
 /* ---------- pages ---------- */
-const PAGES={home:"مصاريف البيت",notifs:"الإشعارات",capture:"ابعت للمدير",inbox:"الوارد",users:"المستخدمين",access:"صلاحيات الوصول",calc:"الآلة الحاسبة",summary:"ملخص الشهور",month:"المصاريف",months:"الشهور",commits:"ملخص الالتزامات",data:"الداتا",savings:"المدخرات",owed:"فلوس ليا برا",settings:"الإعدادات"};
+const PAGES={home:"مصاريف البيت",notifs:"الإشعارات",chat:"محادثة البيت",capture:"ابعت للمدير",inbox:"الوارد",users:"المستخدمين",access:"صلاحيات الوصول",calc:"الآلة الحاسبة",summary:"ملخص الشهور",month:"المصاريف",months:"الشهور",commits:"ملخص الالتزامات",data:"الداتا",savings:"المدخرات",owed:"فلوس ليا برا",settings:"الإعدادات"};
 let tab="home", cameFromHome=false;
 function applyRoute(){
   const h=location.hash.slice(1); let t=PAGES[h]&&h!=="home"?h:"home";
@@ -2344,7 +2368,7 @@ function applyRoute(){
   $("#pageTitle").textContent=t==="home"?"":PAGES[t];
   $("#backBtn").hidden=t==="home";
   document.querySelector("header").hidden=t==="home";
-  document.querySelector("header").classList.toggle("ne",["notifs","users","access","summary","commits","calc","capture","inbox"].includes(t));
+  document.querySelector("header").classList.toggle("ne",["notifs","users","access","summary","commits","calc","capture","inbox","chat"].includes(t));
   const navKey={home:"home",months:"months",summary:"summary",commits:"commits",data:"data",settings:"settings"}[t];
   document.querySelectorAll(".tabbar [data-nav]").forEach(b=>{ if(b.dataset.nav===navKey) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
   showUpdated();
@@ -2654,7 +2678,15 @@ document.addEventListener("click",async e=>{
 
 /* ---------- roles ---------- */
 const ROLE_N={admin:"مدير",editor:"محرر",viewer:"مشاهد"};
-let houseRef=null, members={}, events=[], locs=[], extrasUnsub=[];
+let houseRef=null, members={}, events=[], locs=[], chat=[], extrasUnsub=[], feSeen=null;
+function renderChat(){ const me=fbUser&&fbUser.uid;
+  $("#chatList").innerHTML=chat.length?chat.map(m=>`<div class="chat-msg ${m.by===me?"me":""}">${m.by!==me?`<span class="cm-who">${esc(personName(m.email)||m.name||"")}</span>`:""}<span class="cm-tx">${esc(m.text)}</span><time>${nfStamp(m.at)}</time></div>`).join(""):`<p class="empty" style="margin:auto">لسه مفيش رسايل. ابدأ الكلام 👋</p>`;
+  const l=$("#chatList"); if(l) l.scrollTop=l.scrollHeight; }
+function forceExitNow(){ try{ flushAll(); }catch(e){} const A=NP("App");
+  const o=document.createElement("div"); o.style.cssText="position:fixed;inset:0;z-index:99999;background:rgba(8,19,15,.97);display:grid;place-items:center;padding:24px;text-align:center;color:#EAF4EF;font-family:inherit";
+  o.innerHTML='<div style="max-width:320px"><div style="font-size:44px;margin-bottom:10px">🔄</div><b style="font-size:1.2rem;display:block;margin-bottom:8px">المدير قفل البرنامج للتحديث</b><p style="margin:0;line-height:1.7;opacity:.85">هيتقفل دلوقتي، افتحه تاني.</p></div>';
+  document.body.appendChild(o);
+  setTimeout(()=>{ try{ sessionStorage.removeItem("masareef-nolock"); }catch(e){} if(A&&A.exitApp){ try{ A.exitApp(); }catch(e){ location.reload(); } } else { location.reload(); } },2200); }
 /* where editors/viewers opened the app from (only the admin can read these) */
 let locLast=0;
 function recordLoc(force){
@@ -2682,7 +2714,7 @@ function adminName(){ const em=ownerEmail(); return em?personName(em):OWNER_LABE
 const ownerEmail=()=>house?(house.ownerEmail||(house.emails||[])[0]||""):"";
 function roleOf(email){ if(!house) return "admin"; const e=(email||"").toLowerCase(); if(e&&e===ownerEmail()) return "admin"; const r=(house.roles||{})[e]; return ROLE_N[r]?r:"editor"; }
 function myRole(){ if(!house||!fbUser) return "admin"; if(house.owner===fbUser.uid) return "admin"; return roleOf(myEmail()); }
-const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["capture","رفع فواتير وتسجيلات للمدير",0],["capdel","يمسح اللي بعته للمدير (لو بالغلط)",0],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1],["totals","الدخل والباقي منه",0],["newmonth","إضافة شهر جديد",0],["activity","نشاط البيت والتنبيهات في الجرس",0],["shareapp","إرسال البرنامج لحد",0]];
+const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["capture","رفع فواتير وتسجيلات للمدير",0],["capdel","يمسح اللي بعته للمدير (لو بالغلط)",0],["chat","محادثة البيت",0],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1],["totals","الدخل والباقي منه",0],["newmonth","إضافة شهر جديد",0],["activity","نشاط البيت والتنبيهات في الجرس",0],["shareapp","إرسال البرنامج لحد",0]];
 const DEF_OFF={viewer:new Set(["totals","newmonth","activity","shareapp","owed","backup","capture"]),editor:new Set(["totals","newmonth","activity","backup"])};
 const VIEWER_OFF=new Set(["totals","newmonth","activity","shareapp"]);
 const PERM_EDITABLE=Object.fromEntries(PERM_ROWS.map(r=>[r[0],!!r[2]]));
@@ -2738,16 +2770,17 @@ function applyRole(){
   const r=myRole(), H=document.documentElement; H.classList.toggle("is-admin",r==="admin"); H.classList.toggle("is-user",!!(house&&fbUser)&&r!=="admin");
   PERM_ROWS.forEach(([k])=>{ H.classList.toggle("hide-"+k,!canSee(k)); H.classList.toggle("ro-"+k,canSee(k)&&!canEditP(k)); });
   if(tab!=="home"&&!canSee(tab)){ toast("الصفحة دي مش متاحة لك"); showTab("home"); }
-  $("#drAdmin").hidden=!(house&&fbUser&&r==="admin"); if($("#drCap")) $("#drCap").hidden=!(canSee("capture")&&!isAdmin()); if($("#tileCap")) $("#tileCap").hidden=!(canSee("capture")&&!isAdmin()); if($("#tileInbox")) $("#tileInbox").hidden=!isAdmin();
+  $("#drAdmin").hidden=!(house&&fbUser&&r==="admin"); if($("#forceExitBtn")) $("#forceExitBtn").hidden=!(house&&fbUser&&r==="admin"); if($("#drChat")) $("#drChat").hidden=!(house&&fbUser&&canSee("chat")); if($("#drCap")) $("#drCap").hidden=!(canSee("capture")&&!isAdmin()); if($("#tileCap")) $("#tileCap").hidden=!(canSee("capture")&&!isAdmin()); if($("#tileInbox")) $("#tileInbox").hidden=!isAdmin();
   { const an=adminName(); PAGES.capture="ابعت لـ "+an; if($("#tileCapTxt")) $("#tileCapTxt").textContent="ابعت لـ "+an; if($("#drCapTxt")) $("#drCapTxt").textContent="ابعت لـ "+an; if($("#capH2")) $("#capH2").textContent="ابعت فاتورة أو تسجيل لـ "+an; if($("#capHint")) $("#capHint").textContent="صوّر الفاتورة بنفسك أو سجّل بيانات الدفع، وهتتبعت لـ "+an+" يرتّبها في مكانها."; if(tab==="capture"&&$("#pageTitle")) $("#pageTitle").textContent=PAGES.capture; }
   // owner: remember owner email once (makes the owner explicit for everyone)
   if(house&&fbUser&&house.owner===fbUser.uid&&!house.ownerEmail&&houseRef){ houseRef.update({ownerEmail:myEmail()}).catch(()=>{}); }
-  renderDrawerFoot(); if(tab==="users") renderUsers(); if(tab==="access"){ renderPermGrid(); renderCvGrid(); renderMvGrid(); } applyCview(); if(tab==="months") renderMonths(); if(tab==="summary") renderSummary(); if(tab==="home") renderHome(); if(tab==="month") renderForm(); if(tab==="commits") renderCommits(); if(tab==="capture") renderCapture(); if(tab==="inbox") renderInbox();
+  renderDrawerFoot(); if(tab==="users") renderUsers(); if(tab==="access"){ renderPermGrid(); renderCvGrid(); renderMvGrid(); } applyCview(); if(tab==="months") renderMonths(); if(tab==="summary") renderSummary(); if(tab==="home") renderHome(); if(tab==="month") renderForm(); if(tab==="commits") renderCommits(); if(tab==="capture") renderCapture(); if(tab==="inbox") renderInbox(); if(tab==="chat") renderChat();
 }
 document.addEventListener("submit",e=>{ const fp={dForm:"data",svForm:"savings",owForm:"owed"}[e.target&&e.target.id]||"month"; if(!canEditP(fp)){ e.preventDefault(); e.stopImmediatePropagation(); toast("مش متاح لك التعديل هنا"); } },true);
 function subscribeHouseExtras(ref,u){
   unsubscribeHouseExtras();
   extrasUnsub.push(ref.collection("events").orderBy("at","desc").limit(60).onSnapshot(s=>{ events=s.docs.map(d=>({id:d.id,...d.data()})); nfRefresh(); },()=>{}));
+  extrasUnsub.push(ref.collection("chat").orderBy("at","desc").limit(100).onSnapshot(s=>{ chat=s.docs.map(d=>({id:d.id,...d.data()})).reverse(); if(tab==="chat") renderChat(); },()=>{}));
   extrasUnsub.push(ref.collection("members").onSnapshot(s=>{ members={}; s.docs.forEach(d=>members[d.id]=d.data()); if(tab==="users") renderUsers(); renderDrawerFoot(); },()=>{}));
   const em=(u.email||"").toLowerCase();
   ref.collection("members").doc(em).set({name:u.displayName||"",photo:u.photoURL||"",lastSeen:new Date().toISOString(),app:NATIVE?"app":"web"},{merge:true}).catch(()=>{});
@@ -2755,7 +2788,7 @@ function subscribeHouseExtras(ref,u){
   let last=0; try{ last=+localStorage.getItem("house-budget-loginlog")||0; }catch(e){}
   if(Date.now()-last>12*3600e3){ try{ localStorage.setItem("house-budget-loginlog",String(Date.now())); }catch(e){} setTimeout(()=>logEvent("login",`${meName()} دخل على البرنامج`,NATIVE?"من التطبيق":"من المتصفح"),1200); }
 }
-function unsubscribeHouseExtras(){ extrasUnsub.forEach(f=>{ try{f()}catch(e){} }); extrasUnsub=[]; events=[]; locs=[]; members={}; nfRefresh(); }
+function unsubscribeHouseExtras(){ extrasUnsub.forEach(f=>{ try{f()}catch(e){} }); extrasUnsub=[]; events=[]; locs=[]; members={}; feSeen=null; nfRefresh(); }
 const recentLogs={};
 function logEvent(t,title,body,go){
   if(!houseRef||!fbUser) return;
@@ -2875,6 +2908,9 @@ document.addEventListener("click",e=>{
   if(e.target.id==="reqSheet"||e.target.closest("#reqCancel")){ $("#reqSheet").hidden=true; return; }
 });
 $("#capMine")&&$("#capMine").addEventListener("click",e=>{ const btn=e.target.closest("[data-capdel]"); if(!btn) return; const row=btn.closest("[data-mev]"); if(!row||!houseRef) return; const id=row.dataset.mev, fid=row.dataset.mfile; confirmDel("هتمسح اللي بعته للحج صاحب البيت — متأكد؟",()=>{ houseRef.collection("events").doc(id).delete().then(()=>{ if(fid) houseRef.collection("files").doc(fid).delete().catch(()=>{}); toast("اتمسحت ✓"); renderCapture(); }).catch(()=>toast("ماقدرش يمسح")); }); });
+$("#chatForm")&&$("#chatForm").addEventListener("submit",e=>{ e.preventDefault(); const t=($("#chatText").value||"").trim(); if(!t||!houseRef||!fbUser) return; $("#chatText").value=""; houseRef.collection("chat").add({by:fbUser.uid,email:myEmail(),name:meName(),text:t.slice(0,1000),at:new Date().toISOString()}).catch(()=>toast("ماتبعتش، جرّب تاني")); });
+$("#inbChat")&&$("#inbChat").addEventListener("click",()=>showTab("chat"));
+$("#forceExitBtn")&&$("#forceExitBtn").addEventListener("click",()=>{ if(!houseRef||!isAdmin()) return; confirmDel("هيخرّج كل المستخدمين من البرنامج ويخليهم يفتحوه تاني — متأكد؟",()=>{ houseRef.update({forceExit:Date.now()}).then(()=>toast("اتبعت الخروج لكل الأجهزة ✓")).catch(()=>toast("ماقدرش، جرّب تاني")); }); });
 $("#capPick")&&$("#capPick").addEventListener("change",sendCapFiles);
 $("#capCam")&&$("#capCam").addEventListener("change",sendCapFiles);
 $("#fileMonth")&&$("#fileMonth").addEventListener("change",fillFileItems);
@@ -3383,6 +3419,7 @@ function renderAllInner(fromSnap){
   if(tab==="access"){ renderPermGrid(); renderCvGrid(); renderMvGrid(); }
   if(tab==="capture") renderCapture();
   if(tab==="inbox") renderInbox();
+  if(tab==="chat") renderChat();
   if(tab==="calc") renderCalc();
 }
 
