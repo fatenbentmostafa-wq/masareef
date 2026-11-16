@@ -3241,17 +3241,22 @@ if("serviceWorker" in navigator && (location.protocol==="https:"||location.hostn
     o.querySelector("button").onclick=bye; document.body.appendChild(o); setTimeout(bye,8000); };
   // the phone app usually resumes instead of restarting, so check for a new version whenever it comes back
   let bootVer="", lastChk=0;
+  // never reload more than twice in 3 minutes (stops a loop if the server briefly serves mixed versions)
+  const okReload=()=>{ let l=[]; try{ l=JSON.parse(localStorage.getItem("masareef-reloads")||"[]").filter(t=>Date.now()-t<180e3); }catch(e){}
+    if(l.length>=2) return false; l.push(Date.now()); try{ localStorage.setItem("masareef-reloads",JSON.stringify(l)); }catch(e){} return true; };
+  const vnum=v=>+String(v||"").replace(/\D/g,"")||0;
   const swVer=()=>fetch("sw.js?t="+Date.now(),{cache:"no-store"}).then(r=>r.text()).then(t=>((t.match(/VERSION = "(v\d+)"/)||[])[1]||"")).catch(()=>"");
   swVer().then(v=>{ bootVer=v; });
-  const checkUpdate=async()=>{ if(Date.now()-lastChk<30000) return; lastChk=Date.now(); const v=await swVer(); if(!v||!bootVer||v===bootVer) return;
+  const checkUpdate=async()=>{ if(Date.now()-lastChk<30000) return; lastChk=Date.now(); const v=await swVer(); if(!v||!bootVer||vnum(v)<=vnum(bootVer)) return;
     try{ const r=await navigator.serviceWorker.getRegistration(); if(r) await r.update(); }catch(e){}
+    if(reloaded||!okReload()) return;
     if(userApp()){ reloaded=true; return updateExit(); }
     setTimeout(()=>{ if(!reloaded){ reloaded=true; try{ flushAll(); }catch(e){} try{ if(!document.documentElement.classList.contains("locked")) sessionStorage.setItem("masareef-nolock",String(Date.now())); }catch(e){} location.reload(); } },6000); };
   document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") checkUpdate(); });
   try{ const A=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.App; if(A) A.addListener("resume",checkUpdate); }catch(e){}
   setInterval(checkUpdate,10*60*1000);
 
-  navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(reloaded) return; reloaded=true; if(userApp()) return updateExit(); try{ flushAll(); }catch(e){} try{ if(!document.documentElement.classList.contains("locked")) sessionStorage.setItem("masareef-nolock",String(Date.now())); }catch(e){} location.reload(); });
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(reloaded||!okReload()) return; reloaded=true; if(userApp()) return updateExit(); try{ flushAll(); }catch(e){} try{ if(!document.documentElement.classList.contains("locked")) sessionStorage.setItem("masareef-nolock",String(Date.now())); }catch(e){} location.reload(); });
 }
 </script>
 </body>
