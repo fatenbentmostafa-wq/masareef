@@ -6,11 +6,12 @@ const read = p => fs.readFileSync(A(p), "utf8");
 const write = (p, s) => fs.writeFileSync(A(p), s);
 const must = (ok, msg) => { if (!ok) { console.error("PATCH FAILED: " + msg); process.exit(1); } };
 
-// 1) permissions: camera + microphone (receipts, voice notes) + biometric
+// 1) permissions: camera + microphone (receipts, voice notes) + biometric + location (where users open the app)
 let man = read("app/src/main/AndroidManifest.xml");
 const perms = ["android.permission.CAMERA", "android.permission.RECORD_AUDIO",
   "android.permission.MODIFY_AUDIO_SETTINGS", "android.permission.USE_BIOMETRIC",
-  "android.permission.POST_NOTIFICATIONS", "android.permission.RECEIVE_BOOT_COMPLETED"];
+  "android.permission.POST_NOTIFICATIONS", "android.permission.RECEIVE_BOOT_COMPLETED",
+  "android.permission.ACCESS_COARSE_LOCATION", "android.permission.ACCESS_FINE_LOCATION"];
 for (const p of perms) if (!man.includes(p))
   man = man.replace("</manifest>", `    <uses-permission android:name="${p}" />\n</manifest>`);
 if (!man.includes("android.hardware.camera"))
