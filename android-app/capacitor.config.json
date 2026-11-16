@@ -14,11 +14,17 @@
   "plugins": {
     "FirebaseAuthentication": {
       "skipNativeAuth": true,
-      "providers": ["google.com"]
+      "providers": [
+        "google.com"
+      ]
     },
     "SplashScreen": {
       "launchAutoHide": true,
       "backgroundColor": "#08130F"
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_notify",
+      "iconColor": "#3DD9B3"
     }
   }
 }
