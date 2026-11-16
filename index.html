@@ -558,6 +558,8 @@ header.ne #saveNow{display:none!important}
 .ro-month #tab-month :is(.x,.mv,.add,.visb,.sc,.lk,.attb:not(.has),.voidb:not(.on)),.ro-month #copyBox{display:none!important}
 .hide-totals #totals,.hide-totals .sum-kpis,.hide-totals #tab-month label:has(#income),.hide-totals .stot,.hide-totals .sum-sec h3 span+span{display:none!important}
 .hide-shareapp #shareAppCard{display:none!important}
+/* signed-in users (not the admin): no password change, no backup, no server/sharing details */
+.is-user #pwCard,.is-user #backupCard,.is-user #houseCard,.is-user #syncBar,.is-user #sbMembers,.is-user #pdfBox,.is-user #drHouse,.is-user #drSync{display:none!important}
 .hide-newmonth #homeNewMonth,.hide-newmonth #newMonth,.hide-newmonth #nmPanel{display:none!important}
 .hide-totals .mo summary>span:nth-child(2),.hide-totals .mo-sub,.hide-totals .mi-h span+span,.hide-totals .mo-body .tl.big,.hide-totals #g6Month{display:none!important}
 .ro-months #newMonth,.ro-months #nmPanel,.ro-months #monthsList [data-del]{display:none!important}
@@ -2573,7 +2575,7 @@ const ownerEmail=()=>house?(house.ownerEmail||(house.emails||[])[0]||""):"";
 function roleOf(email){ if(!house) return "admin"; const e=(email||"").toLowerCase(); if(e&&e===ownerEmail()) return "admin"; const r=(house.roles||{})[e]; return ROLE_N[r]?r:"editor"; }
 function myRole(){ if(!house||!fbUser) return "admin"; if(house.owner===fbUser.uid) return "admin"; return roleOf(myEmail()); }
 const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1],["totals","الدخل والإجماليات",0],["newmonth","إضافة شهر جديد",0],["activity","نشاط البيت والتنبيهات في الجرس",0],["shareapp","إرسال البرنامج لحد",0]];
-const DEF_OFF={viewer:new Set(["totals","newmonth","activity","shareapp","owed","backup"]),editor:new Set(["totals","newmonth","activity"])};
+const DEF_OFF={viewer:new Set(["totals","newmonth","activity","shareapp","owed","backup"]),editor:new Set(["totals","newmonth","activity","backup"])};
 const VIEWER_OFF=new Set(["totals","newmonth","activity","shareapp"]);
 const PERM_EDITABLE=Object.fromEntries(PERM_ROWS.map(r=>[r[0],!!r[2]]));
 function permOf(p){
@@ -2588,7 +2590,7 @@ const canEditKey=k=>k==="commits"?canEditP("data"):k==="savings"?canEditP("savin
 const canEdit=()=>canEditP("month");
 const isAdmin=()=>myRole()==="admin";
 function applyRole(){
-  const r=myRole(), H=document.documentElement; H.classList.toggle("is-admin",r==="admin");
+  const r=myRole(), H=document.documentElement; H.classList.toggle("is-admin",r==="admin"); H.classList.toggle("is-user",!!(house&&fbUser)&&r!=="admin");
   PERM_ROWS.forEach(([k])=>{ H.classList.toggle("hide-"+k,!canSee(k)); H.classList.toggle("ro-"+k,canSee(k)&&!canEditP(k)); });
   if(tab!=="home"&&!canSee(tab)){ toast("الصفحة دي مش متاحة لك"); showTab("home"); }
   $("#drAdmin").hidden=!(house&&fbUser&&r==="admin");
@@ -2698,8 +2700,8 @@ const privColl=()=>houseRef?houseRef.collection("private"):null;
 const HROLES=["editor","viewer"], HROLE_N={editor:"المحرر",viewer:"المشاهد"};
 const nName=x=>String(x||"").trim().replace(/\s+/g," ").toLowerCase();
 // the permissions sheet the owner filled in (applied once to the house)
-const PERM_PRESET={id:"sheet-2026-11-16",
-  perms:{editor:{month:"edit",months:"edit",summary:"view",commits:"view",data:"edit",savings:"edit",owed:"edit",docs:"edit",notifs:"view",calc:"view",backup:"edit",totals:"none",newmonth:"none",activity:"none",shareapp:"view"},
+const PERM_PRESET={id:"sheet-2026-11-16b",
+  perms:{editor:{month:"edit",months:"edit",summary:"view",commits:"view",data:"edit",savings:"edit",owed:"edit",docs:"edit",notifs:"view",calc:"view",backup:"none",totals:"none",newmonth:"none",activity:"none",shareapp:"view"},
          viewer:{month:"view",months:"view",summary:"view",commits:"view",data:"view",savings:"view",owed:"none",docs:"view",notifs:"view",calc:"view",backup:"none",totals:"none",newmonth:"none",activity:"none",shareapp:"none"}},
   hideItems:{editor:[],viewer:["فيزا البنك العربي","فاتوره موبايل","قسط فاليو","مصروف بابا","Samsung s25 ultra"]}};
 function hiddenRolesFor(name){ const h=(house&&house.hideItems)||{}, n=nName(name); return HROLES.filter(r=>(h[r]||[]).some(x=>nName(x)===n)); }
@@ -2802,6 +2804,7 @@ $("#ulForm").addEventListener("submit",async e=>{
   finally{ $("#ulGo").disabled=false; }
 },true);
 $("#pwForm").addEventListener("submit",async e=>{
+  if(house&&fbUser&&!isAdmin()){ e.preventDefault(); toast("تغيير الباسورد من المدير بس"); return; }
   e.preventDefault(); e.stopImmediatePropagation();
   try{ const cred=firebase.auth.EmailAuthProvider.credential(fbUser.email,$("#pwOld").value);
     await fbUser.reauthenticateWithCredential(cred); await fbUser.updatePassword($("#pwNew").value);
