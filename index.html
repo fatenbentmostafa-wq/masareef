@@ -2656,11 +2656,16 @@ document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==
 const mapUrl=l=>`https://www.google.com/maps?q=${l.lat},${l.lng}`;
 document.addEventListener("click",e=>{ const a=e.target.closest(".ploc"); if(!a) return; e.preventDefault(); allowAway(); location.href=a.href; });
 const myEmail=()=>(fbUser&&fbUser.email||"").toLowerCase();
-function personName(em,fb){ em=(em||"").toLowerCase(); const nm=(house&&house.names&&house.names[em])||(()=>{ try{ return members[em]&&members[em].name; }catch(e){ return ""; } })()||(fbUser&&myEmail()===em&&fbUser.displayName)||"";
+const OWNER_LABEL="الحج صاحب البيت";
+const isOwnerEmail=em=>!!em&&(em||"").toLowerCase()===((ownerEmail()||"").toLowerCase());
+function personName(em,fb){ em=(em||"").toLowerCase();
+  const explicit=house&&house.names&&house.names[em]; if(explicit) return explicit;
+  if(isOwnerEmail(em)) return OWNER_LABEL;
+  const nm=(()=>{ try{ return members[em]&&members[em].name; }catch(e){ return ""; } })()||(fbUser&&myEmail()===em&&fbUser.displayName)||"";
   if(nm) return nm; if(fb) return fb; const u=house&&house.unames&&house.unames[em]; return u||em.split("@")[0].split(".")[0]; }
 const svDay=iso=>{ try{ return new Date(iso).toLocaleDateString("ar-EG",{day:"numeric",month:"short"}); }catch(e){ return ""; } };
-const meName=()=>{ const n=house&&house.names&&house.names[myEmail()]; return n||String((fbUser&&fbUser.displayName)||myEmail()||"حد").split(/[\s@]/)[0]; };
-function adminName(){ const em=ownerEmail(); return (house&&house.names&&house.names[em])||(em?personName(em):"")||"المدير"; }
+const meName=()=>{ const n=house&&house.names&&house.names[myEmail()]; if(n) return n; if(fbUser&&isOwnerEmail(myEmail())) return OWNER_LABEL; return String((fbUser&&fbUser.displayName)||myEmail()||"حد").split(/[\s@]/)[0]; };
+function adminName(){ const em=ownerEmail(); return em?personName(em):OWNER_LABEL; }
 const ownerEmail=()=>house?(house.ownerEmail||(house.emails||[])[0]||""):"";
 function roleOf(email){ if(!house) return "admin"; const e=(email||"").toLowerCase(); if(e&&e===ownerEmail()) return "admin"; const r=(house.roles||{})[e]; return ROLE_N[r]?r:"editor"; }
 function myRole(){ if(!house||!fbUser) return "admin"; if(house.owner===fbUser.uid) return "admin"; return roleOf(myEmail()); }
@@ -3106,7 +3111,7 @@ function renderDrawerFoot(){
   const signed=!!(house&&fbUser);
   $("#drHouse").innerHTML=signed?`البيت: <b>${esc(house.name||"بيتنا")}</b> · ${(house.emails||[]).length} مستخدم`:"";
   $("#drOut").hidden=!fbUser;
-  if(signed){ const cn=house&&house.names&&house.names[myEmail()]; const full=cn||fbUser.displayName||myEmail(), disp=cn||String(full).split(" ")[0]; $("#drState").textContent="مسجّل دخول"; $("#drName").textContent=`${disp} · ${ROLE_N[myRole()]}`; $("#drAv").textContent=(String(full).trim()[0]||"?").toUpperCase(); }
+  if(signed){ const cn=(house&&house.names&&house.names[myEmail()])||(isOwnerEmail(myEmail())?OWNER_LABEL:""); const full=cn||fbUser.displayName||myEmail(), disp=cn||String(full).split(" ")[0]; $("#drState").textContent="مسجّل دخول"; $("#drName").textContent=`${disp} · ${ROLE_N[myRole()]}`; $("#drAv").textContent=(String(full).trim()[0]||"?").toUpperCase(); }
   else { $("#drState").textContent="مش مسجّل دخول"; $("#drName").textContent="على الموبايل ده بس"; $("#drAv").innerHTML='<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5c.7-4 3.7-6.3 7.5-6.3s6.8 2.3 7.5 6.3"/></svg>'; }
   let ls=""; try{ ls=localStorage.getItem("house-budget-changed")||""; }catch(e){}
   $("#drSync").textContent=ls?"آخر تحديث "+new Date(ls).toLocaleString("en-GB",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}):"";
