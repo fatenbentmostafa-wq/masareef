@@ -9,12 +9,22 @@ const must = (ok, msg) => { if (!ok) { console.error("PATCH FAILED: " + msg); pr
 // 1) permissions: camera + microphone (receipts, voice notes) + biometric
 let man = read("app/src/main/AndroidManifest.xml");
 const perms = ["android.permission.CAMERA", "android.permission.RECORD_AUDIO",
-  "android.permission.MODIFY_AUDIO_SETTINGS", "android.permission.USE_BIOMETRIC"];
+  "android.permission.MODIFY_AUDIO_SETTINGS", "android.permission.USE_BIOMETRIC",
+  "android.permission.POST_NOTIFICATIONS", "android.permission.RECEIVE_BOOT_COMPLETED"];
 for (const p of perms) if (!man.includes(p))
   man = man.replace("</manifest>", `    <uses-permission android:name="${p}" />\n</manifest>`);
 if (!man.includes("android.hardware.camera"))
   man = man.replace("</manifest>", `    <uses-feature android:name="android.hardware.camera" android:required="false" />\n</manifest>`);
 write("app/src/main/AndroidManifest.xml", man);
+
+// 1b) small monochrome bell icon for reminders
+const dr = A("app/src/main/res/drawable");
+fs.mkdirSync(dr, { recursive: true });
+fs.writeFileSync(path.join(dr, "ic_stat_notify.xml"), `<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF" android:pathData="M12,22c1.1,0 2,-0.9 2,-2h-4c0,1.1 0.9,2 2,2zM18,16v-5c0,-3.07 -1.63,-5.64 -4.5,-6.32V4c0,-0.83 -0.67,-1.5 -1.5,-1.5s-1.5,0.67 -1.5,1.5v0.68C7.64,5.36 6,7.92 6,11v5l-2,2v1h16v-1l-2,-2z"/>
+</vector>
+`);
 
 // 2) Google provider for @capacitor-firebase/authentication
 let vars = read("variables.gradle");
