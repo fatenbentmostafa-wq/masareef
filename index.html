@@ -960,6 +960,7 @@ h2.cap{font-size:.8rem;letter-spacing:.06em;color:var(--muted);text-transform:up
       <p class="hint" style="margin:6px 0 0">الفواتير والتسجيلات اللي بعتهالك أهل البيت. افتحها ورتّبها في الشهر والبند المناسب.</p>
     </div>
     <div id="inbList"></div>
+    <div id="reqSent"></div>
   </section>
 
   <section id="tab-calc" hidden>
@@ -2860,7 +2861,10 @@ let fileEv=null;
 function renderInbox(){ const items=events.filter(e=>e.t==="inbox").sort((a,b)=>a.at<b.at?1:-1);
   $("#inbCount").textContent=items.length?`الوارد (${items.length})`:"الوارد";
   $("#inbList").innerHTML= items.length? items.map(e=>`<div class="card inb" data-ev="${e.id}"><div class="inb-t"><b>${esc(e.name||personName(e.email))}</b><small>${e.kind==="audio"?"🎙 تسجيل صوت":e.kind==="pdf"?"📄 PDF":"📷 صورة"} · ${nfStamp(e.at)}</small>${e.body?`<p>${esc(e.body)}</p>`:""}</div><div class="inb-a"><button type="button" data-inbopen>افتح</button><button type="button" class="btn-main" data-inbfile>رتّبها</button><button type="button" class="x" data-inbdel aria-label="مسح">×</button></div></div>`).join("") : `<p class="empty card">لسه محدش بعت حاجة.</p>`;
+  const reqs=events.filter(e=>e.t==="request").sort((a,b)=>a.at<b.at?1:-1);
+  const rl=$("#reqSent"); if(rl) rl.innerHTML= reqs.length? `<div class="card dc" style="margin-top:12px"><h2 style="margin:0 0 8px">الطلبات اللي بعتها</h2>`+reqs.map(e=>`<div class="inb" data-req="${e.id}"><div class="inb-t"><b>لـ ${esc(personName(e.target))}</b><small>${nfStamp(e.at)}</small>${e.body?`<p>${esc(e.body)}</p>`:""}</div><div class="inb-a"><button type="button" class="x" data-reqdel aria-label="شيل الطلب">×</button></div></div>`).join("")+`</div>` : "";
 }
+document.addEventListener("click",e=>{ const b=e.target.closest("[data-reqdel]"); if(!b) return; const row=b.closest("[data-req]"); if(!row||!houseRef) return; const id=row.dataset.req; confirmDel("هتشيل الطلب ده — متأكد؟",()=>{ houseRef.collection("events").doc(id).delete().then(()=>{ toast("اتشال ✓"); renderInbox(); }).catch(()=>toast("ماقدرش")); }); });
 function fillFileItems(){ const m=state.months[$("#fileMonth").value]; $("#fileItem").innerHTML=(m?m.items:[]).filter(i=>!isEmpty(i)).map(i=>`<option value="${i.id}">${esc(i.name||"بند")}</option>`).join("")||`<option value="">مفيش بنود في الشهر ده</option>`; }
 document.addEventListener("click",e=>{
   if(e.target.closest("#capPickBtn")){ allowAway(); $("#capPick").click(); return; }
