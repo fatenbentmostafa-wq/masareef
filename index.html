@@ -769,6 +769,14 @@ h2.cap{font-size:.8rem;letter-spacing:.06em;color:var(--muted);text-transform:up
       <div class="kv" id="abAppRow" hidden><span>نسخة التطبيق</span><b id="abApp">—</b></div>
       <p class="hint" style="margin:6px 0 0">البرنامج بيتحدث لوحده أول ما تفتحه وهو متصل بالنت.</p>
     </div>
+    <div class="card dc" id="shareAppCard">
+      <h2>ابعت البرنامج لحد</h2>
+      <p class="hint" style="margin:0 0 10px">بيتبعت لينك تنزيل التطبيق للأندرويد ولينك فتحه من المتصفح للآيفون أو الكمبيوتر. الشخص هيحتاج إنك تضيفه من «المستخدمين» عشان يقدر يدخل.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button type="button" class="btn-main" id="shareAppWa">📲 ابعته واتساب</button>
+        <button type="button" class="btn" id="shareAppMore">مشاركة بطريقة تانية</button>
+      </div>
+    </div>
   </section>
 
   <!-- 1. monthly expenses (entry form) -->
@@ -2948,6 +2956,18 @@ $("#bellBtn").addEventListener("click",()=>showTab("notifs"));
     if(latest>mine) nfPushLocal({id:"apk:"+latest,t:"alert",ic:"⬇️",title:"فيه تحديث جديد للتطبيق",body:`نسخة 1.0.${latest} جاهزة (عندك ${info.version}). نزّلها وثبّتها فوق القديمة، والداتا هتفضل زي ما هي.`,go:"",act:{label:"نزّل التحديث",url:"https://github.com/fatenbentmostafa-wq/masareef/releases/download/app/masareef.apk"}});
   }catch(e){}
 })();
+
+/* ---------- send the app to someone ---------- */
+const APP_APK="https://github.com/fatenbentmostafa-wq/masareef/releases/download/app/masareef.apk";
+const APP_WEB="https://fatenbentmostafa-wq.github.io/masareef/";
+const shareAppText=()=>`برنامج «مصاريف البيت» 🏠\n\nللأندرويد: نزّل التطبيق من هنا وثبّته (لو سألك اسمح بالتثبيت من المصدر ده):\n${APP_APK}\n\nللآيفون أو الكمبيوتر: افتحه من هنا:\n${APP_WEB}\n\nبعد التثبيت ادخل باليوزر والباسورد اللي هبعتهملك.`;
+document.addEventListener("click",async e=>{
+  if(e.target.closest("#shareAppWa")){ allowAway(); location.href="https://wa.me/?text="+encodeURIComponent(shareAppText()); return; }
+  if(e.target.closest("#shareAppMore")){ allowAway(); const t=shareAppText();
+    try{ const S=NP("Share"); if(S){ await S.share({title:"مصاريف البيت",text:t,dialogTitle:"ابعت البرنامج"}); return; } }catch(x){ return; }
+    try{ if(navigator.share){ await navigator.share({title:"مصاريف البيت",text:t}); return; } }catch(x){ return; }
+    try{ await navigator.clipboard.writeText(t); toast("اتنسخ الكلام، الصقه في أي مكان"); }catch(x){ location.href="https://wa.me/?text="+encodeURIComponent(t); } }
+});
 
 /* ---------- phone reminders (native app) ---------- */
 const RM_KEY="house-budget-remind";
