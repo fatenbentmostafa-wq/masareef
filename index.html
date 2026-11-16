@@ -641,6 +641,26 @@ header.ne #saveNow{display:none!important}
 #sbUserLogin{margin-top:8px}
 .bioask{border-color:rgba(61,217,179,.5)}
 .bioask .lk-ic{font-size:1.5rem}
+
+.dr-it.adm{display:none} .is-admin .dr-it.adm{display:flex}
+h2.cap{font-size:.8rem;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:0 0 10px}
+.ua-err{grid-column:1/-1;margin:0;color:var(--neg);font-size:.88rem;min-height:0}
+.ua-err:empty{display:none}
+.pp{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;padding:14px 0;border-bottom:1px solid var(--line)}
+.pp:last-child{border-bottom:0}
+.pp .pn{font-weight:700;font-size:1.02rem;overflow-wrap:anywhere}
+.pp .pn small{font-weight:400;color:var(--muted);font-size:.84rem}
+.pp .pu{justify-self:end;font-weight:700;direction:ltr;color:var(--ink);opacity:.9;overflow-wrap:anywhere}
+.pp .ps{grid-column:1/2;color:var(--muted);font-size:.84rem;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pp .dot{width:9px;height:9px;border-radius:50%;background:#7A8A85;display:inline-block}
+.pp .dot.on{background:#3DD9B3;box-shadow:0 0 0 3px rgba(61,217,179,.18)}
+.pp .pa{grid-column:2/3;grid-row:2/3;display:flex;gap:6px;justify-self:end;align-self:center}
+.pp .pa button{height:34px;padding:0 14px;border-radius:10px;font:inherit;font-weight:700;font-size:.88rem;border:0}
+.pp .pe{background:var(--paper2);color:var(--ink);border:1px solid var(--line)!important}
+.pp .pr{background:#B42318;color:#fff}
+.pp .ptag{font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:8px}
+.danger-btn{background:#B42318!important;color:#fff!important;border-color:#B42318!important}
+#ueSheet .f,#ueSheet input,#ueSheet select{width:100%}
 </style>
 
 </head>
@@ -836,11 +856,9 @@ header.ne #saveNow{display:none!important}
   </section>
 
   <section id="tab-users" hidden>
-    <div class="card dc">
-      <h2>المستخدمين</h2>
-      <p class="hint" id="usrHint"></p>
-      <div id="usrList"></div>
-      <div class="usr-add" id="usrAdd" hidden>
+    <div class="card dc" id="usrAddCard">
+      <h2 class="cap">إضافة شخص</h2>
+      <div class="usr-add" id="usrAdd">
         <div class="seg ua-seg" role="radiogroup" aria-label="نوع الحساب">
           <label><input type="radio" name="uaKind" value="pass" checked><span>اسم مستخدم وباسورد</span></label>
           <label><input type="radio" name="uaKind" value="google"><span>حساب جوجل</span></label>
@@ -853,13 +871,23 @@ header.ne #saveNow{display:none!important}
         <label class="f ua-google" hidden>إيميل جوجل<input type="email" id="usrEmail" placeholder="name@gmail.com" autocomplete="off"></label>
         <label class="f">الصلاحية<select id="usrRole"><option value="editor">محرر</option><option value="viewer">مشاهد</option><option value="admin">مدير</option></select></label>
         <button type="button" class="btn-main" id="usrAddBtn">إضافة</button>
+        <p class="ua-err" id="uaErr" role="alert"></p>
       </div>
     </div>
     <div class="card dc">
-      <h2>الصلاحيات</h2>
+      <h2 class="cap" id="usrCount">الأشخاص</h2>
+      <p class="hint" id="usrHint" style="margin-top:0"></p>
+      <div id="usrList"></div>
+      <p class="hint" style="margin:10px 0 0">«متصل» يعني البرنامج مفتوح عنده دلوقتي، وبيبقى «مش متصل» بعد ما يقفله بدقيقتين تقريبًا.</p>
+    </div>
+  </section>
+
+  <section id="tab-access" hidden>
+    <div class="card dc">
+      <h2>تحديد صلاحيات الوصول</h2>
       <p class="hint" style="margin-top:0">علّم ✓ أو ✗ قصاد كل صفحة: «يشوف» يعني الصفحة تظهر له، و«يعدّل» يعني يقدر يضيف ويغيّر فيها. التغيير بيتطبق على طول على كل الموبايلات.</p>
       <div class="pg-wrap"><table class="pg" id="permGrid"></table></div>
-      <p class="pg-note">المدير بيشوف ويعدّل كل حاجة دايمًا. الصفحات اللي جنبها «عرض بس» مافيهاش تعديل أصلًا.</p>
+      <p class="pg-note">المدير بيشوف ويعدّل كل حاجة دايمًا. الصفحات اللي جنبها «عرض بس» مافيهاش تعديل أصلًا. ولو عايز تخبّي بند معيّن من المصاريف عن حد، استخدم زرار «👁» تحت البند نفسه.</p>
     </div>
   </section>
 
@@ -984,6 +1012,25 @@ header.ne #saveNow{display:none!important}
     <button type="button" id="visCancel" class="cn">إلغاء</button>
   </div>
 </div>
+<div class="asheet" id="ueSheet" hidden>
+  <div class="as-box" role="dialog" aria-label="تعديل مستخدم">
+    <b id="ueTitle">تعديل</b>
+    <label class="f">الاسم<input type="text" id="ueName" autocomplete="off"></label>
+    <label class="f">الصلاحية<select id="ueRole"><option value="editor">محرر</option><option value="viewer">مشاهد</option><option value="admin">مدير</option></select></label>
+    <label class="f" id="uePassWrap">باسورد جديد (سيبه فاضي لو مش هتغيّره)<input type="text" id="uePass" autocomplete="new-password" dir="ltr" placeholder="6 حروف أو أرقام على الأقل"></label>
+    <p class="ua-err" id="ueErr" role="alert"></p>
+    <button type="button" class="btn-main" id="ueSave">حفظ</button>
+    <button type="button" id="ueCancel" class="cn">إلغاء</button>
+  </div>
+</div>
+<div class="asheet" id="urSheet" hidden>
+  <div class="as-box" role="dialog" aria-label="مسح مستخدم">
+    <b id="urTitle">مسح المستخدم؟</b>
+    <p class="hint" style="margin:0;text-align:center">هيتشال من البيت ومش هيقدر يدخل على الداتا تاني، حتى لو البرنامج مفتوح عنده.</p>
+    <button type="button" class="btn-main danger-btn" id="urYes">أيوه امسحه</button>
+    <button type="button" id="urNo" class="cn">إلغاء</button>
+  </div>
+</div>
 <div class="drawer-bg" id="drawerBg" hidden></div>
 <aside class="drawer" id="drawer" aria-label="القايمة" aria-hidden="true">
   <div class="dr-head">
@@ -1002,6 +1049,8 @@ header.ne #saveNow{display:none!important}
     <button type="button" class="dr-it c-purple" data-dgo="data"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v6.5c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8V5.5"/><path d="M4.5 12v6.5c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8V12"/></svg></span><span>الداتا</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button type="button" class="dr-it c-pink" data-dgo="savings"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11a7 6 0 0 1 13-2l2-1v4l-1.5.5A7 6 0 0 1 15 17v2h-2.5v-1.2a8 8 0 0 1-2 0V19H8v-2.3A6 6 0 0 1 5 11z"/><circle cx="15" cy="10.5" r=".8"/></svg></span><span>المدخرات</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button type="button" class="dr-it c-green" data-dgo="owed"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12l4-4 4 3 6-6"/><path d="M14 5h3v3"/><path d="M4 20h16"/></svg></span><span>فلوس ليا برا</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button type="button" class="dr-it c-gold adm" data-dgo="users"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.5-3.5 3-5.5 6-5.5s5.5 2 6 5.5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.6c2.6.2 4.2 2 4.5 4.9"/></svg></span><span>المستخدمين</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <button type="button" class="dr-it c-gold adm" data-dgo="access"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.3-7.5 9.5-4.3-1.2-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12l2.2 2.2 4.2-4.4"/></svg></span><span>تحديد صلاحيات الوصول</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button type="button" class="dr-it c-gold" data-dgo="notifs"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 19.5a2 2 0 0 0 4 0"/></svg></span><span>الإشعارات</span><span class="cnt" id="drBell" hidden>0</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button type="button" class="dr-it c-blue" data-dgo="calc"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8 7h8M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18h.01M12 18h3.5"/></svg></span><span>الآلة الحاسبة</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
     <button type="button" class="dr-it c-blue" data-dgo="settings"><span class="di"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></span><span>الإعدادات</span><svg class="i ch" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
@@ -1985,7 +2034,7 @@ function signedOutUI(){
   $("#sbSub").textContent="سجّل دخول بجوجل عشان داتاك تتحفظ على السيرفر وتظهر على أي موبايل.";
   $("#sbLogin").hidden=false; $("#sbMembers").hidden=true; $("#houseCard").hidden=true;
   setStatus("محفوظ على الموبايل ده");
-  unsubscribeHouseExtras(); if(privUnsub){ try{privUnsub()}catch(e){} privUnsub=null; } privDocs={}; pubMonths=null;
+  unsubscribeHouseExtras(); houseRef=null; if(privUnsub){ try{privUnsub()}catch(e){} privUnsub=null; } privDocs={}; pubMonths=null;
   state.months&&Object.values(state.months).forEach(m=>{ m.items=m.items.filter(i=>!i.priv); }); saveLocal();
   renderAuthUI(); applyRole();
 }
@@ -2177,7 +2226,7 @@ document.addEventListener("click",e=>{ if(e.target.closest("#bkLoad,#shareBtn,#b
 (async()=>{ const ok=await lockSupported(); $("#lockCard").hidden=!ok; if(ok){ renderLockCard(); if(lockCred&&!NOLOCK_RELOAD){ showLock(); tryUnlock(); return; } } hideLock(); })();
 
 /* ---------- pages ---------- */
-const PAGES={home:"مصاريف البيت",notifs:"الإشعارات",users:"المستخدمين",calc:"الآلة الحاسبة",summary:"ملخص الشهور",month:"المصاريف",months:"الشهور",commits:"ملخص الالتزامات",data:"الداتا",savings:"المدخرات",owed:"فلوس ليا برا",settings:"الإعدادات"};
+const PAGES={home:"مصاريف البيت",notifs:"الإشعارات",users:"المستخدمين",access:"صلاحيات الوصول",calc:"الآلة الحاسبة",summary:"ملخص الشهور",month:"المصاريف",months:"الشهور",commits:"ملخص الالتزامات",data:"الداتا",savings:"المدخرات",owed:"فلوس ليا برا",settings:"الإعدادات"};
 let tab="home", cameFromHome=false;
 function applyRoute(){
   const h=location.hash.slice(1); let t=PAGES[h]&&h!=="home"?h:"home";
@@ -2188,7 +2237,7 @@ function applyRoute(){
   $("#pageTitle").textContent=t==="home"?"":PAGES[t];
   $("#backBtn").hidden=t==="home";
   document.querySelector("header").hidden=t==="home";
-  document.querySelector("header").classList.toggle("ne",["notifs","users","summary","commits","calc"].includes(t));
+  document.querySelector("header").classList.toggle("ne",["notifs","users","access","summary","commits","calc"].includes(t));
   const navKey={home:"home",months:"months",summary:"summary",commits:"commits",data:"data",settings:"settings"}[t];
   document.querySelectorAll(".tabbar [data-nav]").forEach(b=>{ if(b.dataset.nav===navKey) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
   showUpdated();
@@ -2521,7 +2570,7 @@ function applyRole(){
   $("#drAdmin").hidden=!(house&&fbUser&&r==="admin");
   // owner: remember owner email once (makes the owner explicit for everyone)
   if(house&&fbUser&&house.owner===fbUser.uid&&!house.ownerEmail&&houseRef){ houseRef.update({ownerEmail:myEmail()}).catch(()=>{}); }
-  renderDrawerFoot(); if(tab==="users") renderUsers(); if(tab==="month") renderForm();
+  renderDrawerFoot(); if(tab==="users") renderUsers(); if(tab==="access") renderPermGrid(); if(tab==="month") renderForm();
 }
 document.addEventListener("submit",e=>{ const fp={dForm:"data",svForm:"savings",owForm:"owed"}[e.target&&e.target.id]||"month"; if(!canEditP(fp)){ e.preventDefault(); e.stopImmediatePropagation(); toast("مش متاح لك التعديل هنا"); } },true);
 function subscribeHouseExtras(ref,u){
@@ -2533,7 +2582,7 @@ function subscribeHouseExtras(ref,u){
   let last=0; try{ last=+localStorage.getItem("house-budget-loginlog")||0; }catch(e){}
   if(Date.now()-last>12*3600e3){ try{ localStorage.setItem("house-budget-loginlog",String(Date.now())); }catch(e){} setTimeout(()=>logEvent("login",`${meName()} دخل على البرنامج`,NATIVE?"من التطبيق":"من المتصفح"),1200); }
 }
-function unsubscribeHouseExtras(){ extrasUnsub.forEach(f=>{ try{f()}catch(e){} }); extrasUnsub=[]; events=[]; members={}; houseRef=null; nfRefresh(); }
+function unsubscribeHouseExtras(){ extrasUnsub.forEach(f=>{ try{f()}catch(e){} }); extrasUnsub=[]; events=[]; members={}; nfRefresh(); }
 const recentLogs={};
 function logEvent(t,title,body,go){
   if(!houseRef||!fbUser) return;
@@ -2542,19 +2591,21 @@ function logEvent(t,title,body,go){
 }
 function renderUsers(){
   const L=$("#usrList");
-  if(!house||!fbUser){ $("#usrHint").textContent="سجّل دخول بجوجل الأول من الإعدادات، وبعدها تقدر تضيف أهل البيت وتحدد صلاحياتهم."; L.innerHTML=`<button type="button" class="btn-main" onclick="showTab('settings')">روح للإعدادات</button>`; $("#usrAdd").hidden=true; renderPermGrid(); return; }
-  const admin=isAdmin(), me=myEmail(), own=ownerEmail();
-  $("#usrHint").textContent=admin?"كل واحد بيدخل بحسابه على موبايله (اسم مستخدم وباسورد أو جوجل) ويشوف الداتا حسب صلاحيته.":"إدارة المستخدمين والصلاحيات للمدير بس.";
-  L.innerHTML=(house.emails||[]).map(e=>{
-    const m=members[e]||{}, r=roleOf(e), nm=m.name||(house.names&&house.names[e])||e.split("@")[0], ini=(nm.trim()[0]||"?").toUpperCase(), shown=e.endsWith("@"+USER_DOMAIN)?"اسم المستخدم: "+e.split("@")[0]:e;
-    const seen=m.lastSeen?"آخر دخول "+new Date(m.lastSeen).toLocaleDateString("ar-EG",{day:"numeric",month:"short"}):"لسه ما دخلش";
-    const ctl=admin&&e!==me&&e!==own
-      ?`<span class="uctl"><select data-role="${esc(e)}" aria-label="صلاحية ${esc(e)}">${Object.entries(ROLE_N).map(([k,v])=>`<option value="${k}" ${k===r?"selected":""}>${v}</option>`).join("")}</select><button type="button" class="x" data-urm="${esc(e)}" aria-label="شيل ${esc(e)}">×</button></span>`
-      :`<span class="rbadge r-${r}">${ROLE_N[r]}${e===own?" · صاحب البيت":""}</span>`;
-    return `<div class="usr"><span class="av">${esc(ini)}</span><div><b>${esc(nm)}${e===me?" (إنت)":""}</b><small>${esc(shown)} · ${seen}</small></div>${ctl}</div>`;
+  if(!house||!fbUser){ $("#usrCount").textContent="الأشخاص"; $("#usrHint").textContent="سجّل دخول الأول من الإعدادات، وبعدها تقدر تضيف أهل البيت."; L.innerHTML=""; $("#usrAddCard").hidden=true; return; }
+  const admin=isAdmin(), me=myEmail(), own=ownerEmail(), now=Date.now();
+  $("#usrAddCard").hidden=!admin;
+  const list=house.emails||[];
+  $("#usrCount").textContent=`الأشخاص (${list.length})`;
+  $("#usrHint").textContent=admin?"":"إدارة المستخدمين للمدير بس.";
+  L.innerHTML=list.map(e=>{
+    const m=members[e]||{}, r=roleOf(e), nm=(house.names&&house.names[e])||m.name||e.split("@")[0];
+    const isPass=e.endsWith("@"+USER_DOMAIN), uname=isPass?(house.unames&&house.unames[e])||e.split("@")[0].split(".")[0]:e;
+    const online=e===me||(m.lastSeen&&now-new Date(m.lastSeen).getTime()<130e3);
+    const seen=e===me?nfStamp(new Date().toISOString()):m.lastSeen?nfStamp(m.lastSeen):"لسه ما دخلش";
+    const acts=admin&&e!==own&&e!==me?`<span class="pa"><button type="button" class="pe" data-ue="${esc(e)}">تعديل</button><button type="button" class="pr" data-ur="${esc(e)}">مسح</button></span>`:admin&&e===me&&e!==own?"":"";
+    return `<div class="pp"><div class="pn">${esc(nm)}${e===me?" (إنت)":""} <small>· ${ROLE_N[r]}${e===own?" · صاحب البيت":""}</small></div><div class="pu">${esc(uname)}</div>
+      <div class="ps"><span class="dot ${online?"on":""}"></span>${online?"متصل":"مش متصل"} · آخر دخول <span dir="ltr">${esc(seen)}</span></div>${acts}</div>`;
   }).join("");
-  $("#usrAdd").hidden=!admin;
-  renderPermGrid();
 }
 function renderPermGrid(){
   const admin=isAdmin(), P=(house&&house.perms)||{};
@@ -2599,17 +2650,17 @@ $("#usrAddBtn").addEventListener("click",async()=>{
     const u=$("#uaUser").value.trim().toLowerCase(), pw=$("#uaPass").value, nm=$("#uaName").value.trim(), r=$("#usrRole").value;
     if(!/^[a-z0-9._-]{2,30}$/.test(u)){ $("#uaUser").focus(); toast("اسم المستخدم حروف إنجليزي صغيرة وأرقام بس"); return; }
     if(pw.length<6){ $("#uaPass").focus(); toast("الباسورد 6 حروف أو أرقام على الأقل"); return; }
-    if(!houseRef||!isAdmin()) return;
-    $("#usrAddBtn").disabled=true;
+    if(!houseRef||!isAdmin()){ $("#uaErr").textContent="لسه بيتصل بالسيرفر، استنى ثانية وجرّب تاني"; return; }
+    $("#usrAddBtn").disabled=true; $("#uaErr").textContent="بيعمل الحساب…";
     try{ await createPassUser(u,pw,nm,r); $("#uaUser").value=""; $("#uaPass").value=""; $("#uaName").value="";
-      toast(`اتعمل حساب «${u}» كـ${ROLE_N[r]}. يدخل بيه من الإعدادات`); logEvent("role",`${meName()} عمل حساب ${nm||u} كـ${ROLE_N[r]}`,"","users"); }
-    catch(x){ toast(authMsg(x)); }
+      $("#uaErr").textContent=""; toast(`اتعمل حساب «${u}» كـ${ROLE_N[r]}. يدخل بيه من الإعدادات`); logEvent("role",`${meName()} عمل حساب ${nm||u} كـ${ROLE_N[r]}`,"","users"); }
+    catch(x){ $("#uaErr").textContent=authMsg(x); toast(authMsg(x)); }
     finally{ $("#usrAddBtn").disabled=false; }
     return;
   }
   const em=$("#usrEmail").value.trim().toLowerCase(), r=$("#usrRole").value;
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ $("#usrEmail").focus(); toast("اكتب إيميل صح"); return; }
-  if(!houseRef||!isAdmin()) return;
+  if(!houseRef||!isAdmin()){ $("#uaErr").textContent="لسه بيتصل بالسيرفر، استنى ثانية وجرّب تاني"; return; }
   try{ await houseRef.update("emails",firebase.firestore.FieldValue.arrayUnion(em),new firebase.firestore.FieldPath("roles",em),r);
     $("#usrEmail").value=""; toast(`اتضاف ${em} كـ${ROLE_N[r]}. يسجّل دخول بيه من موبايله.`); logEvent("role",`${meName()} ضاف ${em} كـ${ROLE_N[r]}`,"","users"); }
   catch(x){ toast("ماقدرتش أضيفه. جرّب تاني."); }
@@ -2680,17 +2731,6 @@ const USER_DOMAIN="masareef-elbeit.firebaseapp.com";
 const userEmail=u=>String(u||"").trim().toLowerCase().replace(/\s+/g,"")+"@"+USER_DOMAIN;
 const isPassUser=()=>!!(fbUser&&fbUser.providerData&&fbUser.providerData.some(p=>p.providerId==="password"));
 document.querySelectorAll('input[name="uaKind"]').forEach(r=>r.addEventListener("change",()=>{ const g=(document.querySelector('input[name="uaKind"]:checked')||{}).value==="google"; document.querySelector(".ua-pass").hidden=g; document.querySelector(".ua-google").hidden=!g; }));
-async function createPassUser(username,password,name,role){
-  const sec=firebase.apps.find(a=>a.name==="sec")||firebase.initializeApp(FB_CFG,"sec");
-  try{ await sec.auth().setPersistence(firebase.auth.Auth.Persistence.NONE); }catch(e){}
-  const em=userEmail(username);
-  const cred=await sec.auth().createUserWithEmailAndPassword(em,password);
-  try{ await cred.user.updateProfile({displayName:name||username}); }catch(e){}
-  const uidNew=cred.user.uid; try{ await sec.auth().signOut(); }catch(e){}
-  await houseRef.update("emails",firebase.firestore.FieldValue.arrayUnion(em),new firebase.firestore.FieldPath("roles",em),role,new firebase.firestore.FieldPath("uids",em),uidNew,new firebase.firestore.FieldPath("names",em),name||username);
-  await firebase.firestore().collection("logins").doc(uidNew).set({house:houseRef.id,email:em,by:fbUser.uid});
-  return em;
-}
 const AUTH_ERR={"auth/email-already-in-use":"اسم المستخدم ده موجود قبل كده، اختار اسم تاني","auth/weak-password":"الباسورد لازم 6 حروف أو أرقام على الأقل","auth/invalid-email":"اسم المستخدم فيه حروف مش مسموحة. استخدم حروف إنجليزي وأرقام بس",
   "auth/operation-not-allowed":"الدخول بالباسورد مش مفعّل على السيرفر","auth/wrong-password":"الباسورد غلط","auth/invalid-credential":"اسم المستخدم أو الباسورد غلط","auth/invalid-login-credentials":"اسم المستخدم أو الباسورد غلط",
   "auth/user-not-found":"اسم المستخدم مش موجود","auth/too-many-requests":"محاولات كتير. استنى شوية وجرّب تاني","auth/network-request-failed":"مفيش نت"};
@@ -2702,7 +2742,7 @@ $("#ulForm").addEventListener("submit",async e=>{
   const u=$("#ulUser").value.trim(), pw=$("#ulPass").value;
   if(!/^[a-z0-9._-]{2,30}$/i.test(u)){ $("#ulErr").textContent="اسم المستخدم حروف إنجليزي وأرقام بس"; return; }
   $("#ulErr").textContent="بيدخل…"; $("#ulGo").disabled=true;
-  try{ await firebase.auth().signInWithEmailAndPassword(userEmail(u),pw); $("#ulPass").value=""; $("#ulErr").textContent=""; $("#ulForm").hidden=true;
+  try{ await firebase.auth().signInWithEmailAndPassword(await loginEmailFor(u),pw); $("#ulPass").value=""; $("#ulErr").textContent=""; $("#ulForm").hidden=true;
     try{ localStorage.setItem("house-budget-askbio","1"); }catch(x){} }
   catch(x){ $("#ulErr").textContent=authMsg(x); }
   finally{ $("#ulGo").disabled=false; }
@@ -2725,6 +2765,81 @@ function renderAuthUI(){
   $("#sbUserLogin").hidden=!!fbUser||IN_ARTIFACT; if(fbUser) $("#ulForm").hidden=true;
   $("#pwCard").hidden=!isPassUser();
 }
+
+
+/* ---------- users: edit / remove / reset password ---------- */
+const db_=()=>firebase.firestore();
+const rndTag=()=>Math.random().toString(36).slice(2,6);
+async function makeAuthAccount(email,password,name){
+  const sec=firebase.apps.find(a=>a.name==="sec")||firebase.initializeApp(FB_CFG,"sec");
+  try{ await sec.auth().setPersistence(firebase.auth.Auth.Persistence.NONE); }catch(e){}
+  const cred=await sec.auth().createUserWithEmailAndPassword(email,password);
+  try{ await cred.user.updateProfile({displayName:name}); }catch(e){}
+  const id=cred.user.uid; try{ await sec.auth().signOut(); }catch(e){} return id;
+}
+async function createPassUser(username,password,name,role){
+  const u=username.toLowerCase();
+  const ex=await db_().collection("usernames").doc(u).get().catch(()=>null);
+  if(ex&&ex.exists){ const err=new Error("taken"); err.code="auth/email-already-in-use"; throw err; }
+  const em=`${u}.${rndTag()}@${USER_DOMAIN}`;
+  const uidNew=await makeAuthAccount(em,password,name||u);
+  const FP=firebase.firestore.FieldPath;
+  await houseRef.update("emails",firebase.firestore.FieldValue.arrayUnion(em),new FP("roles",em),role,new FP("uids",em),uidNew,new FP("names",em),name||u,new FP("unames",em),u);
+  await Promise.all([ db_().collection("logins").doc(uidNew).set({house:houseRef.id,email:em,by:fbUser.uid}),
+                      db_().collection("usernames").doc(u).set({email:em,house:houseRef.id,by:fbUser.uid}) ]);
+  return em;
+};
+async function loginEmailFor(u){ u=u.toLowerCase(); try{ const d=await db_().collection("usernames").doc(u).get(); if(d.exists&&d.data().email) return d.data().email; }catch(e){} return userEmail(u); }
+let ueTarget=null;
+$("#usrList").addEventListener("click",e=>{
+  const ed=e.target.closest("[data-ue]"), rm=e.target.closest("[data-ur]");
+  if(ed&&isAdmin()){ const em=ed.dataset.ue; ueTarget=em; const nm=(house.names&&house.names[em])||(members[em]&&members[em].name)||em.split("@")[0];
+    $("#ueTitle").textContent="تعديل "+nm; $("#ueName").value=nm; $("#ueRole").value=roleOf(em); $("#uePass").value=""; $("#ueErr").textContent="";
+    $("#uePassWrap").hidden=!em.endsWith("@"+USER_DOMAIN); $("#ueSheet").hidden=false; }
+  if(rm&&isAdmin()){ ueTarget=rm.dataset.ur; const nm=(house.names&&house.names[ueTarget])||ueTarget.split("@")[0]; $("#urTitle").textContent=`مسح ${nm}؟`; $("#urSheet").hidden=false; }
+});
+$("#ueCancel").addEventListener("click",()=>{ $("#ueSheet").hidden=true; ueTarget=null; });
+$("#urNo").addEventListener("click",()=>{ $("#urSheet").hidden=true; ueTarget=null; });
+["ueSheet","urSheet"].forEach(id=>$("#"+id).addEventListener("click",e=>{ if(e.target.id===id){ $("#"+id).hidden=true; ueTarget=null; } }));
+$("#ueSave").addEventListener("click",async()=>{
+  const em=ueTarget; if(!em||!houseRef||!isAdmin()) return;
+  const nm=$("#ueName").value.trim(), r=$("#ueRole").value, pw=$("#uePass").value, FP=firebase.firestore.FieldPath;
+  if(pw&&pw.length<6){ $("#ueErr").textContent="الباسورد 6 حروف أو أرقام على الأقل"; return; }
+  $("#ueSave").disabled=true; $("#ueErr").textContent="بيحفظ…";
+  try{
+    if(pw&&em.endsWith("@"+USER_DOMAIN)){
+      // new password = new sign-in account for the same username; the old one stops working
+      const u=(house.unames&&house.unames[em])||em.split("@")[0].split(".")[0];
+      const nem=`${u}.${rndTag()}@${USER_DOMAIN}`, nuid=await makeAuthAccount(nem,pw,nm||u);
+      const emails=(house.emails||[]).map(x=>x===em?nem:x), del=firebase.firestore.FieldValue.delete();
+      const oldUid=house.uids&&house.uids[em];
+      await houseRef.update("emails",emails,new FP("roles",em),del,new FP("uids",em),del,new FP("names",em),del,new FP("unames",em),del,
+        new FP("roles",nem),r,new FP("uids",nem),nuid,new FP("names",nem),nm||u,new FP("unames",nem),u);
+      await Promise.all([ db_().collection("logins").doc(nuid).set({house:houseRef.id,email:nem,by:fbUser.uid}),
+        db_().collection("usernames").doc(u).set({email:nem,house:houseRef.id,by:fbUser.uid}),
+        oldUid?db_().collection("logins").doc(oldUid).delete().catch(()=>{}):null ]);
+      const pc=privColl(); if(pc) Object.entries(privDocs).forEach(([id,d])=>{ if((d.allow||[]).includes(em)){ d.allow=d.allow.map(x=>x===em?nem:x); pc.doc(id).set(d).catch(()=>{}); } });
+      logEvent("role",`${meName()} غيّر باسورد ${nm||u}`,"","users");
+    } else {
+      await houseRef.update(new FP("names",em),nm||em.split("@")[0],new FP("roles",em),r);
+      logEvent("role",`${meName()} عدّل ${nm||em} (${ROLE_N[r]})`,"","users");
+    }
+    $("#ueSheet").hidden=true; ueTarget=null; toast(pw?"اتغيّر الباسورد والبيانات ✓":"اتحفظ ✓");
+  }catch(x){ $("#ueErr").textContent=authMsg(x); }
+  finally{ $("#ueSave").disabled=false; }
+});
+$("#urYes").addEventListener("click",async()=>{
+  const em=ueTarget; if(!em||!houseRef||!isAdmin()) return; $("#urSheet").hidden=true; ueTarget=null;
+  const FP=firebase.firestore.FieldPath, del=firebase.firestore.FieldValue.delete(), nm=(house.names&&house.names[em])||em;
+  const u=house.unames&&house.unames[em], oldUid=house.uids&&house.uids[em];
+  try{ await houseRef.update("emails",firebase.firestore.FieldValue.arrayRemove(em),new FP("roles",em),del,new FP("uids",em),del,new FP("names",em),del,new FP("unames",em),del);
+    if(u) db_().collection("usernames").doc(u).delete().catch(()=>{});
+    if(oldUid) db_().collection("logins").doc(oldUid).delete().catch(()=>{});
+    toast("اتمسح "+nm); logEvent("role",`${meName()} مسح ${nm}`,"","users"); }
+  catch(x){ toast("ماقدرتش أمسحه"); }
+});
+// online status heartbeat
+setInterval(()=>{ if(document.visibilityState!=="visible"||!houseRef||!fbUser) return; houseRef.collection("members").doc(myEmail()).set({lastSeen:new Date().toISOString()},{merge:true}).catch(()=>{}); if(tab==="users") renderUsers(); },60e3);
 
 /* ---------- drawer ---------- */
 function openDrawer(on){
@@ -2984,6 +3099,7 @@ function renderAllInner(fromSnap){
   if(tab==="summary") renderSummary();
   if(tab==="notifs") renderNotifs();
   if(tab==="users") renderUsers();
+  if(tab==="access") renderPermGrid();
   if(tab==="calc") renderCalc();
 }
 
