@@ -437,7 +437,7 @@ svg.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .bigadd svg.i{stroke-width:2.4}
 .forcebtn{width:100%;margin-top:10px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;border:1px solid rgba(240,138,120,.5);background:rgba(240,138,120,.1);color:#F08A78}
 .forcebtn svg.i{width:20px;height:20px}
-.tabbar{position:fixed;inset:auto 0 0 0;z-index:8;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:8px max(8px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));background:rgba(10,22,19,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);border-radius:22px 22px 0 0}
+#previewBar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:linear-gradient(90deg,rgba(232,184,75,.97),rgba(212,160,40,.97));color:#1a1206;font-weight:700;box-shadow:0 -6px 24px rgba(0,0,0,.45)}#previewBar[hidden]{display:none}#previewBar .pv-t{font-size:.9rem;line-height:1.45}#previewBar #pvExit{flex:0 0 auto;background:#1a1206;color:#f6e7bf;border:0;border-radius:10px;padding:8px 14px;font:inherit;font-weight:800;font-size:.85rem}html.preview .tabbar{bottom:56px}html.preview body>.wrap{padding-bottom:140px}.pp .pv{background:rgba(232,184,75,.14);color:#e8b84b;border:1px solid rgba(232,184,75,.42)!important}.tabbar{position:fixed;inset:auto 0 0 0;z-index:8;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:8px max(8px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));background:rgba(10,22,19,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);border-radius:22px 22px 0 0}
 .tabbar button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0;border:1px solid transparent;border-radius:14px;background:none;color:var(--muted);font-size:.7rem;white-space:nowrap;min-width:0}
 .tabbar button[aria-current="page"]{color:var(--t3);background:linear-gradient(180deg,#1A3A31,#11261F);border-color:#2B5A4C;font-weight:700}
 @media (max-width:380px){.dhead .mpill svg.i,.dtitle b svg.i{display:none}.roundbtn{width:34px;height:34px}.dicons{gap:4px}.dtitle b{font-size:1rem}.g6 b{font-size:1rem}.dtitle span{display:none}}
@@ -1245,7 +1245,7 @@ try{lastChange=localStorage.getItem("house-budget-changed")}catch(e){}
 function markChanged(){ lastChange=new Date().toISOString(); try{localStorage.setItem("house-budget-changed",lastChange)}catch(e){} showUpdated(); }
 function showUpdated(){ const el=document.getElementById("updated"); if(!el) return;
   el.innerHTML=lastChange?`آخر تحديث <b>${fmtStamp(new Date(lastChange))}</b>`:""; }
-function schedule(key,ms=600){ markChanged(); dirtyUI();clearTimeout(timers[key]);timers[key]=setTimeout(()=>{delete timers[key];flush(key)},ms)}
+function schedule(key,ms=600){ if(viewAs) return; markChanged(); dirtyUI();clearTimeout(timers[key]);timers[key]=setTimeout(()=>{delete timers[key];flush(key)},ms)}
 const chains={};
 function flush(key){
   saveLocal(); savedUI();
@@ -1285,6 +1285,7 @@ function savedUI(){
 }
 function dirtyUI(){ pendingUnsaved=true; const b=$("#saveNow"); b.classList.remove("ok"); b.classList.add("dirty"); $("#saveNowTxt").textContent="حفظ"; }
 function flushAll(){
+  if(viewAs) return;
   Object.keys(timers).forEach(k=>{ clearTimeout(timers[k]); delete timers[k]; flush(k); });
   // keep an unfinished month form too
   try{ if(draft&&draft.dirty){ drafts[cur]=draft; saveDrafts(); } }catch(e){}
@@ -1427,7 +1428,7 @@ function renderForm(focusSel){
     ? (draft.dirty?"فيه تعديلات لسه ماتسجلتش. دوس حفظ فوق أو إدخال تحت.":"الشهر ده متسجل. لو عدّلت فيه دوس حفظ.")
     : "اكتب البنود في كل قسم وفي الآخر دوس إدخال.";
   $("#items").innerHTML=SECS.map(([k,n])=>{
-    const its=draft.items.filter(i=>i.sec===k), filled=its.filter(i=>!isEmpty(i)).length;
+    const its=draft.items.filter(i=>i.sec===k&&itemOkForView(i)), filled=its.filter(i=>!isEmpty(i)).length;
     return `<details class="sec s-${k}" data-sec="${k}" ${secOpen[k]?"open":""}>
       <summary>${CHEV}<span class="sname">${n}<span class="scount" id="cnt-${k}">${filled} بند</span></span>
         <span class="stot" id="tot-${k}"></span></summary>
@@ -1579,7 +1580,7 @@ function renderMonths(){
       <span class="mo-name">${monthName(k)}</span><span>${money(t)}</span>
       <span class="mo-sub"><span>الدخل ${money(inc)}</span><span>اتدفع ${money(p)}</span><span class="due">لسه ${money(t-p)}</span><span class="${inc-t<0?"neg":"pos"}">الباقي ${money(inc-t)}</span></span>
     </summary><div class="mo-body">
-      ${SECS.map(([sk,sn])=>{ const its=m.items.filter(i=>secOf(i)===sk); if(!its.length) return "";
+      ${SECS.map(([sk,sn])=>{ const its=m.items.filter(i=>secOf(i)===sk&&itemOkForView(i)); if(!its.length) return "";
         return `<div class="s-${sk}"><div class="mi-h"><span>${sn}</span><span>${money(its.reduce((a,i)=>a+AMT(i),0))}</span></div>`+
         its.map(i=>`<label class="mi ck"><span class="lbl"><input type="checkbox" class="chk" data-id="${i.id}" ${i.paid?"checked":""} aria-label="اتدفع">${esc(i.name)||"—"}${i.void?'<span class="vtag">ملغي</span>':""}${i.cid?`<span class="tag">${esc(typeOf(commitById(i.cid))||"التزام")}</span>`:""}</span><span>${money(i.cost)}</span></label>`).join("")+`</div>`}).join("")}
       <div class="tl big" style="font-size:1rem"><span>الإجمالي</span><span>${money(t)}</span></div>
@@ -2164,6 +2165,7 @@ async function cloudInit(){
   firebase.auth().onAuthStateChanged(u=>{ fbUser=u; if(u) connectHouse(u).catch(err=>{ console.error(err); $("#sbSub").textContent="حصلت مشكلة في الاتصال بالسيرفر. جرّب تاني."; }); else signedOutUI(); });
 }
 function signedOutUI(){
+  viewAs=null;
   house=null; if(houseUnsub){houseUnsub();houseUnsub=null;}
   if(backendUnsub){backendUnsub();backendUnsub=null;} backend=null;
   $("#syncBar").classList.remove("on"); $("#sbTitle").textContent="مزامنة بين الموبايلات"; 
@@ -2172,7 +2174,7 @@ function signedOutUI(){
   setStatus("محفوظ على الموبايل ده");
   unsubscribeHouseExtras(); houseRef=null; if(privUnsub){ try{privUnsub()}catch(e){} privUnsub=null; } privDocs={}; pubMonths=null;
   state.months&&Object.values(state.months).forEach(m=>{ m.items=m.items.filter(i=>!i.priv); }); saveLocal();
-  renderAuthUI(); applyRole();
+  renderAuthUI(); applyRole(); renderPreviewBar();
 }
 $("#sbLogin").addEventListener("click",async()=>{
   if(!fb){ toast("استنى ثانية… المزامنة لسه بتحمّل"); return; }
@@ -2646,12 +2648,12 @@ function renderSummary(){
   if(!keys.length){ $("#sumMonth").innerHTML=""; $("#sumBody").innerHTML=`<div class="empty card">لسه مفيش شهور متسجلة.</div>`; return; }
   if(!sumMonth||!keys.includes(sumMonth)) sumMonth=keys.includes(homeMonth)?homeMonth:keys[0];
   $("#sumMonth").innerHTML=keys.map(k=>`<option value="${k}" ${k===sumMonth?"selected":""}>${monthName(k)}</option>`).join("");
-  const m=state.months[sumMonth], total=sumItems(m), paid=sumPaid(m), inc=+m.income||0;
+  const m0=state.months[sumMonth], m=viewAs?{...m0,items:m0.items.filter(itemOkForView)}:m0, total=sumItems(m), paid=sumPaid(m), inc=+m.income||0;
   const nAtt=m.items.reduce((a,i)=>a+((i.att||[]).length),0);
   const kpi=(t,v)=>`<div class="sum-kpi"><small>${t}</small><b>${v}</b></div>`;
   $("#sumBody").innerHTML=`<div class="sum-kpis">${kpi("الدخل",money(inc))}${kpi("إجمالي المصاريف",money(total))}${kpi("المدفوع",money(paid))}${kpi("الباقي من الدخل",money(inc-total))}</div>
     <p class="hint" style="margin:0">${nAtt?`فيه ${nAtt} مستند. دوس على البند اللي جنبه زرار الشير علشان تشوف المستند أو تسمع التسجيل.`:"مفيش مستندات متسجلة للشهر ده."}</p>`+
-    SECS.map(([k,n])=>{ const its=m.items.filter(i=>secOf(i)===k); if(!its.length) return "";
+    SECS.map(([k,n])=>{ const its=m.items.filter(i=>secOf(i)===k&&itemOkForView(i)); if(!its.length) return "";
       return `<div class="sum-sec s-${k}"><h3><span>${n}</span><span>${money(secTotal(m.items,k))}</span></h3>${its.map(i=>{ const has=(i.att||[]).length;
         return `<div class="sum-it${has?" has":""}${i.void?" void":""}" data-sum="${i.id}" role="button" tabindex="0"><span class="st${i.paid?" ok":""}">${i.paid?"✓":"○"}</span><span class="nm">${esc(i.name)}${i.void?'<span class="vtag">ملغي</span>':""}${i.date&&secOf(i)==="external"?`<small class="idt">${fmtDay(i.date)}</small>`:""}</span><span>${money(+i.cost||0)}</span><span class="cl">${has?`<button type="button" class="shx" data-share="${i.id}" aria-label="شير"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/></svg></button>`:""}</span></div>`;}).join("")}</div>`; }).join("");
 }
@@ -2684,6 +2686,32 @@ document.addEventListener("click",async e=>{
 /* ---------- roles ---------- */
 const ROLE_N={admin:"مدير",editor:"محرر",viewer:"مشاهد"};
 let houseRef=null, members={}, events=[], locs=[], chat=[], extrasUnsub=[], feSeen=null;
+let viewAs=null;
+const itemOkForView=i=>!viewAs||!(i&&i.priv&&i.priv.roles)||i.priv.roles.includes(viewAs.role);
+function renderPreviewBar(){
+  let bar=document.getElementById("previewBar");
+  if(!viewAs){ if(bar) bar.hidden=true; document.documentElement.classList.remove("preview"); return; }
+  document.documentElement.classList.add("preview");
+  if(!bar){ bar=document.createElement("div"); bar.id="previewBar"; document.body.appendChild(bar);
+    bar.addEventListener("click",ev=>{ if(ev.target.closest("#pvExit")) exitPreview(); }); }
+  bar.hidden=false;
+  bar.innerHTML=`<span class="pv-t">\u{1F441} بتشوف البرنامج كـ <b>${esc(viewAs.name)}</b> · ${ROLE_N[viewAs.role]}</span><button type="button" id="pvExit">\u2715 رجوع للمدير</button>`;
+}
+function enterPreview(email){
+  if(!house||!isAdmin()) return;
+  const em=(email||"").toLowerCase(), role=roleOf(em);
+  if(role==="admin"){ toast("ده مدير — مفيش معاينة"); return; }
+  try{ flushAll(); }catch(e){}
+  viewAs={email:em,role,name:personName(em)};
+  try{ openDrawer(false); }catch(e){}
+  applyRole(); renderPreviewBar(); showTab("home");
+  toast("بتشوف كـ "+viewAs.name);
+}
+function exitPreview(){
+  if(!viewAs) return; viewAs=null;
+  applyRole(); renderPreviewBar(); showTab("home");
+  toast("رجعت مدير");
+}
 function renderChat(){ const me=fbUser&&fbUser.uid; const cf=$("#chatForm"); if(cf) cf.style.display=canEditP("chat")?"":"none";
   $("#chatList").innerHTML=chat.length?chat.map(m=>`<div class="chat-msg ${m.by===me?"me":""}">${m.by!==me?`<span class="cm-who">${esc(personName(m.email)||m.name||"")}</span>`:""}<span class="cm-tx">${esc(m.text)}</span><time>${nfStamp(m.at)}</time></div>`).join(""):`<p class="empty" style="margin:auto">لسه مفيش رسايل. ابدأ الكلام 👋</p>`;
   const l=$("#chatList"); if(l) l.scrollTop=l.scrollHeight; }
@@ -2699,7 +2727,7 @@ function forceExitNow(){ try{ flushAll(); }catch(e){} const A=NP("App");
 /* where editors/viewers opened the app from (only the admin can read these) */
 let locLast=0;
 function recordLoc(force){
-  if(!houseRef||!house||!fbUser||isAdmin()||!navigator.geolocation) return;
+  if(!houseRef||!house||!fbUser||isAdmin()||viewAs||!navigator.geolocation) return;
   if(!force&&Date.now()-locLast<20*60e3) return; locLast=Date.now();
   const ref=houseRef, em=myEmail(), uid=fbUser.uid;
   navigator.geolocation.getCurrentPosition(p=>{
@@ -2722,7 +2750,7 @@ const meName=()=>{ const n=house&&house.names&&house.names[myEmail()]; if(n) ret
 function adminName(){ const em=ownerEmail(); return em?personName(em):OWNER_LABEL; }
 const ownerEmail=()=>house?(house.ownerEmail||(house.emails||[])[0]||""):"";
 function roleOf(email){ if(!house) return "admin"; const e=(email||"").toLowerCase(); if(e&&e===ownerEmail()) return "admin"; const r=(house.roles||{})[e]; return ROLE_N[r]?r:"editor"; }
-function myRole(){ if(!house||!fbUser) return "admin"; if(house.owner===fbUser.uid) return "admin"; return roleOf(myEmail()); }
+function myRole(){ if(viewAs) return viewAs.role; if(!house||!fbUser) return "admin"; if(house.owner===fbUser.uid) return "admin"; return roleOf(myEmail()); }
 const PERM_ROWS=[["month","المصاريف",1],["months","الشهور",1],["summary","ملخص الشهور",0],["commits","ملخص الالتزامات",0],["data","الداتا (الالتزامات)",1],["savings","المدخرات",1],["owed","فلوس ليا برا",1],["docs","المستندات والتسجيلات",1],["capture","رفع فواتير وتسجيلات للمدير",0],["capdel","يمسح اللي بعته للمدير (لو بالغلط)",0],["chat","محادثة البيت",1],["notifs","الإشعارات",0],["calc","الآلة الحاسبة",0],["backup","النسخة الاحتياطية والـ PDF",1],["totals","الدخل والباقي منه",0],["newmonth","إضافة شهر جديد",0],["activity","نشاط البيت والتنبيهات في الجرس",0],["shareapp","إرسال البرنامج لحد",0]];
 const DEF_OFF={viewer:new Set(["totals","newmonth","activity","shareapp","owed","backup","capture"]),editor:new Set(["totals","newmonth","activity","backup"])};
 const DEF_EDIT=new Set(["chat"]); // these default to "can send/edit" even for viewers
@@ -2813,7 +2841,7 @@ function subscribeHouseExtras(ref,u){
 function unsubscribeHouseExtras(){ extrasUnsub.forEach(f=>{ try{f()}catch(e){} }); extrasUnsub=[]; events=[]; locs=[]; members={}; feSeen=null; nfRefresh(); }
 const recentLogs={};
 function logEvent(t,title,body,go){
-  if(!houseRef||!fbUser) return;
+  if(!houseRef||!fbUser||viewAs) return;
   const k=t+"|"+title; if(recentLogs[k]&&Date.now()-recentLogs[k]<10*60e3) return; recentLogs[k]=Date.now();
   houseRef.collection("events").add({t,title,body:body||"",go:go||"",by:fbUser.uid,email:myEmail(),name:fbUser.displayName||"",at:new Date().toISOString()}).catch(()=>{});
 }
@@ -2830,7 +2858,7 @@ function renderUsers(){
     const isPass=e.endsWith("@"+USER_DOMAIN), uname=isPass?(house.unames&&house.unames[e])||e.split("@")[0].split(".")[0]:e;
     const online=e===me||(m.lastSeen&&now-new Date(m.lastSeen).getTime()<130e3);
     const seen=e===me?nfStamp(new Date().toISOString()):m.lastSeen?nfStamp(m.lastSeen):"لسه ما دخلش";
-    const acts=admin&&e!==own&&e!==me?`<span class="pa"><button type="button" class="pe" data-ue="${esc(e)}">تعديل</button><button type="button" class="pr" data-ur="${esc(e)}">مسح</button></span>`:admin&&e===me&&e!==own?"":"";
+    const acts=admin&&e!==own&&e!==me?`<span class="pa"><button type="button" class="pv" data-upv="${esc(e)}">\u{1F441} معاينة</button><button type="button" class="pe" data-ue="${esc(e)}">تعديل</button><button type="button" class="pr" data-ur="${esc(e)}">مسح</button></span>`:admin&&e===me&&e!==own?"":"";
     return `<div class="pp"><div class="pn">${esc(nm)}${e===me?" (إنت)":""} <small>· ${ROLE_N[r]}${e===own?" · صاحب البيت":""}</small></div><div class="pu">${esc(uname)}</div>
       <div class="ps"><span class="dot ${online?"on":""}"></span>${online?"متصل":"مش متصل"} · آخر دخول <span dir="ltr">${esc(seen)}</span></div>${(()=>{ const l=admin&&locs.find(x=>x.email===e); return l?`<div class="ps">📍 آخر مكان فتح منه: <span dir="ltr">${esc(nfStamp(l.at))}</span> · <a href="${mapUrl(l)}" class="ploc" target="_blank" rel="noopener">الخريطة</a></div>`:""; })()}${acts}</div>`;
   }).join("");
@@ -2932,7 +2960,7 @@ document.addEventListener("click",e=>{
   if(e.target.id==="reqSheet"||e.target.closest("#reqCancel")){ $("#reqSheet").hidden=true; return; }
 });
 $("#capMine")&&$("#capMine").addEventListener("click",e=>{ const btn=e.target.closest("[data-capdel]"); if(!btn) return; const row=btn.closest("[data-mev]"); if(!row||!houseRef) return; const id=row.dataset.mev, fid=row.dataset.mfile; confirmDel("هتمسح اللي بعته للحج صاحب البيت — متأكد؟",()=>{ houseRef.collection("events").doc(id).delete().then(()=>{ if(fid) houseRef.collection("files").doc(fid).delete().catch(()=>{}); toast("اتمسحت ✓"); renderCapture(); }).catch(()=>toast("ماقدرش يمسح")); }); });
-$("#chatForm")&&$("#chatForm").addEventListener("submit",e=>{ e.preventDefault(); if(!canEditP("chat")){ toast("صلاحيتك هنا عرض بس"); return; } const t=($("#chatText").value||"").trim(); if(!t||!houseRef||!fbUser) return; $("#chatText").value=""; houseRef.collection("chat").add({by:fbUser.uid,email:myEmail(),name:meName(),text:t.slice(0,1000),at:new Date().toISOString()}).catch(()=>toast("ماتبعتش، جرّب تاني")); });
+$("#chatForm")&&$("#chatForm").addEventListener("submit",e=>{ e.preventDefault(); if(viewAs||!canEditP("chat")){ toast(viewAs?"معاينة — مش هيتبعت":"صلاحيتك هنا عرض بس"); return; } const t=($("#chatText").value||"").trim(); if(!t||!houseRef||!fbUser) return; $("#chatText").value=""; houseRef.collection("chat").add({by:fbUser.uid,email:myEmail(),name:meName(),text:t.slice(0,1000),at:new Date().toISOString()}).catch(()=>toast("ماتبعتش، جرّب تاني")); });
 $("#inbChat")&&$("#inbChat").addEventListener("click",()=>showTab("chat"));
 $("#forceExitBtn")&&$("#forceExitBtn").addEventListener("click",()=>{ if(!houseRef||!isAdmin()) return; confirmDel("هيخرّج كل المستخدمين من البرنامج ويخليهم يفتحوه تاني — متأكد؟",()=>{ houseRef.update({forceExit:Date.now()}).then(()=>toast("اتبعت الخروج لكل الأجهزة ✓")).catch(()=>toast("ماقدرش، جرّب تاني")); }); });
 $("#capPick")&&$("#capPick").addEventListener("change",sendCapFiles);
@@ -3117,6 +3145,7 @@ async function createPassUser(username,password,name,role){
 async function loginEmailFor(u){ u=u.toLowerCase(); try{ const d=await db_().collection("usernames").doc(u).get(); if(d.exists&&d.data().email) return d.data().email; }catch(e){} return userEmail(u); }
 let ueTarget=null;
 $("#usrList").addEventListener("click",e=>{
+  const pv=e.target.closest("[data-upv]"); if(pv&&isAdmin()){ enterPreview(pv.dataset.upv); return; }
   const ed=e.target.closest("[data-ue]"), rm=e.target.closest("[data-ur]");
   if(ed&&isAdmin()){ const em=ed.dataset.ue; ueTarget=em; const nm=(house.names&&house.names[em])||(members[em]&&members[em].name)||em.split("@")[0];
     $("#ueTitle").textContent="تعديل "+nm; $("#ueName").value=nm; $("#ueRole").value=roleOf(em); $("#uePass").value=""; $("#ueErr").textContent="";
