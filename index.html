@@ -811,6 +811,12 @@ h2.cap{font-size:.8rem;letter-spacing:.06em;color:var(--muted);text-transform:up
       <div class="lk-row"><span class="lk-ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 19.5a2 2 0 0 0 4 0"/></svg></span><div><b>تذكير على الموبايل</b><p class="hint" style="margin:2px 0 0">إشعار بمواعيد الأقساط وقبض الجمعيات والفلوس اللي ليك، حتى لو البرنامج مقفول.</p></div></div>
       <button type="button" class="btn-main" id="remindToggle">تشغيل التذكير</button>
     </div>
+    <div class="card dc" id="paydayCard">
+      <h2>يوم القبض</h2>
+      <p class="hint" style="margin:0 0 8px">من اليوم ده كل شهر، البرنامج بيعتبرك في الشهر اللي بعده: في المصاريف والأقساط والتنبيهات.</p>
+      <div class="kv"><span>القبض كل شهر يوم</span><input type="number" id="paydayIn" min="1" max="28" inputmode="numeric" aria-label="يوم القبض" style="width:72px;text-align:center;font:inherit;font-weight:700;padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)"></div>
+      <p class="hint" id="paydayNow" style="margin:8px 0 0"></p>
+    </div>
     <div class="card dc" id="aboutCard">
       <h2>عن البرنامج</h2>
       <div class="kv"><span>نسخة البرنامج</span><b id="abContent">—</b></div>
@@ -1229,7 +1235,12 @@ const fmt=n=>HIDE?star(fmtReal(n)):fmtReal(n);
 const money=n=>`<span class="num">${fmt(n)}</span><span class="cur">ج.م</span>`;
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const uid=()=>Math.random().toString(36).slice(2,9);
-const nowKey=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")};
+const PD_KEY="house-budget-payday";
+function PAYDAY(){ let v=0; try{ v=+(house&&house.payday)||0; }catch(e){}
+  if(v){ try{ localStorage.setItem(PD_KEY,String(v)); }catch(e){} } else { try{ v=+localStorage.getItem(PD_KEY)||0; }catch(e){} }
+  v=Math.round(v)||26; return Math.min(28,Math.max(1,v)); }
+// the "current month" starts on payday: from the 26th you're already in next month
+const nowKey=()=>{const d=new Date(), pd=PAYDAY(); let y=d.getFullYear(), m=d.getMonth()+1; if(pd>1&&d.getDate()>=pd){ m++; if(m>12){ m=1; y++; } } return y+"-"+String(m).padStart(2,"0")};
 const monthName=k=>{const [y,m]=k.split("-");return new Date(+y,+m-1,1).toLocaleDateString("ar-EG",{month:"long",year:"numeric"})};
 const addMonths=(k,n)=>{const [y,m]=k.split("-").map(Number);const d=new Date(y,m-1+n,1);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")};
 const monthsBetween=(a,b)=>{const [y1,m1]=a.split("-").map(Number),[y2,m2]=b.split("-").map(Number);return (y2-y1)*12+(m2-m1)+1};
@@ -3340,8 +3351,8 @@ function reminderPlan(){
   for(const c of (canSee("commits")||canSee("data")?state.commits:[])){
     if(c.type==="مديونية"||!c.start||!c.end) continue;
     const sch=paySchedule(c);
-    const cn=sch.find(x=>x.k===nowK); if(cn&&!cn.paid){ const [y,m]=kd(nowK); const d=at(y,m,25); if(d>now) list.push({at:d,title:`قسط «${c.name}» لسه ما اتدفعش`,body:`${monthName(nowK)} · ${fmtReal(+c.monthly||0)} ج.م`}); }
-    const nx=sch.find(x=>x.k===nextK); if(nx&&!nx.paid){ const [y,m]=kd(nextK); list.push({at:at(y,m,1),title:`قسط «${c.name}» مستحق الشهر ده`,body:`${monthName(nextK)} · ${fmtReal(+c.monthly||0)} ج.م`}); }
+    const cn=sch.find(x=>x.k===nowK); if(cn&&!cn.paid){ const [y,m]=kd(nowK), pd=PAYDAY(); const d=pd>1?at(y,m,pd-1):at(y,m+1,0); if(d>now) list.push({at:d,title:`قسط «${c.name}» لسه ما اتدفعش`,body:`${monthName(nowK)} · ${fmtReal(+c.monthly||0)} ج.م`}); }
+    const nx=sch.find(x=>x.k===nextK); if(nx&&!nx.paid){ const [y,m]=kd(nextK), pd=PAYDAY(); list.push({at:pd>1?at(y,m-1,pd):at(y,m,1),title:`قسط «${c.name}» مستحق الشهر ده`,body:`${monthName(nextK)} · ${fmtReal(+c.monthly||0)} ج.م`}); }
     for(const p of payoutsOf(c)){ const [y,m]=kd(p.k); const d=at(y,m,1); if(d>now&&p.k<=addMonths(nowK,3)) list.push({at:d,title:`قبض جمعية «${c.name}» الشهر ده`,body:`${fmtReal(payoutAmt(c,p))} ج.م`}); }
   }
   for(const o of canSee("owed")?state.owed||[]:[]){ if(!o.due||owLeft(o)<=0) continue; const [y,m,dd]=o.due.split("-").map(Number);
@@ -3363,7 +3374,19 @@ async function doScheduleReminders(){
     await LN.schedule({notifications:plan.map((x,i)=>({id:1000+i,title:x.title,body:x.body,schedule:{at:x.at,allowWhileIdle:true},smallIcon:"ic_stat_notify",iconColor:"#3DD9B3"}))});
   }catch(e){ console.warn("reminders",e); }
 }
+function fillPayday(){ const i=$("#paydayIn"); if(!i) return; if(document.activeElement!==i) i.value=PAYDAY();
+  const lock=!!(house&&fbUser&&!isAdmin()); i.disabled=lock;
+  $("#paydayNow").textContent="الشهر الحالي في البرنامج دلوقتي: "+monthName(nowKey())+(lock?" · المدير بس اللي يقدر يغيّر يوم القبض":""); }
+$("#paydayIn")&&$("#paydayIn").addEventListener("change",e=>{
+  if(house&&fbUser&&!isAdmin()) return fillPayday();
+  const v=Math.min(28,Math.max(1,Math.round(+e.target.value)||26));
+  try{ localStorage.setItem(PD_KEY,String(v)); }catch(x){}
+  if(house) house.payday=v;
+  if(houseRef&&isAdmin()&&!viewAs) houseRef.update({payday:v}).catch(()=>toast("ماتحفظش على السيرفر، جرب تاني"));
+  cur=nowKey(); renderAll(); fillPayday(); toast("يوم القبض بقى "+v+" · الشهر الحالي "+monthName(nowKey()));
+});
 function renderRemindCard(){
+  fillPayday();
   const LN=NP("LocalNotifications"); $("#remindCard").hidden=!LN; if(!LN) return;
   LN.checkPermissions().then(p=>{ const on=remindOn()&&p.display==="granted"; $("#remindToggle").textContent=on?"إيقاف التذكير":"تشغيل التذكير"; $("#remindToggle").classList.toggle("ghost",on); }).catch(()=>{});
 }
