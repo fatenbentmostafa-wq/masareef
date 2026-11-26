@@ -437,6 +437,7 @@ svg.i{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stro
 .bigadd svg.i{stroke-width:2.4}
 .forcebtn{width:100%;margin-top:10px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;border:1px solid rgba(240,138,120,.5);background:rgba(240,138,120,.1);color:#F08A78}
 .forcebtn svg.i{width:20px;height:20px}
+@media (pointer:coarse){html:has(input:focus,textarea:focus,select:focus) .tabbar{display:none}}
 #previewBar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));background:linear-gradient(90deg,rgba(232,184,75,.97),rgba(212,160,40,.97));color:#1a1206;font-weight:700;box-shadow:0 -6px 24px rgba(0,0,0,.45)}#previewBar[hidden]{display:none}#previewBar .pv-t{font-size:.9rem;line-height:1.45}#previewBar #pvExit{flex:0 0 auto;background:#1a1206;color:#f6e7bf;border:0;border-radius:10px;padding:8px 14px;font:inherit;font-weight:800;font-size:.85rem}html.preview .tabbar{bottom:56px}html.preview body>.wrap{padding-bottom:140px}.pp .pv{background:rgba(232,184,75,.14);color:#e8b84b;border:1px solid rgba(232,184,75,.42)!important}.tabbar{position:fixed;inset:auto 0 0 0;z-index:8;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:8px max(8px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));background:rgba(10,22,19,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);border-radius:22px 22px 0 0}
 .tabbar button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0;border:1px solid transparent;border-radius:14px;background:none;color:var(--muted);font-size:.7rem;white-space:nowrap;min-width:0}
 .tabbar button[aria-current="page"]{color:var(--t3);background:linear-gradient(180deg,#1A3A31,#11261F);border-color:#2B5A4C;font-weight:700}
@@ -1365,8 +1366,8 @@ function commitStats(c){
   const sched=paySchedule(c), paidRows=sched.filter(p=>p.paid);
   const paidN=Math.min(paidRows.length,totalM), paidAmt=paidRows.reduce((a,p)=>a+p.amt,0);
   const paidKeys=sched.filter(p=>p.src==="item").map(p=>p.k);
-  const totalAmt=(+c.value||0)||totalM*(+c.monthly||0);
-  return {totalM,paidN,leftN:totalM-paidN,paidAmt,leftAmt:Math.max(0,totalAmt-paidAmt),totalAmt,paidKeys};
+  const totalAmt=(+c.value||0)||totalM*(+c.monthly||0), early=sched.some(p=>p.src==="early");
+  return {totalM,paidN,leftN:totalM-paidN,paidAmt,leftAmt:early?0:Math.max(0,totalAmt-paidAmt),totalAmt,paidKeys,early};
 }
 const typeOf=c=>c?c.type:"";
 
@@ -1470,7 +1471,7 @@ function renderTotals(){
 const findItem=row=>draft.items.find(i=>i.id===row.dataset.id);
 const grow=t=>{ t.style.height="auto"; t.style.height=t.scrollHeight+"px"; };
 const growAll=()=>document.querySelectorAll("#items textarea.name").forEach(grow);
-window.addEventListener("resize",()=>{ if(tab==="month") growAll(); });
+let _lastW=innerWidth; window.addEventListener("resize",()=>{ if(innerWidth===_lastW) return; _lastW=innerWidth; if(tab==="month") growAll(); });
 $("#items").addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.classList.contains("name")){ e.preventDefault(); const r=e.target.closest(".row"); r&&r.querySelector(".cost").focus(); } });
 function fillRow(item){ // first empty row of that section, or a new one
   const sec=item.sec||"basic";
@@ -1685,7 +1686,7 @@ function renderCommits(){
       <div class="pay-h cm-sch">بيانات الدفع</div>
       <div class="pays cm-sch">${paySchedule(c).map(p=>`<div class="pay ${p.paid?"is-paid":p.k===nowK?"is-now":""}${poMap[p.k]?" is-po":""}">
         <span class="pm">${monthName(p.k)}${p.k===nowK?'<span class="tag">الشهر ده</span>':""}${poMap[p.k]?`<span class="potag cm-po">قبض ${money(poMap[p.k])}</span>`:""}</span>
-        <span class="pv">${p.paid?`<span class="pos">اتدفع<span class="cm-amt"> ${money(p.amt)}</span></span>`:`<span class="${p.k<nowK?"neg":"due"}">${p.k<nowK?"متأخر":"لسه"}</span>`}</span></div>`).join("")}</div>
+        <span class="pv">${p.src==="early"?`<span class="pos">تم الدفع ✓</span>`:p.paid?`<span class="pos">اتدفع<span class="cm-amt"> ${money(p.amt)}</span></span>`:`<span class="${p.k<nowK?"neg":"due"}">${p.k<nowK?"متأخر":"لسه"}</span>`}</span></div>`).join("")}</div>
     </div></details>`}).join("");
 }
 
@@ -1699,6 +1700,10 @@ function paySchedule(c){
     else if(n<pre) out.push({k,paid:true,amt:+c.monthly||0,src:"pre"});
     else out.push({k,paid:false});
   }
+  // early payoff: what's been paid already covers the whole total → the rest of the months are done
+  const tot=(+c.value||0)||out.length*(+c.monthly||0), sum=out.reduce((a,p)=>a+(p.paid?p.amt:0),0);
+  if(out.some(p=>!p.paid)&&tot>0&&sum>=tot-1)
+    out.forEach(p=>{ if(!p.paid){ p.paid=true; p.amt=0; p.src="early"; } });
   return out;
 }
 
@@ -1824,7 +1829,7 @@ $("#dList").addEventListener("click",e=>{
 });
 
 /* ---------- new month ---------- */
-function commitDueIn(c,k){ return isDebt(c)?!isDone(c):activeIn(c,k)&&(k<=nowKey()||!isDone(c)); }
+function commitDueIn(c,k){ return isDebt(c)?!isDone(c):activeIn(c,k)&&!paySchedule(c).some(p=>p.k===k&&p.src==="early")&&(k<=nowKey()||!isDone(c)); }
 function copyItems(items,k,withCost){
   return items
     .filter(i=>!i.cid||(commitById(i.cid)&&commitDueIn(commitById(i.cid),k)))
