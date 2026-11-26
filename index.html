@@ -1552,7 +1552,7 @@ $("#saveMonth").addEventListener("click",()=>{
   if(!commitDraft()) return;
   logEvent("save",`${meName()} سجّل مصاريف ${monthName(cur)}`,`${state.months[cur]?state.months[cur].items.length:0} بند`,"summary");
   openMonths.add(cur); try{localStorage.setItem("house-budget-lastmonth",cur)}catch(e){} homePicked=false;
-  showTab("months"); toast("اتسجل "+monthName(cur));
+  sumMonth=cur; showTab("summary"); toast("اتسجل "+monthName(cur));
 });
 $("#saveNow").addEventListener("click",()=>{
   if(tab==="month"&&draft&&draft.dirty){ if(!commitDraft()) return; renderForm(); logEvent("edit",`${meName()} عدّل مصاريف ${monthName(cur)}`,"","summary"); }
