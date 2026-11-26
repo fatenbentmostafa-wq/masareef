@@ -1346,7 +1346,8 @@ const commitById=id=>state.commits.find(c=>c.id===id);
 const isDebt=c=>c&&c.type==="مديونية";
 const activeIn=(c,k)=>(c.start||"")<=k&&(isDebt(c)||k<=c.end);
 const isDone=c=>commitStats(c).leftN<=0;
-const stillDue=(c,k)=>!isDebt(c)&&activeIn(c,k)&&!isDone(c);
+const coveredIn=(c,k)=>!isDebt(c)&&paySchedule(c).some(p=>p.k===k&&(p.src==="early"||p.src==="ahead"||p.src==="pre"));
+const stillDue=(c,k)=>!isDebt(c)&&activeIn(c,k)&&!isDone(c)&&!coveredIn(c,k);
 function debtPayments(c){
   const rows=[];
   for(const [k,m] of Object.entries(state.months)) for(const i of m.items)
@@ -1668,7 +1669,7 @@ function renderCommits(){
     const nowK=nowKey();
     if(s.debt) return debtCard(c,s,nowK);
     const due=activeIn(c,nowK);
-    const paidNow=s.paidKeys.includes(nowK);
+    const covNow=coveredIn(c,nowK), paidNow=covNow||s.paidKeys.includes(nowK);
     const turn=payoutListHtml(c), poKs=payoutsOf(c), poMap={}; poKs.forEach(p=>poMap[p.k]=(poMap[p.k]||0)+payoutAmt(c,p));
     const dots=poKs.map(p=>{ const n=monthsBetween(c.start,p.k); return n>=1&&n<=s.totalM?`<span class="podot" style="right:${((n-.5)/s.totalM*100).toFixed(2)}%" title="قبض ${monthName(p.k)}"></span>`:""; }).join("");
     return `<details class="cmd" data-c="${c.id}" ${openCommits.has(c.id)?"open":""}><summary>${CHEV}<span class="cm-name">${esc(c.name)}<span class="tag">${esc(c.type)}</span></span><span class="sumq">${s.leftN?"باقي "+s.leftN+" شهر":"خلص ✓"}</span></summary><div class="cm">
@@ -1677,7 +1678,7 @@ function renderCommits(){
         <span>باقي<b>${s.leftN?`<span class="num">${s.leftN}</span> شهر`:'<span class="done">خلص ✓</span>'}</b></span>
         <span class="cm-amt">القسط<b>${money(c.monthly)}</b></span>
       </div>
-      <div class="hint">من ${monthName(c.start)} لـ ${monthName(c.end)}${due?` · ${monthName(nowK)}: <b class="${paidNow?"pos":"due"}">${paidNow?"اتدفع ✓":"لسه"}</b>`:""}</div>
+      <div class="hint">من ${monthName(c.start)} لـ ${monthName(c.end)}${due?` · ${monthName(nowK)}: <b class="${paidNow?"pos":"due"}">${covNow?"تم الدفع ✓":paidNow?"اتدفع ✓":"لسه"}</b>`:""}</div>
       <div class="bar${dots?" has-po":""}" role="progressbar" aria-valuenow="${s.paidN}" aria-valuemax="${s.totalM}"><i style="width:${s.paidN/s.totalM*100}%"></i>${dots}</div>
       <div class="facts cm-amt">
         <span>اتدفع منه<b class="pos">${money(s.paidAmt)}</b></span>
@@ -1687,7 +1688,7 @@ function renderCommits(){
       <div class="pay-h cm-sch">بيانات الدفع</div>
       <div class="pays cm-sch">${paySchedule(c).map(p=>`<div class="pay ${p.paid?"is-paid":p.k===nowK?"is-now":""}${poMap[p.k]?" is-po":""}">
         <span class="pm${p.k===nowK?" now":""}">${monthName(p.k)}${poMap[p.k]?`<span class="potag cm-po">قبض ${money(poMap[p.k])}</span>`:""}</span>
-        <span class="pv">${p.src==="early"?`<span class="pos">تم الدفع ✓</span>`:p.paid?`<span class="pos">اتدفع<span class="cm-amt"> ${money(p.amt)}</span></span>`:`<span class="${p.k<nowK?"neg":"due"}">${p.k<nowK?"متأخر":"لسه"}</span>`}</span></div>`).join("")}</div>
+        <span class="pv">${p.src==="early"||p.src==="ahead"?`<span class="pos">تم الدفع ✓</span>`:p.paid?`<span class="pos">اتدفع<span class="cm-amt"> ${money(p.amt)}</span></span>`:`<span class="${p.k<nowK?"neg":"due"}">${p.k<nowK?"متأخر":"لسه"}</span>`}</span></div>`).join("")}</div>
     </div></details>`}).join("");
 }
 
@@ -1705,6 +1706,11 @@ function paySchedule(c){
   const tot=(+c.value||0)||out.length*(+c.monthly||0), sum=out.reduce((a,p)=>a+(p.paid?p.amt:0),0);
   if(out.some(p=>!p.paid)&&tot>0&&sum>=tot-1)
     out.forEach(p=>{ if(!p.paid){ p.paid=true; p.amt=0; p.src="early"; } });
+  else { // paid ahead: the money paid so far covers more installments than the months ticked → the next months are covered
+    const mo=+c.monthly||0;
+    if(mo>0){ let need=Math.floor((sum+1)/mo)-out.filter(p=>p.paid).length;
+      for(const p of out){ if(need<=0) break; if(!p.paid){ p.paid=true; p.amt=0; p.src="ahead"; need--; } } }
+  }
   return out;
 }
 
@@ -1830,7 +1836,7 @@ $("#dList").addEventListener("click",e=>{
 });
 
 /* ---------- new month ---------- */
-function commitDueIn(c,k){ return isDebt(c)?!isDone(c):activeIn(c,k)&&!paySchedule(c).some(p=>p.k===k&&p.src==="early")&&(k<=nowKey()||!isDone(c)); }
+function commitDueIn(c,k){ return isDebt(c)?!isDone(c):activeIn(c,k)&&!coveredIn(c,k)&&(k<=nowKey()||!isDone(c)); }
 function copyItems(items,k,withCost){
   return items
     .filter(i=>!i.cid||(commitById(i.cid)&&commitDueIn(commitById(i.cid),k)))
