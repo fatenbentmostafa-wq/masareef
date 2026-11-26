@@ -2704,7 +2704,7 @@ function recordLoc(force){
   const ref=houseRef, em=myEmail(), uid=fbUser.uid;
   navigator.geolocation.getCurrentPosition(p=>{
     ref.collection("locs").add({by:uid,email:em,name:personName(em),lat:+p.coords.latitude.toFixed(6),lng:+p.coords.longitude.toFixed(6),acc:Math.round(p.coords.accuracy||0),at:new Date().toISOString(),app:NATIVE?"app":"web"}).catch(e=>console.warn("loc",e&&e.code));
-  },e=>console.warn("loc denied",e&&e.code),{enableHighAccuracy:true,timeout:20000,maximumAge:60000});
+  },e=>console.warn("loc denied",e&&e.code),{enableHighAccuracy:false,timeout:12000,maximumAge:1800000});
 }
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") recordLoc(false); });
 const mapUrl=l=>`https://www.google.com/maps?q=${l.lat},${l.lng}`;
