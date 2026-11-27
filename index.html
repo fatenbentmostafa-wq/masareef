@@ -1079,7 +1079,7 @@ h2.cap{font-size:.8rem;letter-spacing:.06em;color:var(--muted);text-transform:up
   <div class="ls-box">
     <span class="ls-ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 11v3.5c0 2.5-1 4.5-2.5 6"/><path d="M8.5 9.5A4 4 0 0 1 16 11.5v2c0 2.6-.6 5-1.8 7"/><path d="M5.5 13.5V12a6.5 6.5 0 0 1 11.6-4"/><path d="M18.4 10.5c.1.5.1 1 .1 1.5v1.5c0 1.5-.2 3-.6 4.3"/><path d="M6 17.5c.6-1 .9-2 1-3"/><path d="M4.5 8.5A9 9 0 0 1 19 5.5"/></svg></span>
     <b>مصاريف البيت مقفول</b>
-    <span class="hint">افتح ببصمتك أو بالـ PIN بتاع الموبايل</span>
+    <span class="hint">افتح ببصمتك أو وشك أو بالـ PIN بتاع الموبايل</span>
     <button type="button" class="bigadd" id="unlockBtn"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 11v3.5c0 2.5-1 4.5-2.5 6"/><path d="M8.5 9.5A4 4 0 0 1 16 11.5v2c0 2.6-.6 5-1.8 7"/><path d="M5.5 13.5V12a6.5 6.5 0 0 1 11.6-4"/><path d="M18.4 10.5c.1.5.1 1 .1 1.5v1.5c0 1.5-.2 3-.6 4.3"/><path d="M6 17.5c.6-1 .9-2 1-3"/><path d="M4.5 8.5A9 9 0 0 1 19 5.5"/></svg>فتح</button>
     <button type="button" class="linkbtn" id="unlockGoogle" hidden>افتح بحساب جوجل بدل البصمة</button>
     <span class="hint neg" id="lockErr"></span>
@@ -2320,7 +2320,12 @@ function renderLockCard(){
 async function verifyUser(){
   verifying=true;
   try{
-  if(NATIVE){ await NP("NativeBiometric").verifyIdentity({reason:"افتح مصاريف البيت",title:"مصاريف البيت",subtitle:"بصمتك أو الـ PIN",useFallback:true,maxAttempts:5}); return true; }
+  if(NATIVE){ const NB=NP("NativeBiometric"), base={reason:"افتح مصاريف البيت",title:"مصاريف البيت",subtitle:"بصمتك أو وشك أو الـ PIN بتاع الموبايل",useFallback:true,maxAttempts:5};
+    // Android ignores useFallback: ask for fingerprint/face/iris AND the phone's PIN/pattern/password (DEVICE_CREDENTIAL=7)
+    try{ await NB.verifyIdentity({...base,allowedBiometryTypes:[3,4,5,7]}); return true; }
+    catch(e){ const m=String(e&&(e.code||"")+" "+(e&&e.message||"")).toLowerCase();
+      if(/cancel|10|13|16/.test(m)) throw e;          // the user backed out: don't pop a second prompt
+      await NB.verifyIdentity(base); return true; } }  // older phones that can't mix them: fingerprint/face only
   const a=await navigator.credentials.get({publicKey:{challenge:rnd(32),allowCredentials:[{type:"public-key",id:unb64(lockCred)}],userVerification:"required",timeout:60000}});
   return !!a;
   } finally { setTimeout(()=>{ verifying=false; },800); }
